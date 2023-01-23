@@ -2,7 +2,11 @@
 
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\MotorController;
+use App\Http\Livewire\Customers\IndexCustomers;
+use App\Http\Livewire\Motors\IndexMotors;
 use Illuminate\Support\Facades\Route;
+use App\Http\Livewire\Customers\CreateCustomers;
+use App\Http\Livewire\Customers\EditCustomer;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,8 +26,9 @@ Route::get('/', function () {
 
 
 // Clientes
-Route::resource('clientes',ClienteController::class);
-Route::resource('motores',MotorController::class);
+
+//Route::resource('clientes',ClienteController::class);
+//Route::resource('motores',MotorController::class);
 
 Route::middleware([
     'auth:sanctum',
@@ -33,4 +38,13 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+    Route::get('/clientes', IndexCustomers::class)->name('clientes.index');
+    Route::get('/clientes/create', CreateCustomers::class)->name('clientes.create');
+    Route::get('/clientes/{c}/edit', EditCustomer::class)->name('clientes.edit');
+    Route::get('/clientes/{cliente}', [ClienteController::class, 'show'])->name('clientes.show');
+
+
+
+    Route::get('/motores', IndexMotors::class)->name('motores.index');
+    Route::get('/motores/create', [MotorController::class, 'create'])->name('motores.create');
 });

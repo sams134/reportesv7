@@ -145,4 +145,24 @@ if (test)
         swiperInit();
     }) */
 
+function deleteContact(key)
+{
+    Swal.fire({
+        title: 'Seguro que desea eliminar este contacto?',
+        text: "Este cambio no puede ser revertido",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si, Borrarlo',
+        cancelButtonText: 'No, cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+           Livewire.emit('deleteContact',key);
+        }
+    })
+}
+
+
+
    

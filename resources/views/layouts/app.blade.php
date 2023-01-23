@@ -129,6 +129,7 @@
     @stack('modals')
 
     @livewireScripts
+    @stack('livescripts')
 
     <script src="{{ asset('vendors/anchorjs/anchor.min.js') }}"></script>
     <script src="{{ asset('vendors/is/is.min.js') }}"></script>
@@ -141,6 +142,7 @@
     <script src="{{ asset('vendors/fontawesome/all.min.js') }}"></script>
     <script src="{{ asset('vendors/dropzone/dropzone.min.js') }}"></script>
     <script src="{{ asset('vendors/list.js/list.min.js') }}"></script>
+    <script src="{{ asset('vendors/tinymce/tinymce.min.js') }}"></script>
     
     <script src="{{ asset('js/flatpickr.js') }}"></script>
     <script src="{{ asset('js/theme.js') }}"></script>
