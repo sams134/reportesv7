@@ -60,7 +60,7 @@
                     <div class="col-6">
                         <div class="input-group flex-nowrap"><span class="input-group-text" id="addon-wrapping">No.
                                 de Contactos</span>
-                            <select class="form-select" aria-label="Default select example" wire:model="cant_contactos">
+                            <select class="form-select" aria-label="Default select example" wire:model="cant_contactos" wire:change="updateContactNumber">
                                 <option selected="">Seleccione Cantidad de Contactos</option>
                                 @for ($i = 0; $i <= 6; $i++)
                                     <option value="{{ $i }}">{{ $i }}</option>

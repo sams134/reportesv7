@@ -9,10 +9,10 @@ use App\Models\Contacto;
 
 class EditCustomer extends Component
 {
-   
+    public $listeners = ['deleteContact'];
     public $cant_contactos;
     public $cliente,$razon_social,$nit,$direccion_fiscal,$direccion_planta,$pais="Guatemala",$ciudad="Guatemala",$comentarios;
-    public $contactos;
+    public $contactos,$contactosToDelete;
     public $id_cliente;
     public function mount(Cliente $c)
     {
@@ -27,6 +27,7 @@ class EditCustomer extends Component
         $this->comentarios = $c->info_cliente->comentarios;
         $this->id_cliente = $c->id_cliente;
         $this->contactos = collect();
+        $this->contactosToDelete = collect();
         foreach($c->contactos as $contacto)
          {
             $this->contactos->push([
@@ -67,6 +68,9 @@ class EditCustomer extends Component
     }
     public function deleteContact($key)
     {
+        if ($this->contactos[$key]["id"] != "")
+         $this->contactosToDelete->push($this->contactos[$key]["id"]);
+        
         $this->contactos->pull($key);
         $this->cant_contactos--;
     }
@@ -93,8 +97,60 @@ class EditCustomer extends Component
         ]);
         foreach ($this->contactos as $key=>$contact)
         {
-            
+            if ($contact["id"] != "")
+            {
+                $contactoObj = Contacto::find($contact["id"]);
+                $contactoObj->update([
+                    'contacto' => $contact["name"],
+                    'telefono' => $contact["telefono"],
+                    'puesto' => $contact["puesto"],
+                    'email' => $contact["email"],  
+                ]);
+             }else
+             {
+                 $contactoObj = Contacto::create([
+                    'contacto' => $contact["name"],
+                    'telefono' => $contact["telefono"],
+                    'puesto' => $contact["puesto"],
+                    'email' => $contact["email"],  
+                    'id_cliente' => $cliente->id_cliente
+                 ]);
+             }
+        }
+        foreach ($this->contactosToDelete as $key=>$contact)
+        {
+            $contactoObj = Contacto::find($contact);
+            $contactoObj->delete();
         }
         return redirect()->route('clientes.index')->with('success','El cliente '.$cliente->cliente. ' fue editado exitosamente.');
+    }
+    public function updateContactNumber()
+    {
+        $this->cant_contactos = $this->cant_contactos * 1;
+        
+        if ($this->contactos->count() != $this->cant_contactos)
+        {
+            if ($this->contactos->count() < $this->cant_contactos)
+              for ($i=$this->contactos->count();$i<$this->cant_contactos;$i++)
+                    $this->contactos->push([
+                        'name' => '',
+                        'telefono' => '',
+                        'puesto' => '',
+                        'email' => '',
+                        'id' => '',
+                    ]);
+            else
+            {
+                $this->contactos->take($this->cant_contactos-$this->contactos->count())
+                
+                ->each(function ($contactoToDelete) { 
+                    if ($contactoToDelete["id"] != "")
+                        $this->contactosToDelete->push($contactoToDelete["id"]);
+                });
+                $this->contactos =  $this->contactos->take($this->cant_contactos);
+            }
+            
+        }
+
     }
 }

@@ -147,6 +147,7 @@ if (test)
 
 function deleteContact(key)
 {
+    console.log("hola");
     Swal.fire({
         title: 'Seguro que desea eliminar este contacto?',
         text: "Este cambio no puede ser revertido",
@@ -164,5 +165,11 @@ function deleteContact(key)
 }
 
 
+
+const cameraBtnNameplate = document.querySelector('#cameraBtnNameplate');
+if (cameraBtnNameplate)
+   cameraBtnNameplate.addEventListener('click',function(){
+        document.querySelector("#cameraNameplate").click();
+   });
 
    

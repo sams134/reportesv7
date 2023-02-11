@@ -4383,20 +4383,16 @@ var wizardInit = function wizardInit() {
   var tabProgressBar = document.querySelector('.theme-wizard .progress');
   wizards.forEach(function (wizard) {
     var tabToggleButtonEl = wizard.querySelectorAll('[data-wizard-step]');
-    var inputEmail = wizard.querySelector('[data-wizard-validate-email]');
-    var emailPattern = inputEmail.getAttribute('pattern');
-    var inputPassword = wizard.querySelector('[data-wizard-validate-password]');
-    var inputConfirmPassword = wizard.querySelector('[data-wizard-validate-confirm-password]');
+
+   
+  
     var form = wizard.querySelector('[novalidate]');
     var nextButton = wizard.querySelector('.next button');
     var prevButton = wizard.querySelector('.previous button');
     var cardFooter = wizard.querySelector('.theme-wizard .card-footer');
     var count = 0;
 
-    var validatePattern = function validatePattern(pattern, value) {
-      var regexPattern = new RegExp(pattern);
-      return regexPattern.test(String(value).toLowerCase());
-    };
+    
 
     prevButton.classList.add('d-none'); // on button click tab change
 
@@ -4405,13 +4401,11 @@ var wizardInit = function wizardInit() {
 
     function next()
     {
-      if ((!(inputEmail.value && validatePattern(emailPattern, inputEmail.value)) || !inputPassword.value || !inputConfirmPassword.value) && form.className.includes('needs-validation')) {
-        form.classList.add('was-validated');
-      } else {
+        
         count += 1;
         var tab = new window.bootstrap.Tab(tabToggleButtonEl[count]);
         tab.show();
-      }
+      
     }
     function prev()
     {
@@ -4419,32 +4413,30 @@ var wizardInit = function wizardInit() {
       var tab = new window.bootstrap.Tab(tabToggleButtonEl[count]);
       tab.show();
     }
+    Livewire.on('updateStep',function (step){
+      var tab = new window.bootstrap.Tab(tabToggleButtonEl[step]);
+      count=step;
+      tab.show();
+    })
     nextButton.addEventListener('click', function () {
-      
+      Livewire.emit('next')
+     // count += 1;
+      //var tab = new window.bootstrap.Tab(tabToggleButtonEl[count]);
+      //tab.show();
     });
     prevButton.addEventListener('click', function () {
-     
+      Livewire.emit('prev')
     });
 
     if (tabToggleButtonEl.length) {
       tabToggleButtonEl.forEach(function (item, index) {
         /* eslint-disable */
         item.addEventListener('show.bs.tab', function (e) {
-          if ((!(inputEmail.value && validatePattern(emailPattern, inputEmail.value)) || !inputPassword.value || !inputConfirmPassword.value) && form.className.includes('needs-validation')) {
-            e.preventDefault();
-            form.classList.add('was-validated');
-            return null;
-            /* eslint-enable */
-          }
+          
 
           count = index; // can't go back tab
           //Livewire.emit('setCount',count);
-          if (count === tabToggleButtonEl.length - 1) {
-            tabToggleButtonEl.forEach(function (tab) {
-              tab.setAttribute('data-bs-toggle', 'modal');
-              tab.setAttribute('data-bs-target', '#error-modal');
-            });
-          } //add done class
+         
 
 
           for (var i = 0; i < count; i += 1) {
@@ -4459,9 +4451,9 @@ var wizardInit = function wizardInit() {
 
           if (count > tabToggleButtonEl.length - 2) {
             item.classList.add('done');
-            cardFooter.classList.add('d-none');
+            nextButton.classList.add('d-none');
           } else {
-            cardFooter.classList.remove('d-none');
+            nextButton.classList.remove('d-none');
           } // prev-button removing
 
 

@@ -13,26 +13,26 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="nombreRazonSocial">Razon Social</label> 
-                    <div class="btn btn-falcon-default me-2 mb-2" wire:click="setName">Usar Nombre Cliente</div>
-                    <div class="btn btn-falcon-default me-2 mb-2" wire:click="setNameSA">Usar Nombre Cliente + S.A.</div>
+                    <div class="btn btn-falcon-default float-end mb-2" wire:click="setName">Usar Nombre Cliente</div>
+                    <div class="btn btn-falcon-default float-end me-2 mb-2" wire:click="setNameSA">Usar Nombre Cliente + S.A.</div>
                     <input class="form-control" id="nombreRazonSocial" type="text" placeholder="Cliente S.A." wire:model.defer="razon_social"/>
                     @error('razon_social') <div class="alert alert-danger my-1" role="alert">{{ $message }}</div> @enderror
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="nit">Nit</label>
-                     <div class="btn btn-falcon-default me-2 mb-2" wire:click="setCF">C/F</div>
+                     <div class="btn btn-falcon-default float-end mb-2" wire:click="setCF">C/F</div>
                     <input class="form-control" id="nit" type="text" placeholder="Nit" wire:model.defer="nit"/>
                     @error('nit') <div class="alert alert-danger my-1" role="alert">{{ $message }}</div> @enderror
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="DireccionFiscal">Direccion Fiscal</label>
-                    <div class="btn btn-falcon-default me-2 mb-2" wire:click="setCiudad">Usar Ciudad</div>
+                    <div class="btn btn-falcon-default float-end mb-2" wire:click="setCiudad">Usar Ciudad</div>
                     <input class="form-control" id="DireccionFiscal" type="text" placeholder="Direccion Fiscal" wire:model.defer="direccion_fiscal"/>
                     @error('direccion_fiscal') <div class="alert alert-danger my-1" role="alert">{{ $message }}</div> @enderror
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="DireccionPlanta">Direccion Planta</label>
-                    <div class="btn btn-falcon-default me-2 mb-2" wire:click="setPlantAddr">Usar direccion fiscal</div>
+                    <div class="btn btn-falcon-default float-end mb-2" wire:click="setPlantAddr">Usar direccion fiscal</div>
                     <input class="form-control" id="DireccionPlanta" type="text" placeholder="Direccion Planta" wire:model.defer="direccion_planta"/>
                 </div>
                 <div class="mb-3">
@@ -58,7 +58,7 @@
                     <div class="col-6">
                         <div class="input-group flex-nowrap"><span class="input-group-text" id="addon-wrapping">No.
                                 de Contactos</span>
-                            <select class="form-select" aria-label="Default select example" wire:model="cant_contactos">
+                            <select class="form-select" aria-label="Default select example" wire:model="cant_contactos" wire:change="updateContactNumber">
                                 <option selected="">Seleccione Cantidad de Contactos</option>
                                 @for ($i = 0; $i <= 6; $i++)
                                     <option value="{{ $i }}">{{ $i }}</option>
@@ -97,6 +97,7 @@
                                     <button class="btn btn-danger me-1 mb-1 float-end" type="button" onclick="deleteContact({{$key}})">
                                         <i class="far fa-trash-alt me-1"></i> Borrar Contacto
                                     </button>
+                                
                                 </div>
                             </x-form-card>
                         </div>

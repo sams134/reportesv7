@@ -10,6 +10,7 @@ use Illuminate\Support\Collection;
 
 
 
+
 class CreateCustomers extends Component
 {
     public $cant_contactos;
@@ -101,5 +102,25 @@ class CreateCustomers extends Component
     {
         $this->contactos->pull($key);
         $this->cant_contactos--;
+    }
+    public function updateContactNumber()
+    {
+        $this->cant_contactos = $this->cant_contactos * 1;
+        
+        if ($this->contactos->count() != $this->cant_contactos)
+        {
+            if ($this->contactos->count() < $this->cant_contactos)
+              for ($i=$this->contactos->count();$i<$this->cant_contactos;$i++)
+                    $this->contactos->push([
+                        'name' => '',
+                        'telefono' => '',
+                        'puesto' => '',
+                        'email' => ''
+                    ]);
+            else
+                $this->contactos =  $this->contactos->take($this->cant_contactos);
+            
+        }
+
     }
 }

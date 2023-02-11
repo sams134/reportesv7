@@ -25,7 +25,7 @@ class Motor extends Model
             }
         );
     }
-    
+  
     public function cliente()
     {
         return $this->belongsTo(Cliente::class,'id_cliente');
@@ -46,6 +46,10 @@ class Motor extends Model
     public function tecnicos()
     {
         return $this->belongsToMany(User::class,'asignacions','id_motor','id_user');
+    }
+    public function fotos()
+    {
+        return $this->hasMany(Foto::class,'id_motor');
     }
     
 }

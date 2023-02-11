@@ -7,6 +7,8 @@ use App\Http\Livewire\Motors\IndexMotors;
 use Illuminate\Support\Facades\Route;
 use App\Http\Livewire\Customers\CreateCustomers;
 use App\Http\Livewire\Customers\EditCustomer;
+use App\Http\Livewire\Customers\ShowCustomers;
+use App\Http\Livewire\Motors\CreateMotor;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,10 +43,10 @@ Route::middleware([
     Route::get('/clientes', IndexCustomers::class)->name('clientes.index');
     Route::get('/clientes/create', CreateCustomers::class)->name('clientes.create');
     Route::get('/clientes/{c}/edit', EditCustomer::class)->name('clientes.edit');
-    Route::get('/clientes/{cliente}', [ClienteController::class, 'show'])->name('clientes.show');
+    Route::get('/clientes/{cliente}', ShowCustomers::class)->name('clientes.show');
 
 
 
     Route::get('/motores', IndexMotors::class)->name('motores.index');
-    Route::get('/motores/create', [MotorController::class, 'create'])->name('motores.create');
+    Route::get('/motores/create', CreateMotor::class)->name('motores.create');
 });

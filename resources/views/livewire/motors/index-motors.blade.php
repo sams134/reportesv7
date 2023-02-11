@@ -13,16 +13,19 @@
         <div class="card-header">
             <h6 class="mb-0">Ordenes de Servicio</h6>
         </div>
+        
         <div class="card-body p-0">
             <div class="scrollbar">
                 <table
-                    class="table mb-0 table-borderless fs--2 border-200 overflow-hidden table-running-project table-hover">
+                    class="table mb-0 table-borderless fs--2 border-200 overflow-hidden table-running-project table-hover table-striped">
                     <thead class="bg-light">
                         <tr class="text-800">
                             <th style="width:30px"><input type="checkbox" name="" id=""> </th>
+                            <th style="width:1rem"></th>
                             <th class="sort" style="width:15%">Orden de Servicio</th>
-                            <th class="sort" style="width:25%">Cliente</th>
+                           
                             <th class="sort ">Potencia</th>
+                            <th class="sort ">Rpm</th>
                             <th class="sort ">Estado</th>
                             <th class="sort ">Progreso</th>
                             <th>Tecnicos</th>
@@ -32,7 +35,14 @@
                     <tbody class="list">
                         @foreach ($motores as $motor)
                             <tr>
-                                <td style="width:30px"><input type="checkbox" name="" id=""></td>
+                                <td style="width:30px"><input type="checkbox" name="" id="" class="align-bottom"></td>
+                                <td>
+                                    <div class="col-auto">
+                                        <div class="avatar avatar-2xl status-offline">
+                                          <img class="rounded-circle" src="{{Storage::url($motor->fotos->first()->thumb)}}" alt="" />
+                                        </div>
+                                      </div>
+                                </td>
                                 <td>
                                     <div class="d-flex align-items-center position-relative">
                                         {{--   --}}
@@ -42,8 +52,9 @@
                                             <p class="text-500 fs--2 mb-0">{{ $motor->cliente->cliente }}</p>
                                         </div>
                                     </div>
+                                    
                                 </td>
-                                <td class="align-middle ">{{ $motor->cliente->cliente }}</td>
+                                <td class="align-middle text-uppercase">{{ $motor->rpm }}</td>
                                 <td class="align-middle ">{{ $motor->potencia }}</td>
                                 <td class="align-middle ">{{ $motor->status_id }}</td>
                                 <td class="align-middle ">
