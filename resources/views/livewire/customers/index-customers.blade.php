@@ -69,9 +69,15 @@
                                             </button>
                                         </td>
                                         <td>
-                                            <a class="btn btn-falcon-primary me-1 mb-1" type="button" href="{{route('clientes.edit',$cliente)}}">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
+                                            <div class="d-flex">
+                                                <a class="btn btn-falcon-primary me-1 mb-1" type="button" href="{{route('clientes.edit',$cliente)}}">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button class="btn btn-falcon-danger me-1 mb-1 delete" type="button" onclick="removeCustomer({{$cliente->id_cliente}})">
+                                                    <i class="far fa-trash-alt me-1"></i> 
+                                                </button>
+                                            </div>
+                                            
                                         </td>
                                     </tr>
                                 @endforeach
@@ -83,4 +89,17 @@
             </div>
         </div>
     </div>
+    <script src="{{asset('js/main.js')}}"></script>
+    @push('livescripts')
+     
+    <script>
+        Livewire.on('customerRemoved', (cliente) => {
+    Swal.fire(
+        'Eliminado!',
+        'El cliente '+cliente+' fue eliminado',
+        'success'
+      )
+});
+        </script>
+    @endpush
 </div>

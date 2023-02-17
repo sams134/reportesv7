@@ -15,24 +15,25 @@
         </div>
         
         <div class="card-body p-0">
-            <div class="scrollbar">
+            <div class="table-responsive scrollbar">
                 <table
-                    class="table mb-0 table-borderless fs--2 border-200 overflow-hidden table-running-project table-hover table-striped">
-                    <thead class="bg-light">
+                    class="table table-hover table-striped overflow-hidden fs--1">
+                    <thead class="bg-300 text-dark">
                         <tr class="text-800">
                             <th style="width:30px"><input type="checkbox" name="" id=""> </th>
                             <th style="width:1rem"></th>
-                            <th class="sort" style="width:15%">Orden de Servicio</th>
-                           
+                            <th class="sort " style="width:15%;cursor: pointer;">Orden de Servicio</th>
+                            <th class="sort ">Cliente</th>
                             <th class="sort ">Potencia</th>
-                            <th class="sort ">Rpm</th>
-                            <th class="sort ">Estado</th>
-                            <th class="sort ">Progreso</th>
+                            <th class="sort d-none d-xl-table-cell">Rpm</th>
+                            <th class="sort d-none d-xxl-table-cell">Marca</th>
+                            <th class="sort ">Status</th>
+                            <th class="sort d-none d-lg-table-cell">Ingreso</th>
                             <th>Tecnicos</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody class="list">
+                    <tbody class="">
                         @foreach ($motores as $motor)
                             <tr>
                                 <td style="width:30px"><input type="checkbox" name="" id="" class="align-bottom"></td>
@@ -48,21 +49,26 @@
                                         {{--   --}}
                                         <div class="flex-1 ms-1">
                                             <h6 class="mb-0 fw-semi-bold"><a class="stretched-link text-900"
-                                                    href="">{{ $motor->fullOs }}</a></h6>
-                                            <p class="text-500 fs--2 mb-0">{{ $motor->cliente->cliente }}</p>
+                                                    href="{{route('motores.downloadPdf',$motor)}}">{{ $motor->fullOs }}</a></h6>
+                                            <p class="text-500 fs--2 mb-0">{{$motor->id_tipoequipo}}</p>
                                         </div>
                                     </div>
                                     
                                 </td>
-                                <td class="align-middle text-uppercase">{{ $motor->rpm }}</td>
+                                <td class="align-middle">{{ $motor->cliente->cliente }}</td>
                                 <td class="align-middle ">{{ $motor->potencia }}</td>
-                                <td class="align-middle ">{{ $motor->status_id }}</td>
-                                <td class="align-middle ">
-                                    <div class="progress rounded-3 worked" style="height: 6px;">
-                                        <div class="progress-bar bg-progress-gradient rounded-pill" role="progressbar"
-                                            style="width: 50%" aria-valuenow="43.72" aria-valuemin="0"
-                                            aria-valuemax="100"></div>
+                                <td class="align-middle text-uppercase d-none d-xl-table-cell">{{ $motor->rpm }}</td>
+                                <td class="align-middle text-uppercase d-none d-xxl-table-cell">{{ $motor->marca }}</td>
+                                <td class="align-middle "> <x-status-badge status_id="{{ $motor->status_id }}" /> </td>
+                                <td class="align-middle d-none d-lg-table-cell"> 
+                                    <div style="d-block">
+                                        {{ Carbon\Carbon::parse($motor->fecha_ingreso)->format('d/m/Y')}}
                                     </div>
+                                    
+                                    <small>
+                                        {{ Carbon\Carbon::parse($motor->fecha_ingreso)->diffForHumans();}}
+                                    </small>
+                                    
                                 </td>
                                 <td>
                                     @foreach ($motor->tecnicos as $tecnico)

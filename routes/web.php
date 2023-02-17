@@ -49,4 +49,5 @@ Route::middleware([
 
     Route::get('/motores', IndexMotors::class)->name('motores.index');
     Route::get('/motores/create', CreateMotor::class)->name('motores.create');
+    Route::get('/motores/pdfIngreso/{motor}',[MotorController::class,'downloadPdf'])->name('motores.downloadPdf');
 });

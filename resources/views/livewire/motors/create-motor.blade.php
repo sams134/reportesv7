@@ -4,15 +4,17 @@
         Ingrese los datos del equipo.
     </x-page-title>
     <div class="col-lg-12 col-xl-12 col-xxl-12 h-100">
-        <x-form-wizzard  active="4">
+        
+        <x-form-wizzard  active="{{$step+1}}">
             <x-slot:tab1>
                 <div class="row">
                     
                     <div class="col-12 col-lg-6">
                         <x-form-card title="Datos del cliente">
                             <div>
-                                <label>Cliente
-                                    <a href="" class="ms-3">[+ Agregar Cliente]</a>
+                                <label class="d-flex flex-row">Cliente 
+                                    
+                                    @livewire('customers.create-customer-modal')
                                 </label>
                                 <select class="form-select"  size="1" wire:model="customer" wire:change="fillContacts">
                                     <option value="">Seleccione un Cliente</option>
@@ -325,12 +327,67 @@
                 </div>
             </x-slot:tab3>
             <x-slot:tab4>
-                <div class="row">
-                    <div class="col-6 row-lg-3">
-                        <img src="{{ $foto->temporaryUrl() }}" style="width:100%" class="rounded-soft img-thumbnail">
+                <x-form-card title="Cargue 4 fotos del equipo">
+                    <div class="row">
+                        <div class="col-6 col-lg-3">
+                            <button class="btn btn-falcon-primary me-1 mb-1" type="button" id="cameraBtnPhotoMotor1">
+                                <div class="img-thumbnail">
+                                    Cargue Foto Vista 1
+                                </div>
+                                @if ($photosMotor[0] != "")
+                                <img src="{{$photosMotor[0]->temporaryUrl()}}" style="width:100%" class="rounded-soft img-thumbnail">
+                                @else
+                                <img src="{{asset('img/motors/m1.png')}}" style="width:100%" class="rounded-soft img-thumbnail">
+                                @endif
+                                
+                            </button>
+                        </div>
+                        <div class="col-6 col-lg-3">
+                            <button class="btn btn-falcon-primary me-1 mb-1" type="button" id="cameraBtnPhotoMotor2">
+                                <div class="img-thumbnail">
+                                    Cargue Foto Vista 2
+                                </div>
+                                @if ($photosMotor[1] != "")
+                                <img src="{{$photosMotor[1]->temporaryUrl()}}" style="width:100%" class="rounded-soft img-thumbnail">
+                                @else
+                                <img src="{{asset('img/motors/m2.png')}}" style="width:100%" class="rounded-soft img-thumbnail">
+                                @endif
+                            </button>
+                        </div>
+                        <div class="col-6 col-lg-3">
+                            <button class="btn btn-falcon-primary me-1 mb-1" type="button" id="cameraBtnPhotoMotor3">
+                                <div class="img-thumbnail">
+                                    Cargue Foto Vista 3
+                                </div>
+                                @if ($photosMotor[2] != "")
+                                <img src="{{$photosMotor[2]->temporaryUrl()}}" style="width:100%" class="rounded-soft img-thumbnail">
+                                @else
+                                <img src="{{asset('img/motors/m3.png')}}" style="width:100%" class="rounded-soft img-thumbnail">
+                                @endif
+                            </button>
+                        </div>
+                        <div class="col-6 col-lg-3">
+                            <button class="btn btn-falcon-primary me-1 mb-1" type="button" id="cameraBtnPhotoMotor4">
+                                <div class="img-thumbnail">
+                                    Cargue Foto Vista 4
+                                </div>
+                                @if ($photosMotor[3] != "")
+                                <img src="{{$photosMotor[3]->temporaryUrl()}}" style="width:100%" class="rounded-soft img-thumbnail">
+                                @else
+                                <img src="{{asset('img/motors/m4.png')}}" style="width:100%" class="rounded-soft img-thumbnail">
+                                @endif
+                            </button>
+                        </div>
                     </div>
-                </div>
+                    <input type="file" wire:model="photosMotor.0" class="d-none" id="cameraPhotoMotor1">
+                    <input type="file" wire:model="photosMotor.1" class="d-none" id="cameraPhotoMotor2">
+                    <input type="file" wire:model="photosMotor.2" class="d-none" id="cameraPhotoMotor3">
+                    <input type="file" wire:model="photosMotor.3" class="d-none" id="cameraPhotoMotor4">
+                </x-form-card>
             </x-slot:tab4>
+            <x-slot:tab5>
+                hola
+            </x-slot:tab5>
         </x-form-wizzard>
     </div>
     @push('css')

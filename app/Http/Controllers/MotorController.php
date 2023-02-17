@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Motor;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 
 class MotorController extends Controller
 {
@@ -90,5 +92,16 @@ class MotorController extends Controller
     public function destroy(Motor $motor)
     {
         //
+    }
+
+    public function downloadPdf(Motor $motor)
+    {
+        //$snappy = PDF::loadView("motores.contrasenia",$motor);
+        //$snappy = PDF::load("motores.contrasenia",$motor);
+        //return $snappy->stream();
+        //return $pdf->download('contrasenia.pdf');
+        return PDF::loadView("motores.contrasenia",['server'=>'http://192.168.0.130/','motor'=>$motor])->inline();
+       // return view("motores.contrasenia",['server'=>'http://192.168.0.130/','motor'=>$motor]);
+    
     }
 }

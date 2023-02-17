@@ -18,14 +18,18 @@ class CreateMotor extends Component
     public $inventory;
     public $photoInventory = [];
     public $nameplates = [];
+    public $photosMotor = ['','','',''];
     public $step=0;
+    
 
-    public $listeners = ['next','prev'];
+    public $listeners = ['next','prev','newCustomerAdded'];
     protected $rules = [
         'inventory.*.name' => '',
         'inventory.*.valor' => 'required',
         'photoInventory.*' => 'image|max:2048', // 2MB Max
         'nameplates.*' => 'image|max:2048', // 2MB Max
+        'photosMotor.*' => 'image|max:2048|required', // 2MB Max
+       
     ];
 
 
@@ -41,6 +45,7 @@ class CreateMotor extends Component
     }
     public function render()
     {
+    
         $this->clientesList = Cliente::orderBy('cliente','asc')->get();
         return view('livewire.motors.create-motor');
     }
@@ -87,4 +92,20 @@ class CreateMotor extends Component
     public function updatedPhotoInventory() {
         $this->emit('updateStep',$this->step);
     }
+    public function updatedphotosMotor() {
+        $this->emit('updateStep',$this->step);
+    }
+    public function gotoStep($step){
+        $this->step = $step;
+       $this->emit('updateStep',$step);
+    }
+    // es un listener que viene de cuando se agrega un cliente nuevo
+    public function newCustomerAdded($id_customer)
+    {
+        $this->clientesList = Cliente::orderBy('cliente','asc')->get();
+        $this->customer = $id_customer;
+        $this->fillContacts();
+    }
+
+   
 }

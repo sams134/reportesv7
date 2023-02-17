@@ -4418,6 +4418,8 @@ var wizardInit = function wizardInit() {
       count=step;
       tab.show();
     })
+
+    
     nextButton.addEventListener('click', function () {
       Livewire.emit('next')
      // count += 1;
@@ -4435,9 +4437,7 @@ var wizardInit = function wizardInit() {
           
 
           count = index; // can't go back tab
-          //Livewire.emit('setCount',count);
-         
-
+          //Livewire.emit('setCount',count)
 
           for (var i = 0; i < count; i += 1) {
             tabToggleButtonEl[i].classList.add('done');

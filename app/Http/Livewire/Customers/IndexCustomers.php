@@ -9,6 +9,7 @@ use Livewire\WithPagination;
 class IndexCustomers extends Component
 {
     use WithPagination;
+    public $listeners = ['removeCustomer'];
     public $search="";
     public function render()
     {
@@ -22,5 +23,11 @@ class IndexCustomers extends Component
                     })
                     ->orderBy('cliente','asc')->paginate(20);
         return view('livewire.customers.index-customers',compact('customers'));
+    }
+    public function removeCustomer($id_cliente){
+        $cliente = Cliente::find($id_cliente);
+        $cliente->delete();
+        $this->render();
+        $this->emit('customerRemoved',$cliente->cliente);
     }
 }

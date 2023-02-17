@@ -13,18 +13,19 @@ class Motor extends Model
     protected $guarded = [];
     protected $primaryKey = 'id_motor';
 
-    protected function statusId():Attribute
+   /*  protected function statusId():Attribute
     {
         return new Attribute(
             get: function($value)
             {
                 switch ($value)
                 {
-                    case '-1': return "No Asignado";
+                    case '-1': return "No Asignados";
+                    case '1': return "No Asignados";
                 }
             }
         );
-    }
+    } */
   
     public function cliente()
     {

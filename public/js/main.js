@@ -101,6 +101,24 @@ function removeAnimal(id) {
         }
     })
 }
+function removeCustomer(id) {
+    Swal.fire({
+        title: 'Seguro que desea eliminar este cliente junto con todos sus motores?',
+        text: "Este cambio no puede ser revertido",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si, Borrarlo',
+        cancelButtonText: 'No, cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+           Livewire.emit('removeCustomer',id);
+        }
+    })
+}
+
+
 
 const btn_photo_create = document.querySelector('#btn_photo_create');
 if (btn_photo_create)
@@ -172,4 +190,26 @@ if (cameraBtnNameplate)
         document.querySelector("#cameraNameplate").click();
    });
 
+   const cameraBtnPhotoMotor1 = document.querySelector('#cameraBtnPhotoMotor1');
+if (cameraBtnPhotoMotor1)
+   cameraBtnPhotoMotor1.addEventListener('click',function(){
+        document.querySelector("#cameraPhotoMotor1").click();
+   });
    
+   const cameraBtnPhotoMotor2 = document.querySelector('#cameraBtnPhotoMotor2');
+   if (cameraBtnPhotoMotor2)
+      cameraBtnPhotoMotor2.addEventListener('click',function(){
+           document.querySelector("#cameraPhotoMotor2").click();
+      });
+       const cameraBtnPhotoMotor3 = document.querySelector('#cameraBtnPhotoMotor3');
+if (cameraBtnPhotoMotor3)
+   cameraBtnPhotoMotor3.addEventListener('click',function(){
+        document.querySelector("#cameraPhotoMotor3").click();
+   });
+
+   const cameraBtnPhotoMotor4 = document.querySelector('#cameraBtnPhotoMotor4');
+   if (cameraBtnPhotoMotor4)
+      cameraBtnPhotoMotor4.addEventListener('click',function(){
+           document.querySelector("#cameraPhotoMotor4").click();
+      });
+

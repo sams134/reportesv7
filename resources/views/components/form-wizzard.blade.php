@@ -3,27 +3,27 @@
 <div class="card theme-wizard mb-5">
     <div class="card-header bg-light pt-3 pb-2">
         <ul class="nav justify-content-between nav-wizard">
-            <li class="nav-item"><a class="nav-link active fw-semi-bold" href="#bootstrap-wizard-tab1"
+            <li class="nav-item"><a class="nav-link active fw-semi-bold" wire:click="gotoStep(0)" href="#bootstrap-wizard-tab1"
                     data-bs-toggle="tab" data-wizard-step="data-wizard-step"><span
                         class="nav-item-circle-parent"><span class="nav-item-circle"><span
                                 class="far fa-address-card"></span></span></span><span
                         class="d-none d-md-block mt-1 fs--1">Datos del Cliente</span></a></li>
-            <li class="nav-item"><a class="nav-link fw-semi-bold" href="#bootstrap-wizard-tab2"
+            <li class="nav-item"><a class="nav-link fw-semi-bold" wire:click="gotoStep(1)" href="#bootstrap-wizard-tab2"
                     data-bs-toggle="tab" data-wizard-step="data-wizard-step"><span
                         class="nav-item-circle-parent"><span class="nav-item-circle"><span
                                 class="fas fa-list"></span></span></span><span
                         class="d-none d-md-block mt-1 fs--1">Datos del Equipo</span></a></li>
-            <li class="nav-item"><a class="nav-link fw-semi-bold" href="#bootstrap-wizard-tab3"
+            <li class="nav-item"><a class="nav-link fw-semi-bold" wire:click="gotoStep(2)" href="#bootstrap-wizard-tab3"
                     data-bs-toggle="tab" data-wizard-step="data-wizard-step"><span
                         class="nav-item-circle-parent"><span class="nav-item-circle"><span
                                 class="fas fa-clipboard-list"></span></span></span><span
                         class="d-none d-md-block mt-1 fs--1">Inventario de Partes</span></a></li>
-            <li class="nav-item"><a class="nav-link fw-semi-bold" href="#bootstrap-wizard-tab4"
+            <li class="nav-item"><a class="nav-link fw-semi-bold" wire:click="gotoStep(3)" href="#bootstrap-wizard-tab4"
                     data-bs-toggle="tab" data-wizard-step="data-wizard-step"><span
                         class="nav-item-circle-parent"><span class="nav-item-circle"><span
                                 class="fas fa-photo-video"></span></span></span><span
                         class="d-none d-md-block mt-1 fs--1">Fotografias Ingreso</span></a></li>
-            <li class="nav-item"><a class="nav-link fw-semi-bold" href="#bootstrap-wizard-tab5"
+            <li class="nav-item"><a class="nav-link fw-semi-bold" wire:click="gotoStep(4)" href="#bootstrap-wizard-tab5"
                     data-bs-toggle="tab" data-wizard-step="data-wizard-step"><span
                         class="nav-item-circle-parent"><span class="nav-item-circle"><span
                                 class="fas fa-thumbs-up"></span></span></span><span
@@ -48,15 +48,11 @@
                 id="bootstrap-wizard-tab4">
                 {{$tab4}}
             </div>
-            <div class="tab-pane text-center px-sm-3 px-md-5" role="tabpanel"
+            <div class="tab-pane  px-sm-3 px-md-5" role="tabpanel"
                 aria-labelledby="bootstrap-wizard-tab5" id="bootstrap-wizard-tab5">
-                <div class="wizard-lottie-wrapper">
-                    <div class="lottie wizard-lottie mx-auto my-3"
-                        data-options='{"path":"../../assets/img/animated-icons/celebration.json"}'></div>
-                </div>
-                <h4 class="mb-1">Your account is all set!</h4>
-                <p>Now you can access to your account</p><a class="btn btn-primary px-5 my-3"
-                    href="../../modules/forms/wizard.html">Start Over</a>
+                hola
+               
+               
             </div>
         </div>
     </div>
