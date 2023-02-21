@@ -26,7 +26,7 @@ class CreateContact extends Component
             'puesto' => $this->puesto,
             'email' => $this->email,
             'id_cliente' => $this->id_cliente
-        ]);
+        ]); 
         $this->emit('render');
         $this->emit('closeNewContact');
     }

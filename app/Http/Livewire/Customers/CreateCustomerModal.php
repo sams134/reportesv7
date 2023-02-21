@@ -53,7 +53,7 @@ class CreateCustomerModal extends Component
             'puesto' => $this->puesto,
             'id_cliente' => $cliente->id_cliente
         ]);
-        $this->emit('newCustomerAdded',$cliente->id_cliente); // enviado a componente create new motor
+        $this->emit('newCustomerAdded',$cliente); // enviado a componente create new motor
         $this->emit('closeNewCustomer'); // enviado al JS de la pagina para cerrar el modal
     }
 }

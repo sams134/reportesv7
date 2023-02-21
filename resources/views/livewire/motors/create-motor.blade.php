@@ -7,6 +7,7 @@
         
         <x-form-wizzard  active="{{$step+1}}">
             <x-slot:tab1>
+            
                 <div class="row">
                     
                     <div class="col-12 col-lg-6">
@@ -19,7 +20,7 @@
                                 <select class="form-select"  size="1" wire:model="customer" wire:change="fillContacts">
                                     <option value="">Seleccione un Cliente</option>
                                     @foreach ($clientesList as $cliente)
-                                        <option value="{{ $cliente->id_cliente }}">{{ $cliente->cliente }}</option>
+                                        <option value="{{ $cliente}}">{{ $cliente->cliente }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -38,7 +39,7 @@
                                     <tbody>
                                         @foreach ($contactList as $contact)
                                           <tr>
-                                            <td> <input class="form-check-input"  type="checkbox" value="" /></td>
+                                            <td> <input class="form-check-input"  type="checkbox" wire:model="emailTo" value="{{$contact->id}}" /></td>
                                             <td>{{$contact->contacto}}</td>
                                             <td>{{$contact->email}}</td> 
                                           </tr>      
@@ -47,8 +48,11 @@
                                     </tbody>
                                 </table>
                             </div>
+                         
                             @endif
-                           
+                           @if ($customer != "")
+                           @livewire('customers.create-contact',["id_cliente" => $customer])
+                           @endif
                            
                         </x-form-card>
                     </div>
@@ -78,25 +82,28 @@
                             <div class="mt-3">
                                 <div class="form-check form-switch">
 
-                                    <input class="form-check-input" id="flexSwitchCheckDefault" type="checkbox" />
+                                    <input class="form-check-input"  type="checkbox" wire:model="preAutorizado" />
                                     <label class="form-check-label" for="flexSwitchCheckDefault">Equipo
                                         pre-Autorizado</label>
+                                       
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label" for="exampleFormControlInput1">Nivel de Emergencia</label>
-                                <select class="form-select" aria-label="Default select example">
+                                <select class="form-select" wire:model="emergencyLevel">
                                     <option selected="">Seleccione nivel de Emergencia</option>
                                     <option value="1">Bajo</option>
                                     <option value="2">Medio</option>
                                     <option value="3">Alto</option>
-                                    <option value="3">Muy Alto (+ Costo adicional 10%)</option>
+                                    <option value="4">Muy Alto (+ Costo adicional 10%)</option>
                                 </select>
+                                
                             </div>
                             <div class="mb-3">
                                 <label class="form-label" for="exampleFormControlTextarea1">Comentarios del
                                     cliente</label>
-                                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                                <textarea class="form-control"  rows="3" wire:model="comentariosCliente"></textarea>
+                                
                             </div>
                         </x-form-card>
                     </div>
@@ -386,7 +393,15 @@
                 </x-form-card>
             </x-slot:tab4>
             <x-slot:tab5>
-                hola
+                <div class="row">
+                    
+                    <div class="col-12 col-lg-6">
+                        <x-form-card title="Resumen Orden de trabajo">
+                            <h1>{{$year}}-{{$os}}</h1>
+                            <h3> {{$customer->cliente}}</h3>
+                        </x-form-card>
+                    </div>
+                </div>
             </x-slot:tab5>
         </x-form-wizzard>
     </div>

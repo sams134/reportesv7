@@ -50,7 +50,8 @@
             </div>
             <div class="tab-pane  px-sm-3 px-md-5" role="tabpanel"
                 aria-labelledby="bootstrap-wizard-tab5" id="bootstrap-wizard-tab5">
-                hola
+             
+                {{$tab5}}
                
                
             </div>

@@ -14,7 +14,7 @@ use Livewire\WithFileUploads;
 class CreateMotor extends Component
 {
     use WithFileUploads;
-    public $clientesList,$customer="",$contactList=array(),$equipmentTypes,$year,$os,$inDate;
+    public $clientesList,$customer="",$contactList=array(),$equipmentTypes,$year,$os,$inDate,$emailTo=[],$preAutorizado=false;
     public $inventory;
     public $photoInventory = [];
     public $nameplates = [];
@@ -22,7 +22,7 @@ class CreateMotor extends Component
     public $step=0;
     
 
-    public $listeners = ['next','prev','newCustomerAdded'];
+    public $listeners = ['next','prev','newCustomerAdded','render'];
     protected $rules = [
         'inventory.*.name' => '',
         'inventory.*.valor' => 'required',
@@ -47,11 +47,13 @@ class CreateMotor extends Component
     {
     
         $this->clientesList = Cliente::orderBy('cliente','asc')->get();
+        if ($this->customer != "")
+            $this->contactList = Contacto::where('id_cliente',$this->customer)->get();
         return view('livewire.motors.create-motor');
     }
     public function fillContacts()
     {
-        $this->contactList = Contacto::where('id_cliente',$this->customer)->get();
+        $this->emailTo = [];
         $this->render();
     }
     public function addInventoryParts()

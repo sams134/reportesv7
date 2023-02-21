@@ -162,7 +162,13 @@ if (test)
     test.addEventListener('click',() => {
         swiperInit();
     }) */
-
+    Livewire.on('closeNewContact',function (){
+            
+        const contactModal = bootstrap.Modal.getInstance(document.getElementById('newContact-modal'));
+        contactModal.hide();
+        
+        
+    })
 function deleteContact(key)
 {
     console.log("hola");
