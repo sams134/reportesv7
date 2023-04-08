@@ -1,5 +1,5 @@
 <div>
-    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#newContact-modal">Nuevo Contacto</button>
+    <button class="btn btn-primary mt-3" type="button" data-bs-toggle="modal" data-bs-target="#newContact-modal">Nuevo Contacto</button>
     <div wire:ignore.self class="modal fade" id="newContact-modal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 500px">
             <div class="modal-content position-relative">

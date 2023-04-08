@@ -100,7 +100,7 @@ class MotorController extends Controller
         //$snappy = PDF::load("motores.contrasenia",$motor);
         //return $snappy->stream();
         //return $pdf->download('contrasenia.pdf');
-        return PDF::loadView("motores.contrasenia",['server'=>'http://192.168.0.130/','motor'=>$motor])->inline();
+        return PDF::loadView("motores.contrasenia",['server'=>'http://http://45.188.128.210/','motor'=>$motor])->inline();
        // return view("motores.contrasenia",['server'=>'http://192.168.0.130/','motor'=>$motor]);
     
     }

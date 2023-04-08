@@ -4389,33 +4389,17 @@ var wizardInit = function wizardInit() {
     var form = wizard.querySelector('[novalidate]');
     var nextButton = wizard.querySelector('.next button');
     var prevButton = wizard.querySelector('.previous button');
+    var endButton = wizard.querySelector('.end button');
     var cardFooter = wizard.querySelector('.theme-wizard .card-footer');
     var count = 0;
 
     
 
     prevButton.classList.add('d-none'); // on button click tab change
-
-    Livewire.on('next',next);
-    Livewire.on('prev',prev)
-
-    function next()
-    {
-        
-        count += 1;
-        var tab = new window.bootstrap.Tab(tabToggleButtonEl[count]);
-        tab.show();
-      
-    }
-    function prev()
-    {
-      count -= 1;
-      var tab = new window.bootstrap.Tab(tabToggleButtonEl[count]);
-      tab.show();
-    }
-    Livewire.on('updateStep',function (step){
-      var tab = new window.bootstrap.Tab(tabToggleButtonEl[step]);
+  Livewire.on('updateStep',function (step){
       count=step;
+      var tab = new window.bootstrap.Tab(tabToggleButtonEl[step]);
+      
       tab.show();
     })
 
@@ -4450,10 +4434,12 @@ var wizardInit = function wizardInit() {
 
 
           if (count > tabToggleButtonEl.length - 2) {
-            item.classList.add('done');
+            //item.classList.add('done');
             nextButton.classList.add('d-none');
+            endButton.classList.remove('d-none');
           } else {
             nextButton.classList.remove('d-none');
+            endButton.classList.add('d-none');
           } // prev-button removing
 
 

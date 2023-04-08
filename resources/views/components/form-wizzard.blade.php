@@ -64,10 +64,15 @@
                     <button class="btn btn-link ps-0" type="button"><span class="fas fa-chevron-left me-2"
                             data-fa-transform="shrink-3"></span>Anterior</button>
                 </li>
+                <li class="end">
+                    <button class="btn btn-primary px-5 px-sm-6 d-none" type="submit">Guardar Equipo<span
+                            class="fa fa-save ms-2" data-fa-transform="shrink-3"> </span></button>
+                </li>
                 <li class="next">
                     <button class="btn btn-primary px-5 px-sm-6" type="submit">Siguiente<span
                             class="fas fa-chevron-right ms-2" data-fa-transform="shrink-3"> </span></button>
                 </li>
+               
             </ul>
         </div>
     </div>
