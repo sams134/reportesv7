@@ -48,7 +48,7 @@
                 id="bootstrap-wizard-tab4">
                 {{$tab4}}
             </div>
-            <div class="tab-pane  px-sm-3 px-md-5" role="tabpanel"
+            <div class="tab-pane  @if ($active==5) active @endif  px-sm-3 px-md-5" role="tabpanel"
                 aria-labelledby="bootstrap-wizard-tab5" id="bootstrap-wizard-tab5">
              
                 {{$tab5}}
@@ -64,10 +64,7 @@
                     <button class="btn btn-link ps-0" type="button"><span class="fas fa-chevron-left me-2"
                             data-fa-transform="shrink-3"></span>Anterior</button>
                 </li>
-                <li class="end">
-                    <button class="btn btn-primary px-5 px-sm-6 d-none" type="submit">Guardar Equipo<span
-                            class="fa fa-save ms-2" data-fa-transform="shrink-3"> </span></button>
-                </li>
+              
                 <li class="next">
                     <button class="btn btn-primary px-5 px-sm-6" type="submit">Siguiente<span
                             class="fas fa-chevron-right ms-2" data-fa-transform="shrink-3"> </span></button>

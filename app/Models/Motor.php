@@ -52,5 +52,10 @@ class Motor extends Model
     {
         return $this->hasMany(Foto::class,'id_motor');
     }
+    public function contactos()
+    {
+        return $this->belongsToMany(Contacto::class, 'informar_a_contactos', 'id_motor', 'id_contacto');
+    }
+    
     
 }

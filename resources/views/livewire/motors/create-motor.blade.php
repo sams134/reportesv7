@@ -74,13 +74,18 @@
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">2M-</span>
                                         <input class="form-control" type="text" wire:model="year" />
+                                        @error('year')
+                                        <div class="alert alert-danger my-1 py-1" role="alert"> {{ $message }}</div>
+                                    @enderror
                                     </div>
                                 </div>-
                                 <div class="col-6">
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">OS</span>
                                         <input class="form-control" type="text" wire:model="os">
-
+                                        @error('os')
+                                            <div class="alert alert-danger my-1 py-1" role="alert"> {{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -133,7 +138,7 @@
                                 <select class="form-select" aria-label="Default select example" wire:model="equipmentType">
                                     <option selected="">Seleccione tipo de equipo</option>
                                            @foreach ($equipmentTypes as $types)
-                                <option value="{{ $types->id }}">{{ $types->name }}</option>
+                                <option value="{{ $types->id }}">{{ $types->tipo_equipo }}</option>
                                 @endforeach
                                 </select>
                                 @error('tipo_equipo')
@@ -169,7 +174,7 @@
                                 </div>
                             @endforeach
 
-                            <input type="file" wire:model="nameplates" class="d-none" id="cameraNameplate">
+                            <input type="file" wire:model="nameplates" class="d-none"  accept="image/*" id="cameraNameplate">
                         </x-form-card>
                     </div>
                     <div class="col-12 col-lg-6">
@@ -180,6 +185,9 @@
                                             id="basic-addon1">Potencia</span>
                                         <input class="form-control" type="text" placeholder="100"
                                             wire:model="potencia" />
+                                        @error('hp')
+                                            <div class="alert alert-danger my-1 py-1" role="alert"> {{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                                 <div class="col-3 pt-2">
@@ -197,17 +205,17 @@
                             <div class="mb-3 row ps-5">
 
                                 <div class="form-check col-4">
-                                    <input class="form-check-input" type="radio" value="1"
+                                    <input class="form-check-input" type="radio" value="0"
                                         wire:model="powerUnit" />
                                     <label class="form-check-label">HP</label>
                                 </div>
                                 <div class="form-check col-4">
-                                    <input class="form-check-input" type="radio" value="2"
+                                    <input class="form-check-input" type="radio" value="1"
                                         wire:model="powerUnit" />
                                     <label class="form-check-label">KW</label>
                                 </div>
                                 <div class="form-check col-4">
-                                    <input class="form-check-input" type="radio" value="3"
+                                    <input class="form-check-input" type="radio" value="2"
                                         wire:model="powerUnit" />
                                     <label class="form-check-label">KVA</label>
                                 </div>
@@ -285,7 +293,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-3 pt-2">
+                            <div class="col-12 pt-2">
                                 <div class="form-check form-switch align-bottom">
                                     <input class="form-check-input" id="flexSwitchCheckChecked" type="checkbox"
                                         wire:model="inverter" />
@@ -391,7 +399,7 @@
                             @endforeach
 
                         </div>
-                        <input type="file" wire:model="photoInventory" class="d-none" id="cameraModal">
+                        <input type="file" wire:model="photoInventory" class="d-none"  accept="image/*" id="cameraModal">
                     </x-form-card>
                 </div>
             </x-slot:tab3>
@@ -460,10 +468,10 @@
                                 </button>
                             </div>
                         </div>
-                        <input type="file" wire:model="photosMotor.0" class="d-none" id="cameraPhotoMotor1">
-                        <input type="file" wire:model="photosMotor.1" class="d-none" id="cameraPhotoMotor2">
-                        <input type="file" wire:model="photosMotor.2" class="d-none" id="cameraPhotoMotor3">
-                        <input type="file" wire:model="photosMotor.3" class="d-none" id="cameraPhotoMotor4">
+                        <input type="file" wire:model="photosMotor.0" class="d-none" id="cameraPhotoMotor1"  accept="image/*">
+                        <input type="file" wire:model="photosMotor.1" class="d-none" id="cameraPhotoMotor2"  accept="image/*">
+                        <input type="file" wire:model="photosMotor.2" class="d-none" id="cameraPhotoMotor3"  accept="image/*"> 
+                        <input type="file" wire:model="photosMotor.3" class="d-none" id="cameraPhotoMotor4"  accept="image/*">
                     </x-form-card>
                 </x-slot:tab4>
                 <x-slot:tab5>
@@ -503,7 +511,8 @@
                                             <tbody>
                                                 <tr>
                                                     <td>Fecha Ingreso:</td>
-                                                    <td>{{ $fechaSpanish }}</td>
+                                                    <td>{{ $fechaSpanish }} <br>
+                                                    {{$inDate}}</td>
                                                 </tr>
                                                 <tr>
                                                     <td>Equipo pre-autorizado:</td>

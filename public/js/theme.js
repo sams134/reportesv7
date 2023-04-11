@@ -4389,7 +4389,7 @@ var wizardInit = function wizardInit() {
     var form = wizard.querySelector('[novalidate]');
     var nextButton = wizard.querySelector('.next button');
     var prevButton = wizard.querySelector('.previous button');
-    var endButton = wizard.querySelector('.end button');
+ 
     var cardFooter = wizard.querySelector('.theme-wizard .card-footer');
     var count = 0;
 
@@ -4397,18 +4397,19 @@ var wizardInit = function wizardInit() {
 
     prevButton.classList.add('d-none'); // on button click tab change
   Livewire.on('updateStep',function (step){
+      
       count=step;
       var tab = new window.bootstrap.Tab(tabToggleButtonEl[step]);
       
       tab.show();
     })
-
+    
+   
     
     nextButton.addEventListener('click', function () {
+    
       Livewire.emit('next')
-     // count += 1;
-      //var tab = new window.bootstrap.Tab(tabToggleButtonEl[count]);
-      //tab.show();
+       
     });
     prevButton.addEventListener('click', function () {
       Livewire.emit('prev')
@@ -4435,11 +4436,11 @@ var wizardInit = function wizardInit() {
 
           if (count > tabToggleButtonEl.length - 2) {
             //item.classList.add('done');
-            nextButton.classList.add('d-none');
-            endButton.classList.remove('d-none');
+          //  nextButton.classList.add('d-none');
+           nextButton.textContent ="Guardar"
           } else {
-            nextButton.classList.remove('d-none');
-            endButton.classList.add('d-none');
+           // nextButton.classList.remove('d-none');
+           nextButton.textContent ="Siguiente"
           } // prev-button removing
 
 
