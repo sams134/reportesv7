@@ -15,8 +15,9 @@
         </div>
 
         <div class="card-body p-0">
+            <span wire:loading> Loading</span>
             <div class="table-responsive scrollbar">
-                <table class="table table-hover table-striped overflow-hidden fs--1">
+                <table class="table table-hover table-striped overflow-hidden fs--1" wire:loading.remove>
                     <thead class="bg-300 text-dark">
                         <tr class="text-800">
                             <th style="width:30px"><input type="checkbox" name="" id=""> </th>
@@ -39,10 +40,10 @@
                                         class="align-bottom"></td>
                                 <td>
                                     <div class="col-auto">
-                                        @if ($motor->fotos && $motor->fotos->count() > 0 && Storage::exists($motor->fotos->first()->thumb))
-                                            <div class="avatar avatar-2xl status-offline">
+                                        @if ($motor->fotos && $motor->fotos->count() > 0 && Storage::exists('public' . $motor->fotos->first()->thumb))
+                                            <div class="avatar avatar-xl status-offline">
                                                 <img class="rounded-circle"
-                                                    src="{{ Storage::url($motor->fotos->first()->thumb) }}"
+                                                    src="{{ asset('storage' . $motor->fotos->first()->thumb) }}"
                                                     alt="" />
                                             </div>
                                         @else
@@ -61,11 +62,14 @@
                                                     href="{{ route('motores.downloadPdf', $motor) }}">{{ $motor->fullOs }}</a>
                                             </h6>
                                             <p class="text-500 fs--2 mb-0">{{ $motor->id_tipoequipo }}</p>
+                                           
+                                           
                                         </div>
                                     </div>
 
                                 </td>
                                 <td class="align-middle">{{ $motor->cliente->cliente }}</td>
+                             
                                 <td class="align-middle ">{{ $motor->potencia }}</td>
                                 <td class="align-middle text-uppercase d-none d-xl-table-cell">{{ $motor->rpm }}</td>
                                 <td class="align-middle text-uppercase d-none d-xxl-table-cell">{{ $motor->marca }}</td>

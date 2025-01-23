@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Livewire\Customers\CreateCustomers;
 use App\Http\Livewire\Customers\EditCustomer;
 use App\Http\Livewire\Customers\ShowCustomers;
+use App\Http\Livewire\Materiales\MaterialesIndex;
 use App\Http\Livewire\Motors\CreateMotor;
+use App\Http\Livewire\Motors\ShowMotor;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,5 +52,9 @@ Route::middleware([
 
     Route::get('/motores', IndexMotors::class)->name('motores.index');
     Route::get('/motores/create', CreateMotor::class)->name('motores.create');
+    Route::get('/motores/{motor}',ShowMotor::class)->name('motores.show');
     Route::get('/motores/pdfIngreso/{motor}',[MotorController::class,'downloadPdf'])->name('motores.downloadPdf');
+
+
+    Route::get('/materiales',MaterialesIndex::class)->name('materiales.index');
 });

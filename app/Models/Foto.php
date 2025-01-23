@@ -11,5 +11,34 @@ class Foto extends Model
 
     protected $guarded = [];
 
+    protected $table = 'fotos';
+
+    // Llave primaria
+    protected $primaryKey = 'id';
+
+    // Indicar si la llave primaria es auto incrementable
+    public $incrementing = true;
+
+    // Tipo de la llave primaria
+    protected $keyType = 'int';
+
+
+
+    // Relación con el modelo Motor
+    public function motor()
+    {
+        return $this->belongsTo(Motor::class, 'id_motor');
+    }
+
+    // Relación con el modelo TipoFoto
+    public function tipoFoto()
+    {
+        return $this->belongsTo(TipoFoto::class, 'type');
+    }
+
+    public function fotosTrabajo()
+    {
+        return $this->hasMany(FotosTrabajo::class, 'id_foto');
+    }
     
 }

@@ -50,7 +50,7 @@
                 <div class="d-flex align-items-center"><span class="nav-link-icon"><span class="fas fa-palette"></span></span><span class="nav-link-text ps-1">Agregar Clientes</span>
                 </div>
               </a>
-            <!-- parent pages--><a class="nav-link" href="#" role="button" aria-expanded="false">
+            <!-- parent pages--><a class="nav-link" href="{{route('materiales.index') }}" role="button" aria-expanded="false">
                 <div class="d-flex align-items-center"><span class="nav-link-icon"><span class="far fa-eye"></span></span><span class="nav-link-text ps-1">Materiales</span>
                 </div>
               </a>

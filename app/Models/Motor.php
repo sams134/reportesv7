@@ -11,9 +11,18 @@ class Motor extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $table = 'motors';
+
+    // Llave primaria
     protected $primaryKey = 'id_motor';
 
-   /*  protected function statusId():Attribute
+    // Indicar si la llave primaria es auto incrementable
+    public $incrementing = true;
+
+    // Tipo de la llave primaria
+    protected $keyType = 'int';
+
+    /*  protected function statusId():Attribute
     {
         return new Attribute(
             get: function($value)
@@ -26,36 +35,63 @@ class Motor extends Model
             }
         );
     } */
-  
+
     public function cliente()
     {
-        return $this->belongsTo(Cliente::class,'id_cliente');
+        return $this->belongsTo(Cliente::class, 'id_cliente', 'id_cliente');
     }
     public function getPotenciaAttribute()
     {
         if ($this->hpkw == 0)
-            return $this->hp." Hp";
+            return $this->hp . " Hp";
         else
-           return $this->hp." Kw";
+            return $this->hp . " Kw";
     }
 
     public function getFullOsAttribute()
     {
-        return $this->year."-".$this->os;
+        return $this->year . "-" . $this->os;
     }
+
+    
 
     public function tecnicos()
     {
-        return $this->belongsToMany(User::class,'asignacions','id_motor','id_user');
+        return $this->belongsToMany(User::class, 'asignacions', 'id_motor', 'id_user')
+            ->withPivot('asignado_por', 'responsabilidad')
+            ->withTimestamps();
     }
     public function fotos()
     {
-        return $this->hasMany(Foto::class,'id_motor');
+        return $this->hasMany(Foto::class, 'id_motor');
     }
     public function contactos()
     {
         return $this->belongsToMany(Contacto::class, 'informar_a_contactos', 'id_motor', 'id_contacto');
     }
-    
-    
+    public function bitacoras()
+    {
+        return $this->hasMany(Bitacora::class, 'id_motor');
+    }
+    public function documentos()
+    {
+        return $this->hasMany(Documento::class, 'id_motor');
+    }
+    public function infoMotor()
+    {
+        return $this->hasOne(InfoMotor::class, 'id_motor');
+    }
+    public function inventario()
+    {
+        return $this->hasOne(Inventario::class, 'id_motor');
+    }
+    public function materialesPedidos()
+    {
+        return $this->hasMany(MaterialesPedido::class, 'id_motor');
+    }
+    public function trabajos()
+    {
+        return $this->hasMany(Trabajo::class, 'id_motor');
+    }
+
 }

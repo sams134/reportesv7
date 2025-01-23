@@ -96,12 +96,23 @@ class MotorController extends Controller
 
     public function downloadPdf(Motor $motor)
     {
-        //$snappy = PDF::loadView("motores.contrasenia",$motor);
+        //$snappy = PDF::loadView("motores.contrasenia",['motor'=>$motor]);
+        $html = view('motores.contrasenia', compact('motor'))
+        ->render();
+    $pdf = PDF::loadHTML($html)->setOption('load-error-handling', 'ignore') // Ignora los errores de carga
+    ->setOption('enable-local-file-access', true)
+    ->setOption('no-stop-slow-scripts', true)
+    ->setOption('javascript-delay', 5000);
+    return $pdf->inline('Contrasenia.pdf');
+      // return $snappy->inline();
         //$snappy = PDF::load("motores.contrasenia",$motor);
-        //return $snappy->stream();
+       // return $snappy->stream();
         //return $pdf->download('contrasenia.pdf');
-        return PDF::loadView("motores.contrasenia",['server'=>'http://http://45.188.128.210/','motor'=>$motor])->inline();
+       // return PDF::loadView("motores.contrasenia",['server'=>'http://http://45.188.128.210/','motor'=>$motor])->inline();
        // return view("motores.contrasenia",['server'=>'http://192.168.0.130/','motor'=>$motor]);
     
+
+      
+   
     }
 }

@@ -16,10 +16,15 @@
     </thead>
     @foreach ($motores as $motor)
     <tr>
+        <td style="width:30px"><input type="checkbox" name="" id="" class="align-bottom"></td>
         <td>
-            {{ $motor->cliente->cliente }}
+           
+        </td>
+        <td>
+            {{$motor->year}}-{{$motor->os}}
             
         </td>
+        <td class="align-middle">{{$motor->cliente->cliente}}</td>
     </tr>
     @endforeach
     </table>

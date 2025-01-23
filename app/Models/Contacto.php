@@ -9,7 +9,12 @@ class Contacto extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $table = 'contactos';
     protected $primaryKey = 'id';
+    public $incrementing = true;
+
+    // Tipo de la llave primaria
+    protected $keyType = 'int';
 
     public function cliente()
     {

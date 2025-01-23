@@ -59,4 +59,30 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    public function usuario()
+    {
+        return $this->hasOne(Usuario::class, 'id_user', 'id');
+    }
+
+    public function motors()
+    {
+        return $this->belongsToMany(Motor::class, 'asignacions', 'id_user', 'id_motor')
+            ->withPivot('asignado_por', 'responsabilidad')
+            ->withTimestamps();
+    }
+    public function bitacoras()
+    {
+        return $this->hasMany(Bitacora::class, 'id_usuario');
+    }
+
+    public function documentos()
+    {
+        return $this->hasMany(Documento::class, 'id_user');
+    }
+
+    public function materialesPedidos()
+    {
+        return $this->hasMany(MaterialesPedido::class, 'id_user');
+    }
 }
