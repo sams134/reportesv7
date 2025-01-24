@@ -51,6 +51,14 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    public const DEVELOPER = '1';
+    public const ADMIN = '2';
+    public const OFICINA = '3';
+    public const ALMACEN = '4';
+    public const PRUEBAS = '5';
+    public const TECNICO = '6';
+    public const TORNOS = '7';
+
     /**
      * The accessors to append to the model's array form.
      *

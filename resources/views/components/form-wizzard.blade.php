@@ -66,7 +66,7 @@
                 </li>
               
                 <li class="next">
-                    <button class="btn btn-primary px-5 px-sm-6" type="submit">Siguiente<span
+                    <button class="btn btn-primary px-5 px-sm-6" type="submit" wire:loading.attr="disabled">Siguiente<span
                             class="fas fa-chevron-right ms-2" data-fa-transform="shrink-3"> </span></button>
                 </li>
                

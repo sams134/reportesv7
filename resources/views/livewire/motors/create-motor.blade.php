@@ -138,7 +138,7 @@
                                 <select class="form-select" aria-label="Default select example" wire:model="equipmentType">
                                     <option selected="">Seleccione tipo de equipo</option>
                                            @foreach ($equipmentTypes as $types)
-                                <option value="{{ $types->id }}">{{ $types->tipo_equipo }}</option>
+                                <option value="{{ $types->id }}">{{ $types->name }}</option>
                                 @endforeach
                                 </select>
                                 @error('tipo_equipo')
@@ -287,6 +287,24 @@
                             <div class="mb-1 row">
                                 <div class="col-12">
                                     <div class="input-group mb-3"><span class="input-group-text"
+                                            id="basic-addon1">Factor de Potencia</span>
+                                        <input class="form-control" type="text" placeholder="0.85"
+                                            wire:model="pf" style="text-transform: uppercase;" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-1 row">
+                                <div class="col-12">
+                                    <div class="input-group mb-3"><span class="input-group-text"
+                                            id="basic-addon1">Eficiencia</span>
+                                        <input class="form-control" type="text" placeholder="93%"
+                                            wire:model="eff" style="text-transform: uppercase;" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-1 row">
+                                <div class="col-12">
+                                    <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">Hz.</span>
                                         <input class="form-control" type="text" placeholder="eg. 60"
                                             wire:model="hz" />
@@ -364,7 +382,7 @@
                         <div class="row">
                             <label class="form-label" for="exampleFormControlTextarea1">Comentarios del
                                 inventario</label>
-                            <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                            <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" wire:model="inventoryComments"></textarea>
                         </div>
                     </x-form-card>
                 </div>

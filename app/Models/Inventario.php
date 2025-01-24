@@ -41,9 +41,10 @@ class Inventario extends Model
     public function getItemStatus($item)
 {
     $status = [
-        1 => 'Si trae',
-        2 => 'No trae',
-        3 => 'No Aplica'
+        1 => 'Buen Estado',
+        2 => 'Mal Estado',
+        3 => 'No Trae',
+        4 => 'No Aplica',
     ];
     return isset($status[$item]) ? $status[$item] : 'No definido';
 }

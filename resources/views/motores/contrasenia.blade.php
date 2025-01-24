@@ -193,6 +193,35 @@
             color: white;
             /* Color del texto para el elemento activo */
         }
+
+        .footer-span {
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            color: #ffffff;
+            background-color: #1c3759;
+            /* Fondo oscuro */
+            padding: 5px 10px;
+            text-align: center;
+            width: 100%;
+            white-space: nowrap;
+            /* Evita que el texto salte de línea */
+            overflow: hidden;
+            /* Oculta texto extra si el espacio es demasiado pequeño */
+            text-overflow: ellipsis;
+            /* Muestra "..." si el texto no cabe */
+            box-sizing: border-box;
+            position: absolute;
+            top: 1330px;
+        }
+
+        .footer-span span {
+            display: inline-block;
+            margin: 0 3px;
+            /* Espaciado horizontal entre elementos */
+            font-weight: bold;
+            color: #b1c9e4;
+            /* Azul claro */
+        }
     </style>
 </head>
 
@@ -207,6 +236,10 @@
     <h6 class="titulo tipo_letra" style="top: 160px;">DATOS DEL EQUIPO</h6>
 
     <table class="table-striped" style="top: 250px;">
+        <tr>
+            <td>Nombre del Equipo</td>
+            <td colspan="5">{{ $motor->infoMotor->nombre_equipo?$motor->infoMotor->nombre_equipo:"" }}</td>
+        </tr>
         <tr>
             <td>Marca</td>
             <td>{{ $motor->marca }}</td>
@@ -244,8 +277,8 @@
             <td colspan="4">{{ $motor->comentarios }}</td>
         </tr>
     </table>
-    <h6 class="titulo tipo_letra" style="top: 390px;">INVENTARIO DE PARTES</h6>
-    <table class="table-striped" style="top: 480px;">
+    <h6 class="titulo tipo_letra" style="top: 430px;">INVENTARIO DE PARTES</h6>
+    <table class="table-striped" style="top: 520px;">
         <tr>
             <td>Acople</td>
             <td>{{ $motor->inventario->getItemStatus($motor->inventario->acople) }}</td>
@@ -278,9 +311,13 @@
             <td>Tornillos Completos</td>
             <td>{{ $motor->inventario->getItemStatus($motor->inventario->tornillos) }}</td>
         </tr>
+        <tr>
+            <td>Comentarios Inventario</td>
+            <td colspan="5">{{ $motor->inventario->comentarios }}</td>
+        </tr>
     </table>
-    <h6 class="titulo tipo_letra" style="top: 600px;">IMAGENES DE ENTRADA</h6>
-    <div class="imagenes" style="top: 690px;">
+    <h6 class="titulo tipo_letra" style="top: 660px;">IMAGENES DE ENTRADA</h6>
+    <div class="imagenes" style="top: 750px;">
         @php
             $fotos = $motor->fotos->take(4); // Limita a las primeras 4 imágenes
             $missingImages = 4 - $fotos->count(); // Calcula cuántas imágenes faltan
@@ -294,48 +331,63 @@
             <img src="{{ public_path('img/default-avatar.png') }}" alt="Imagen Predeterminada">
         @endfor
     </div>
-    <h6 class="titulo tipo_letra" style="top: 870px;">TRABAJOS A REALIZAR</h6>
-    <table class="table-striped" style="top: 960px;">
+    <h6 class="titulo tipo_letra" style="top: 920px;">INFORMACI&Oacute;N DE RECEPCI&Oacute;N</h6>
+    <table class="table-striped" style="font-size: 12px;top: 1000px;">
         <tr>
-            
-            <td width="35%">
-                <ul class="list-group"></ul>
-                @foreach ($motor->trabajos as $trabajo)
-                    <li class="list-group-item">{{ $trabajo->trabajo }}</li>
-                @endforeach
+            <td>Cliente:</td>
+            <td colspan="2" >{{ $motor->cliente->cliente }}</td>
+            <td width="" colspan="2">Fecha de Ingreso:</td>
+            <td colspan="">
+                {{ \Carbon\Carbon::parse($motor->fecha_ingreso)->locale('es')->isoFormat('dddd D [de] MMMM [del] YYYY') }}
             </td>
-            <td>
-                <table style="font-size: 12px;">
-                    <tr>
-                        <td>Equipo Recibido por:</td>
-                        <td>{{ $motor->recibido }}</td>
 
-                        <td>Fecha de Ingreso:</td>                        
-                        <td>{{ \Carbon\Carbon::parse($motor->fecha_ingreso)->locale('es')->isoFormat('dddd D [de] MMMM [del] YYYY') }}</td>
-                    </tr>
-                    <tr>
-                        <td>Cliente:</td>
-                        <td>{{ $motor->cliente->cliente }}</td>
-                        <td>Contacto</td>
-                        <td>{{ $motor->infoMotor->contacto }}</td>
-                    </tr>
-                    <tr>
-                        <td>Telefono:</td>
-                        <td>{{ $motor->infoMotor->telefono }}</td>
-                        <td>Correo:</td>
-                        <td>{{ $motor->infoMotor->email }}</td>
-                    </tr>
-                    <tr>
-                        <td>Nivel de Emergencia</td>
-                        <td>{{ $motor->infoMotor->emergencia }}</td>
-                        <td>Empezar a Trabajar</td>
-                        <td>{{ $motor->infoMotor->cotizar }}</td>
-                    </tr>
-
-                </table>
-            </td>
+        </tr>
+        <tr>
+            <td width="15%">Contacto</td>
+            <td width="20%">{{ $motor->infoMotor->contacto }}</td>
+            <td width="15%">Telefono:</td>
+            <td width="15%">{{ $motor->infoMotor->telefono }}</td>
+            <td width="15%">Correo:</td>
+            <td width="20%">{{ $motor->infoMotor->email }}</td>
         </tr>
     </table>
+    <table class="table-striped" style="font-size: 12px;top: 1100px;">
+        <tr>
+            <td>Recibido por:</td>
+            <td>{{ $motor->recibido }}</td>
+            <td>Nivel de Emergencia</td>
+            <td>{{ $motor->infoMotor->emergencia }}</td>
+            <td>Empezar a Trabajar</td>
+            <td>{{ $motor->infoMotor->cotizar }}</td>
+        </tr>
+        <tr>
+            <td>Facturar a:</td>
+            <td colspan="3">{{ $motor->cliente->info_cliente->razon_social }}</td>
+            <td>NIT:</td>
+            <td>{{ $motor->cliente->info_cliente->nit }}</td>
+        </tr>
+        <tr>
+            <td>Dirección:</td>
+            <td colspan="6">{{ $motor->cliente->info_cliente->direccion_fiscal }}</td>
+        </tr>
+    </table>
+
+    <h6 class="titulo tipo_letra" style="top: 1160px;">Contacto</h6>
+    <table class="table-striped" style="top: 1240px;">
+        <tr style="height: 50px">
+            <td width="25%">Equipo Entregado por:</td>
+            <td></td>
+            <td width="20%">Firma</td>
+            <td width="25%"></td>
+
+        </tr>
+    </table>
+    <span class="footer-span">
+        <span>Clinica de Motores Electricos</span> |
+        <span>PBX: 2331-1596</span> |
+        <span>23 Ave 28-46 Zona 5, Guatemala C.A</span> |
+        <span>info@cmeamir.com</span>
+    </span>
 
 </body>
 

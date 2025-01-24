@@ -1,7 +1,8 @@
 <div>
     {{-- To attain knowledge, add things every day; To attain wisdom, subtract things every day. --}}
     <x-pretty-card>
-        <h2>Listado General de Motores</h2>
+        <h2>Listado General de Motores del usuario {{ auth()->user()->name }}
+        </h2>
         Revisa todos los motores en el sistema
     </x-pretty-card>
     <x-pretty-card>
@@ -11,7 +12,11 @@
     </x-pretty-card>
     <div class="card" id="runningProjectTable" data-list='{"valueNames":["projects","worked","time","date"]}'>
         <div class="card-header">
-            <h6 class="mb-0">Ordenes de Servicio</h6>
+            
+            <div class="mb-3">
+                <label class="form-label" for="basic-form-name">Busqueda de equipos</label>
+                <input class="form-control" id="basic-form-name" type="text" placeholder="Ingrese OS, nombre de equipo, cliente o t&eacute;cnico" wire:model="search"/>
+              </div>
         </div>
 
         <div class="card-body p-0">
@@ -48,8 +53,8 @@
                                             </div>
                                         @else
                                             <div class="avatar avatar-2xl status-offline">
-                                                <img class="rounded-circle"
-                                                    src="{{ asset('img/default-avatar.png') }}" alt="No hay foto" />
+                                                <img class="rounded-circle" src="{{ asset('img/default-avatar.png') }}"
+                                                    alt="No hay foto" />
                                             </div>
                                         @endif
                                     </div>
@@ -59,17 +64,17 @@
                                         {{--   --}}
                                         <div class="flex-1 ms-1">
                                             <h6 class="mb-0 fw-semi-bold"><a class="stretched-link text-900"
-                                                    href="{{ route('motores.downloadPdf', $motor) }}">{{ $motor->fullOs }}</a>
+                                                    href="">{{ $motor->fullOs }}</a>
                                             </h6>
                                             <p class="text-500 fs--2 mb-0">{{ $motor->id_tipoequipo }}</p>
-                                           
-                                           
+
+
                                         </div>
                                     </div>
 
                                 </td>
                                 <td class="align-middle">{{ $motor->cliente->cliente }}</td>
-                             
+
                                 <td class="align-middle ">{{ $motor->potencia }}</td>
                                 <td class="align-middle text-uppercase d-none d-xl-table-cell">{{ $motor->rpm }}</td>
                                 <td class="align-middle text-uppercase d-none d-xxl-table-cell">{{ $motor->marca }}</td>
@@ -103,9 +108,10 @@
                                         <button class="btn p-0" type="button" data-bs-toggle="tooltip"
                                             data-bs-placement="top" title="Editar"><span
                                                 class="text-500 fas fa-edit"></span></button>
-                                        <button class="btn p-0 ms-2" type="button" data-bs-toggle="tooltip"
-                                            data-bs-placement="top" title="Eliminar"><span
-                                                class="text-500 fas fa-trash-alt"></span></button>
+                                        <a class="btn p-0 ms-2" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Eliminar"><span class="text-500 fas fa-trash-alt"></span></a>
+                                        <a href="{{ route('motores.downloadPdf', $motor) }}" class="btn p-0 ms-2" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Generar PDF Ingreso"><span class="text-500 far fa-file-pdf"></span></a>
                                     </div>
                                 </td>
 
@@ -119,7 +125,6 @@
                 {{ $motores->links() }}
             </div>
         </div>
-        <div class="card-footer bg-light py-0 text-center"><a class="btn btn-sm btn-link py-2" href="#!">Show All
-                Projects<span class="fas fa-chevron-right ms-1 fs--2"></span></a></div>
+       
     </div>
 </div>

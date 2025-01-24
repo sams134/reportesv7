@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Scope;
+use Illuminate\Database\Eloquent\Builder;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
@@ -53,7 +55,7 @@ class Motor extends Model
         return $this->year . "-" . $this->os;
     }
 
-    
+
 
     public function tecnicos()
     {
@@ -61,6 +63,7 @@ class Motor extends Model
             ->withPivot('asignado_por', 'responsabilidad')
             ->withTimestamps();
     }
+
     public function fotos()
     {
         return $this->hasMany(Foto::class, 'id_motor');
@@ -93,5 +96,8 @@ class Motor extends Model
     {
         return $this->hasMany(Trabajo::class, 'id_motor');
     }
-
+    public function tipoEquipo()
+    {
+        return $this->belongsTo(TipoEquipo::class, 'id_tipoequipo', 'id');
+    }
 }
