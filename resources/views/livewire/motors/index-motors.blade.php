@@ -12,11 +12,12 @@
     </x-pretty-card>
     <div class="card" id="runningProjectTable" data-list='{"valueNames":["projects","worked","time","date"]}'>
         <div class="card-header">
-            
+
             <div class="mb-3">
                 <label class="form-label" for="basic-form-name">Busqueda de equipos</label>
-                <input class="form-control" id="basic-form-name" type="text" placeholder="Ingrese OS, nombre de equipo, cliente o t&eacute;cnico" wire:model="search"/>
-              </div>
+                <input class="form-control" id="basic-form-name" type="text"
+                    placeholder="Ingrese OS, nombre de equipo, cliente o t&eacute;cnico" wire:model="search" />
+            </div>
         </div>
 
         <div class="card-body p-0">
@@ -27,13 +28,34 @@
                         <tr class="text-800">
                             <th style="width:30px"><input type="checkbox" name="" id=""> </th>
                             <th style="width:1rem"></th>
-                            <th class="sort " style="width:15%;cursor: pointer;">Orden de Servicio</th>
-                            <th class="sort ">Cliente</th>
-                            <th class="sort ">Potencia</th>
-                            <th class="sort d-none d-xl-table-cell">Rpm</th>
-                            <th class="sort d-none d-xxl-table-cell">Marca</th>
-                            <th class="sort ">Status</th>
-                            <th class="sort d-none d-lg-table-cell">Ingreso</th>
+                            <th class="sort" style="width:15%;cursor: pointer;" wire:click="sortBy('fullos')">
+                                Orden de Servicio
+                                <i class="fa {{ $sort === 'fullos' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'fullos' ? 'text-success' : '' }}"></i>
+                            </th>
+                            <th class="sort" wire:click="sortBy('id_cliente')">
+                                Cliente
+                                <i class="fa {{ $sort === 'id_cliente' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'id_cliente' ? 'text-success' : '' }}"></i>
+                            </th>
+                            <th class="sort" wire:click="sortBy('hp')">
+                                Potencia
+                                <i class="fa {{ $sort === 'hp' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'hp' ? 'text-success' : '' }}"></i>
+                            </th>
+                            <th class="sort d-none d-xl-table-cell" wire:click="sortBy('rpm')">
+                                Rpm
+                                <i class="fa {{ $sort === 'rpm' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'rpm' ? 'text-success' : '' }}"></i>
+                            </th>
+                            <th class="sort d-none d-xxl-table-cell" wire:click="sortBy('marca')">
+                                Marca
+                                <i class="fa {{ $sort === 'marca' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'marca' ? 'text-success' : '' }}"></i>
+                            </th>
+                            <th class="sort" wire:click="sortBy('status_id')">
+                                Status
+                                <i class="fa {{ $sort === 'status_id' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'status_id' ? 'text-success' : '' }}"></i>
+                            </th>
+                            <th class="sort d-none d-lg-table-cell" wire:click="sortBy('created_at')">
+                                Ingreso
+                                <i class="fa {{ $sort === 'created_at' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'created_at' ? 'text-success' : '' }}"></i>
+                            </th>
                             <th>Tecnicos</th>
                             <th class="text-end">Acciones</th>
                         </tr>
@@ -64,7 +86,7 @@
                                         {{--   --}}
                                         <div class="flex-1 ms-1">
                                             <h6 class="mb-0 fw-semi-bold"><a class="stretched-link text-900"
-                                                    href="">{{ $motor->fullOs }}</a>
+                                                    href="{{route('motores.show',$motor)}}">{{ $motor->fullOs }}</a>
                                             </h6>
                                             <p class="text-500 fs--2 mb-0">{{ $motor->id_tipoequipo }}</p>
 
@@ -79,7 +101,14 @@
                                 <td class="align-middle text-uppercase d-none d-xl-table-cell">{{ $motor->rpm }}</td>
                                 <td class="align-middle text-uppercase d-none d-xxl-table-cell">{{ $motor->marca }}</td>
                                 <td class="align-middle ">
-                                    <x-status-badge status_id="{{ $motor->status_id }}" />
+                                    <button data-bs-toggle="modal" data-bs-target="#error-modal"
+                                        class="bg-transparent border-0"
+                                        wire:click="loadStatusModal({{ $motor }})">
+                                        <x-status-badge status_id="{{ $motor->status_id }}" data-bs-toggle="modal"
+                                            data-bs-target="#error-modal" />
+                                    </button>
+
+
                                 </td>
                                 <td class="align-middle d-none d-lg-table-cell">
                                     <div style="d-block">
@@ -108,10 +137,12 @@
                                         <button class="btn p-0" type="button" data-bs-toggle="tooltip"
                                             data-bs-placement="top" title="Editar"><span
                                                 class="text-500 fas fa-edit"></span></button>
-                                        <a class="btn p-0 ms-2" data-bs-toggle="tooltip" data-bs-placement="top"
-                                            title="Eliminar"><span class="text-500 fas fa-trash-alt"></span></a>
-                                        <a href="{{ route('motores.downloadPdf', $motor) }}" class="btn p-0 ms-2" data-bs-toggle="tooltip" data-bs-placement="top"
-                                            title="Generar PDF Ingreso"><span class="text-500 far fa-file-pdf"></span></a>
+                                        <button class="btn p-0 ms-2" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Eliminar" onClick="removeMotor({{$motor->id_motor}})"><span class="text-500 fas fa-trash-alt" ></span></button>
+                                        <a href="{{ route('motores.downloadPdf', $motor) }}" class="btn p-0 ms-2"
+                                            data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="Generar PDF Ingreso"><span
+                                                class="text-500 far fa-file-pdf"></span></a>
                                     </div>
                                 </td>
 
@@ -125,6 +156,15 @@
                 {{ $motores->links() }}
             </div>
         </div>
-       
+
     </div>
-</div>
+
+
+    <x-status-modal :statuses="$statuses" :equipo="$equipo" />
+
+        @push('scripts')
+       
+        <script src="{{ asset('js/main.js') }}"></script>
+    @endpush
+
+    </div>

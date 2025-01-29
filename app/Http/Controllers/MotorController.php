@@ -18,8 +18,8 @@ class MotorController extends Controller
     public function index()
     {
         //
-        $motores = Motor::orderBy('year','desc')->orderBy('os','desc')->paginate(300);
-        return view('motores.index',compact('motores'));
+        $motores = Motor::orderBy('year', 'desc')->orderBy('os', 'desc')->paginate(300);
+        return view('motores.index', compact('motores'));
     }
 
     /**
@@ -42,11 +42,11 @@ class MotorController extends Controller
     public function store(Request $request)
     {
         //
-      
-      
-       $imagen =  $request->file('file')->store('public/imagenes');
-       $url = Storage::url($imagen);
-       echo $url;
+
+
+        $imagen =  $request->file('file')->store('public/imagenes');
+        $url = Storage::url($imagen);
+        echo $url;
     }
 
     /**
@@ -96,23 +96,178 @@ class MotorController extends Controller
 
     public function downloadPdf(Motor $motor)
     {
-        //$snappy = PDF::loadView("motores.contrasenia",['motor'=>$motor]);
-        $html = view('motores.contrasenia', compact('motor'))
-        ->render();
-    $pdf = PDF::loadHTML($html)->setOption('load-error-handling', 'ignore') // Ignora los errores de carga
-    ->setOption('enable-local-file-access', true)
-    ->setOption('no-stop-slow-scripts', true)
-    ->setOption('javascript-delay', 5000);
-    return $pdf->inline('Contrasenia.pdf');
-      // return $snappy->inline();
-        //$snappy = PDF::load("motores.contrasenia",$motor);
-       // return $snappy->stream();
-        //return $pdf->download('contrasenia.pdf');
-       // return PDF::loadView("motores.contrasenia",['server'=>'http://http://45.188.128.210/','motor'=>$motor])->inline();
-       // return view("motores.contrasenia",['server'=>'http://192.168.0.130/','motor'=>$motor]);
-    
 
-      
-   
+        $html = view('motores.contrasenia', compact('motor'))
+            ->render();
+        $pdf = PDF::loadHTML($html)->setOption('load-error-handling', 'ignore') // Ignora los errores de carga
+            ->setOption('enable-local-file-access', true)
+            ->setOption('no-stop-slow-scripts', true)
+            ->setOption('javascript-delay', 5000);
+        return $pdf->inline('Contrasenia.pdf');
     }
+
+    public function downloadPdfDensidades(Motor $motor)
+    {
+        $user = auth()->user();
+        $html = view('motores.densidadespdf')->with([
+            'motor' => $motor,
+            'tecnico' => $user->name,
+        ])
+            ->render();
+        $pdf = PDF::loadHTML($html)->setOption('load-error-handling', 'ignore') // Ignora los errores de carga
+            ->setOption('enable-local-file-access', true)
+            ->setOption('no-stop-slow-scripts', true)
+            ->setOption('javascript-delay', 5000);
+        return $pdf->inline('densidades.pdf');
+    }
+
+    public function downloadPdfBalanceo(Motor $motor)
+    {
+        $user = auth()->user();
+
+        // Generar la imagen en memoria y obtenerla en base64
+        $imagenBase64 = $this->dibujarDiagrama();
+
+        // Pasar la imagen base64 a la vista
+        $html = view('motores.balanceopdf')->with([
+            'motor' => $motor,
+            'tecnico' => $user->name,
+            'imagenBase64' => $imagenBase64, // Pasamos la imagen como base64
+        ])->render();
+
+        // Generar PDF
+        $pdf = PDF::loadHTML($html)
+            ->setOption('load-error-handling', 'ignore') // Ignorar errores de carga
+            ->setOption('enable-local-file-access', true)
+            ->setOption('no-stop-slow-scripts', true)
+            ->setOption('javascript-delay', 5000);
+
+        return $pdf->inline('balanceo.pdf');
+    }
+
+    public function dibujarDiagrama()
+{
+    // Dimensiones del lienzo
+    $width = 600;
+    $height = 600;
+
+    // Centro del diagrama
+    $cx = $width / 2;
+    $cy = $height / 2;
+
+    // Crear la imagen en memoria
+    $image = imagecreate($width, $height);
+
+    // Colores
+    $white = imagecolorallocate($image, 255, 255, 255);
+    $black = imagecolorallocate($image, 0, 0, 0);
+    $gray = imagecolorallocate($image, 200, 200, 200);
+    $red = imagecolorallocate($image, 215, 0, 0);
+    $green = imagecolorallocate($image, 0, 95, 0);
+
+    // Definir tolerancia
+    $tolerance = 5;
+
+    // Dibujar círculos concéntricos
+    for ($r = 0; $r <= 250; $r += 25) {
+        imageellipse($image, $cx, $cy, $r * 2, $r * 2, $gray);
+    }
+
+    // Dibujar líneas cada 30 grados
+    for ($theta = 0; $theta < 360; $theta += 30) {
+        $angleRad = deg2rad($theta);
+        $x2 = $cx + 250 * cos($angleRad);
+        $y2 = $cy - 250 * sin($angleRad);
+        imageline($image, $cx, $cy, $x2, $y2, $gray);
+    }
+
+    // Dibujar ejes principales más gruesos
+    imagesetthickness($image, 3);
+    imageline($image, $cx, $cy - 250, $cx, $cy + 250, $gray);
+    imageline($image, $cx - 250, $cy, $cx + 250, $cy, $gray);
+    imagesetthickness($image, 1); // Restaurar grosor
+
+    for ($theta = 0; $theta < 360; $theta++) {
+        $angleRad = deg2rad($theta);
+        $xOuter = $cx + 250 * cos($angleRad);
+        $yOuter = $cy - 250 * sin($angleRad);
+
+        // Definir el tamaño del tick
+        $tickLength = ($theta % 5 === 0) ? 10 : 5;
+        $xInner = $cx + (250 - $tickLength) * cos($angleRad);
+        $yInner = $cy - (250 - $tickLength) * sin($angleRad);
+        imageline($image, $xInner, $yInner, $xOuter, $yOuter, $black);
+
+        // Agregar etiquetas de ángulos cada 15°
+        if ($theta % 15 === 0) {
+            $labelR = 260;
+            $xLabel = $cx + $labelR * cos($angleRad);
+            $yLabel = $cy - $labelR * sin($angleRad);
+            $label = $theta . '°';
+            imagestring($image, 2, $xLabel - (strlen($label) * 3), $yLabel - 6, $label, $black);
+        }
+    }
+
+    // **Función para convertir coordenadas polares a cartesianas**
+    function polarToCartesian($r, $theta, $cx, $cy)
+    {
+        $max = 28;
+        $r = $r * 250 / $max;
+        $thetaRad = deg2rad($theta);
+        $x = $cx + $r * cos($thetaRad);
+        $y = $cy - $r * sin($thetaRad);
+        return [$x, $y];
+    }
+
+    // **Función para dibujar una línea con una flecha al final**
+    function dibujarLineaConFlecha(&$image, $x1, $y1, $x2, $y2, $colorLinea, $colorFlecha)
+    {
+        imageline($image, $x1, $y1, $x2, $y2, $colorLinea); // Línea principal
+
+        // Calcular la dirección de la flecha
+        $angle = atan2($y2 - $y1, $x2 - $x1); // Ángulo de la línea
+        $arrowSize = 10; // Tamaño de la flecha
+
+        // Calcular puntos de la flecha (triángulo apuntando en la dirección correcta)
+        $xArrow1 = $x2 - $arrowSize * cos($angle + deg2rad(30)); 
+        $yArrow1 = $y2 - $arrowSize * sin($angle + deg2rad(30));
+
+        $xArrow2 = $x2 - $arrowSize * cos($angle - deg2rad(30));
+        $yArrow2 = $y2 - $arrowSize * sin($angle - deg2rad(30));
+
+        // Dibujar flecha como un triángulo
+        imagefilledpolygon($image, [$x2, $y2, $xArrow1, $yArrow1, $xArrow2, $yArrow2], 3, $colorFlecha);
+    }
+
+    // **Dibujar líneas de balanceo con flechas**
+    $puntos = [
+        [20, 67],
+        [28, 183],
+        [14, 43],
+        [0.6, 154]
+    ];
+
+    for ($i = 0; $i < count($puntos) - 1; $i++) {
+        list($r1, $theta1) = $puntos[$i];
+        list($r2, $theta2) = $puntos[$i + 1];
+
+        list($x1, $y1) = polarToCartesian($r1, $theta1, $cx, $cy);
+        list($x2, $y2) = polarToCartesian($r2, $theta2, $cx, $cy);
+
+        // Determinar color (rojo si radio >= tolerancia, verde si < tolerancia)
+        $color = ($r2 < $tolerance) ? $green : $red;
+
+        dibujarLineaConFlecha($image, $x1, $y1, $x2, $y2, $color, $color);
+    }
+
+    // **Convertir la imagen a base64**
+    ob_start();
+    imagepng($image);
+    $imageData = ob_get_contents();
+    ob_end_clean();
+    imagedestroy($image);
+
+    return 'data:image/png;base64,' . base64_encode($imageData);
+}
+
 }

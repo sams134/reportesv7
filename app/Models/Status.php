@@ -10,4 +10,9 @@ class Status extends Model
     use HasFactory;
     protected $guarded = [];
     public $timestamps = false;
+
+    public function motors()
+    {
+        return $this->hasMany(Motor::class, 'status_id');
+    }
 }

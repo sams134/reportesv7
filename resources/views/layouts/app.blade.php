@@ -22,6 +22,7 @@
     <link href="{{ asset('vendors/overlayscrollbars/OverlayScrollbars.min.css') }}"  rel="stylesheet">
         <link href=" {{ asset('vendors/dropzone/dropzone.min.css') }}" rel="stylesheet">
         <link href="{{ asset('vendors/flatpickr/flatpickr.min.css') }}" rel="stylesheet" />
+        
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user.css') }}">

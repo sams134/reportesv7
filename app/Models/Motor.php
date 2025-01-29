@@ -100,4 +100,8 @@ class Motor extends Model
     {
         return $this->belongsTo(TipoEquipo::class, 'id_tipoequipo', 'id');
     }
+    public function status()
+    {
+        return $this->belongsTo(Status::class, 'status_id');
+    }
 }

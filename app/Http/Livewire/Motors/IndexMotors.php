@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Motors;
 
 use App\Models\Motor;
+use App\Models\Status;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -11,6 +12,16 @@ class IndexMotors extends Component
 {
     use withPagination;
     public $search;
+    public $equipo, $statuses, $newStatus;
+    public $sort = 'fullos', $direction = 'desc';
+
+    protected $listeners = ['removeMotor'];
+    public function mount($search = '')
+    {
+        $this->search = $search;
+        $this->equipo = new Motor();
+        $this->statuses = Status::all();
+    }
     public function render()
     {
         $user = auth()->user();
@@ -33,7 +44,7 @@ class IndexMotors extends Component
                 $query->where('id_user', $user->id); // Solo motores asignados al técnico
             });
         }
-        
+
 
         // Si hay una búsqueda
         $search = $this->search;
@@ -68,14 +79,66 @@ class IndexMotors extends Component
         }
 
         // Finalizar con orden y paginación
-        $motores = $motores
-            ->orderBy('year', 'desc')
-            ->orderBy('os', 'desc')
-            ->paginate(100);
+        if ($this->sort === "fullos") {
+            $motores = $motores
+                ->orderBy('year', $this->direction)
+                ->orderBy('os', $this->direction)
+                ->paginate(100);
+        } elseif ($this->sort === 'hp') {
+            $motores = $motores
+                ->orderByRaw("CAST(hp AS UNSIGNED) {$this->direction}")
+                ->paginate(100);
+        } elseif ($this->sort === 'rpm') {
+            $motores = $motores
+                ->orderByRaw("CAST(rpm AS UNSIGNED) {$this->direction}")
+                ->paginate(100);
+        } else {
+            $motores = $motores
+                ->orderBy($this->sort, $this->direction)
+                ->paginate(100);
+        }
 
 
 
         //   return view('livewire.motors.index',compact('motores'));
         return view('livewire.motors.index-motors', compact('motores'))->with(["Carbon" => 'Carbon\Carbon']);
+    }
+
+    public function loadStatusModal(Motor $motor)
+    {
+        $this->equipo = $motor;
+        $this->newStatus = $this->equipo->status_id;
+
+    }
+    public function updateStatus()
+    {
+        $this->validate([
+            'newStatus' => 'required|exists:statuses,id',
+        ]);
+
+        $this->equipo->status_id = $this->newStatus;
+        $this->equipo->save();
+    }
+    public function removeMotor($id)
+    {
+        $motor = Motor::find($id);
+        $motor->delete();
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sort === $field) {
+            $this->direction = $this->direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sort = $field;
+            $this->direction = 'asc';
+        }
+    }
+    public function updatedSearch()
+    {
+        // Reiniciar las propiedades de orden
+        $this->sort = 'fullos';
+        $this->direction = 'desc';
+        $this->resetPage();
     }
 }

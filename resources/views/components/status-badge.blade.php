@@ -1,8 +1,9 @@
 @props(['status_id' => -1 ])
+
 @switch($status_id)
     @case(-1)
     @case(null)
-        <span class="badge badge-soft-warning">No Asignado</span>
+     <span class="badge badge-soft-warning">No Asignado</span>
         @break
     @case(0)
         <span class="badge badge-soft-danger">No Autorizado</span>
@@ -55,4 +56,5 @@
     @default
         {{$status_id}}
 @endswitch
+
 

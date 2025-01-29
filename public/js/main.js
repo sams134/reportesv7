@@ -118,6 +118,24 @@ function removeCustomer(id) {
     })
 }
 
+function removeMotor(id) {
+    Swal.fire({
+        title: 'Seguro que desea eliminar este motor y toda su informacion?',
+        text: "Este cambio no puede ser revertido",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si, Borrarlo',
+        cancelButtonText: 'No, cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            
+           Livewire.emit('removeMotor',id);
+        }
+    })
+}
+
 
 
 const btn_photo_create = document.querySelector('#btn_photo_create');
@@ -162,13 +180,13 @@ if (test)
     test.addEventListener('click',() => {
         swiperInit();
     }) */
-    Livewire.on('closeNewContact',function (){
+   
+   /*  Livewire.on('closeNewContact',function (){
             
         const contactModal = bootstrap.Modal.getInstance(document.getElementById('newContact-modal'));
-        contactModal.hide();
+        contactModal.hide();    
         
-        
-    })
+    }) */
 function deleteContact(key)
 {
     console.log("hola");
@@ -219,3 +237,14 @@ if (cameraBtnPhotoMotor3)
            document.querySelector("#cameraPhotoMotor4").click();
       });
 
+
+
+      function openImageModal(imageSrc) {
+        // Asigna la imagen al modal
+        const modalImage = document.getElementById('modalImage');
+        modalImage.src = imageSrc;
+    
+        // Abre el modal
+        const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+        modal.show();
+    }
