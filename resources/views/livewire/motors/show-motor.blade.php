@@ -78,7 +78,7 @@
                                 </button>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <a href="{{route('motores.downloadPdfBalanceo',$motor)}}" class="btn btn-falcon-primary me-1 mb-1" type="button">
+                                <a href="{{route('motores.createBalanceo',$motor)}}" class="btn btn-falcon-primary me-1 mb-1" type="button">
                                     <span><i class="fas fa-balance-scale mx-1"></i>Balanceo Dinamico </span></a>
                                 </a>
                             </li>

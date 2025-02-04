@@ -5135,7 +5135,7 @@ var chartLine = function chartLine() {
           borderColor: utils.getColor('primary'),
           borderWidth: 2,
           fill: false,
-          data: [55, 80, 60, 22, 50, 40, 90],
+          data: [10, 80, 60, 22, 50, 40, 90],
           tension: 0.3
         }]
       },

@@ -104,4 +104,8 @@ class Motor extends Model
     {
         return $this->belongsTo(Status::class, 'status_id');
     }
+    public function balanceo()
+    {
+        return $this->hasOne(Balanceo::class, 'motor_id', 'id_motor');
+    }
 }

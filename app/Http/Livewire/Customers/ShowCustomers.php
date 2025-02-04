@@ -10,10 +10,10 @@ class ShowCustomers extends Component
 {
     public Cliente $cliente;
 
-    protected $listeners = ['render','deleteContact'];
+    protected $listeners = ['render', 'deleteContact'];
     public function mount($cliente)
     {
-        
+
         $this->cliente = $cliente;
     }
     public function render()
@@ -21,8 +21,10 @@ class ShowCustomers extends Component
         $this->cliente = Cliente::find($this->cliente->id_cliente);
         return view('livewire.customers.show-customers');
     }
-    public function deleteContact($id){
+    public function deleteContact($id)
+    {
         Contacto::find($id)->delete();
         $this->render();
     }
+   
 }

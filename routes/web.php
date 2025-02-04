@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\MotorController;
+use App\Http\Livewire\Balanceo\CreateBalanceo;
 use App\Http\Livewire\Customers\IndexCustomers;
 use App\Http\Livewire\Motors\IndexMotors;
 use Illuminate\Support\Facades\Route;
@@ -9,8 +10,11 @@ use App\Http\Livewire\Customers\CreateCustomers;
 use App\Http\Livewire\Customers\EditCustomer;
 use App\Http\Livewire\Customers\ShowCustomers;
 use App\Http\Livewire\Materiales\MaterialesIndex;
+use App\Http\Livewire\Metalizados\MetalizadosCreate;
+use App\Http\Livewire\Metalizados\MetalizadosIndex;
 use App\Http\Livewire\Motors\CreateMotor;
 use App\Http\Livewire\Motors\ShowMotor;
+use App\Models\BalanceoArt;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,7 +62,17 @@ Route::middleware([
     Route::get('/motores/pdfIngreso/{motor}',[MotorController::class,'downloadPdf'])->name('motores.downloadPdf');
     Route::get('/motores/pdf-densidades/{motor}',[MotorController::class,'downloadPdfDensidades'])->name('motores.downloadPdfDensidades');
     Route::get('/motores/pdf-balanceo/{motor}',[MotorController::class,'downloadPdfBalanceo'])->name('motores.downloadPdfBalanceo');
-
-
+    Route::get('/motores/createBalanceo/{motor}',CreateBalanceo::class)->name('motores.createBalanceo');
     Route::get('/materiales',MaterialesIndex::class)->name('materiales.index');
+
+    Route::get('/metalizados', MetalizadosIndex::class)->name('metalizados.index');
+    Route::get('/metalizados/create', MetalizadosCreate::class)->name('metalizados.create');
+
+
+
+    //API
+    Route::get('/balanceo/arts', function () {
+        return response()->json(BalanceoArt::orderBy('id', 'desc')->get());
+    });
+   
 });

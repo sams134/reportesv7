@@ -15,7 +15,7 @@ class IndexMotors extends Component
     public $equipo, $statuses, $newStatus;
     public $sort = 'fullos', $direction = 'desc';
 
-    protected $listeners = ['removeMotor'];
+    protected $listeners = ['removeMotor','render'];
     public function mount($search = '')
     {
         $this->search = $search;
@@ -140,5 +140,10 @@ class IndexMotors extends Component
         $this->sort = 'fullos';
         $this->direction = 'desc';
         $this->resetPage();
+    }
+    public function addTecnico($id)
+    {
+        $motor = Motor::find($id);
+        $this->emit('showAsignacionesModalP1', $motor);
     }
 }
