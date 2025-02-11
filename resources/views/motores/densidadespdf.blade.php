@@ -217,7 +217,7 @@
             <td width="20%">
                 <span style="font-weight:100;padding:10px">Amperajes: </span>
             </td>
-            <td width="30%">{{ $motor->rpm }}</td>
+            <td width="30%"></td>
 
         </tr>
         <tr>

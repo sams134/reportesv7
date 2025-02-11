@@ -48,7 +48,7 @@
                         <h3>Herramientas</h3>
                         <ul class="list-group">
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <button class="btn btn-falcon-primary me-1 mb-1" type="button">
+                                <button class="btn btn-falcon-primary me-1 mb-1" type="button" onclick="loadCamera()">
                                     <span><i class="fas fa-camera mx-1"></i> Tomar Foto</span></a>
                                 </button>
                             </li>
@@ -58,7 +58,8 @@
                                 </button>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <a href="{{route('motores.downloadPdfDensidades',$motor)}}" class="btn btn-falcon-primary me-1 mb-1" type="button">
+                                <a href="{{ route('motores.downloadPdfDensidades', $motor) }}"
+                                    class="btn btn-falcon-primary me-1 mb-1" type="button">
                                     <span><i class="far fa-file-pdf mx-1"></i> Hoja Densidades </span></a>
                                 </a>
                             </li>
@@ -68,9 +69,7 @@
                                 </button>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <button class="btn btn-falcon-primary me-1 mb-1" type="button">
-                                    <span><i class="far fa-list-alt mx-1"></i> Pedir Materiales </span></a>
-                                </button>
+                                @livewire('motors.pedido-materiales', ['motor' => $motor])
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <button class="btn btn-falcon-primary me-1 mb-1" type="button">
@@ -78,7 +77,8 @@
                                 </button>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <a href="{{route('motores.createBalanceo',$motor)}}" class="btn btn-falcon-primary me-1 mb-1" type="button">
+                                <a href="{{ route('motores.createBalanceo', $motor) }}"
+                                    class="btn btn-falcon-primary me-1 mb-1" type="button">
                                     <span><i class="fas fa-balance-scale mx-1"></i>Balanceo Dinamico </span></a>
                                 </a>
                             </li>
@@ -104,6 +104,26 @@
                             <small>
                                 {{ Carbon\Carbon::parse($motor->fecha_ingreso)->diffForHumans() }}
                             </small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Fecha de Finalizacion</td>
+                        <td>
+                            <div style="d-block">
+                                <button class="btn btn-falcon-primary me-1 mb-1" type="button">Finalizar
+                                </button>
+                            </div>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Fecha de Entrega</td>
+                        <td>
+                            <div style="d-block">
+                                <button class="btn btn-falcon-primary me-1 mb-1" type="button">Gen. Env&iacute;o
+                                </button>
+                            </div>
+
                         </td>
                     </tr>
                 </table>
@@ -205,6 +225,49 @@
                     </tr>
                 </table>
             </x-pretty-card>
+            <x-pretty-card>
+                <h3>Documentos Cargados</h3>
+                <div class="document-gallery" style="display: flex; flex-wrap: wrap; gap: 1rem;" id="documentGallery">
+                    <div class="card document-card" id="addDocument"
+                        style="width: 200px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; transition: transform 0.3s;">
+                        <a>
+                            <img src="{{ asset('img/pdfadd.png') }}" alt="Agregar PDF" title="Agregar PDF"
+                                style="width: 50%; display: block; margin: 0 auto;">
+                        </a>
+                        <div class="card-footer"
+                            style="padding: 0.5rem; text-align: center; background-color: #f8f9fa;">
+                            <a style="text-decoration: none; color: inherit;">
+                                Agregar Documento
+                            </a>
+                        </div>
+                    </div>
+                    <style>
+                        .document-card:hover {
+                            transform: scale(1.1);
+                        }
+                    </style>
+                    @foreach ($motor->Documentos as $documento)
+                        <div class="card document-card"
+                            style="width: 200px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                            <a href="{{ asset('storage' . $documento->documento) }}" target="_blank">
+                                <img src="{{ asset('img/pdflogo.png') }}" alt="PDF Logo"
+                                    style="width: 30%; display: block; margin: 0 auto;">
+                            </a>
+                            <div class="card-footer"
+                                style="padding: 0.5rem; text-align: center; background-color: #f8f9fa;">
+                                <a href="{{ asset('storage' . $documento->documento) }}" target="_blank"
+                                    style="text-decoration: none; color: inherit;">
+                                    {{ $documento->titulo }}
+                                </a>
+                                <button class="btn btn-danger btn-sm me-1 mb-1" type="button"
+                                    onclick="removeDoc({{ $documento->id }})">Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    @endforeach
+                    <input type="file" id="documentUpload" wire:model="doc" accept=".pdf" style="display: none;">
+                </div>
+            </x-pretty-card>
         </div>
     </div>
     <style>
@@ -218,34 +281,108 @@
             border-radius: 5px;
             /* Opcional: para bordes redondeados */
         }
+
+        .card-gallery {
+            max-height: 250px;
+            overflow: hidden;
+            padding: 2px;
+        }
+
+        /* Estilos para que la imagen tenga 200px de altura, se centre y se ajuste sin distorsión */
+        .card-img-top {
+            height: 200px;
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+            /* Mantiene la proporción y muestra letterboxing si es necesario */
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
     </style>
     <div class="row">
         <div class="col-12">
             <x-pretty-card>
                 <h3>Imagenes</h3>
-                <div class="swiper-container theme-slider"
-                    data-swiper='{
-        "spaceBetween": 10,
-        "slidesPerView": 4,
-        "loop": true,
-        "grabCursor": true,
-        "centeredSlides": false,
-        "slideToClickedSlide": true
-    }'>
-                    <div class="swiper-wrapper">
-                        @foreach ($motor->fotos as $foto)
-                            <div class="swiper-slide">
-                                <img class="slider-img" src="{{ asset('storage' . $foto->foto) }}"
-                                    alt="Foto"
-                                    ondblclick="openImageModal('{{ asset('storage' . $foto->foto) }}')" />
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex ">
+                            <div class="d-flex">
+                                <button class="btn btn-success me-1 mb-1" type="button" onclick="loadCamera()">
+                                    <span><i class="fas fa-camera mx-1"></i> Agregar Foto</span>
+                                </button>
+                                <input type="file" id="photoUpload" wire:model="photo" accept="image/*" style="display: none;">
+                       
                             </div>
-                        @endforeach
-                    </div>
-                    <div class="swiper-nav">
-                        <div class="swiper-button-next swiper-button-white"></div>
-                        <div class="swiper-button-prev swiper-button-white"></div>
+                            <div class="form-check form-switch mt-1 mx-4">
+
+                                <input class="form-check-input" id="flexSwitchCheckDefault" type="checkbox"
+                                    wire:model="full_gallery" />
+                                <label class="form-check-label" for="flexSwitchCheckDefault">Galer&iacute;a
+                                    completa</label>
+                            </div>
+                            
+                        </div>
                     </div>
                 </div>
+                @if (!$full_gallery)
+
+                    <div class="swiper-container theme-slider"
+                        data-swiper='{
+                                    "spaceBetween": 10,
+                                    "slidesPerView": 4,
+                                    "loop": true,
+                                    "grabCursor": true,
+                                    "centeredSlides": false,
+                                    "slideToClickedSlide": true,
+                                    "navigation": {
+                                        "nextEl": ".swiper-button-next",
+                                        "prevEl": ".swiper-button-prev"
+                                    }
+                                }'>
+                        <div class="swiper-wrapper">
+                            @foreach ($motor->fotos as $foto)
+                                <div class="swiper-slide">
+                                    <img class="slider-img" src="{{ asset('storage' . $foto->foto) }}"
+                                        alt="Foto"
+                                        ondblclick="openImageModal('{{ asset('storage' . $foto->foto) }}')" />
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="swiper-nav">
+                            <div class="swiper-button-next swiper-button-white"></div>
+                            <div class="swiper-button-prev swiper-button-white"></div>
+                        </div>
+                    </div>
+                @else
+                    <div class="card py-3 px-1 mt-3">
+                        <div class="row">
+                            @foreach ($motor->fotos->sortByDesc('id') as $foto)
+                                <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12 my-2">
+                                    <div class="card card-gallery">
+                                        <img class="card-img-top" src="{{ asset('storage' . $foto->foto) }}"
+                                            alt="Foto"
+                                            ondblclick="openImageModal('{{ asset('storage' . $foto->foto) }}')">
+                                        <div class="card-footer">
+                                            <p style="font-size: 12px">
+                                                <span class="fw-bold">Fecha Foto: </span>
+                                                {{ Carbon\Carbon::parse($foto->created_at)->format('d/m/Y') }}
+                                            </p>
+                                            
+                                            @if ($foto->user)
+                                                <p style="font-size: 12px">
+                                                    <span class="fw-bold">Foto Tomada por: </span>
+                                                    {{ $foto->user->name }}
+                                                </p>
+                                            @endif
+                                            <p class="card-text">{{ $foto->comentario }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
 
                 <!-- Modal -->
                 <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel"
@@ -253,7 +390,7 @@
                     <div class="modal-dialog modal-fullscreen">
                         <div class="modal-content">
                             <div class="modal-body p-0 text-center" style="background-color: black;">
-                                <img id="modalImage" src="" class="img-fluid w-100 h-auto" alt="Preview" />
+                                <img id="modalImage" src="" class="img-fluid w-90 h-auto" alt="Preview" />
                                 <button type="button"
                                     class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
                                     data-bs-dismiss="modal" aria-label="Close"></button>
@@ -262,8 +399,60 @@
                     </div>
                 </div>
             </x-pretty-card>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <x-pretty-card>
+                <h3>Materiales</h3>
+                @livewire('motors.show-pedido', ['motor' => $motor])
+            </x-pretty-card>
         </div>
     </div>
     <x-status-modal :statuses="$statuses" :equipo="$motor" />
     <script src="{{ asset('js/main.js') }}"></script>
+    <script>
+        const documentBtn = document.querySelector('#addDocument');
+
+        if (documentBtn)
+            documentBtn.addEventListener('click', function() {
+                document.querySelector("#documentUpload").click();
+            });
+
+
+
+        function removeDoc(id) {
+            console.log(id);
+            Swal.fire({
+                title: 'Seguro que desea eliminar este documento?',
+                text: "Este cambio no puede ser revertido",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Si, Borrarlo',
+                cancelButtonText: 'No, cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Livewire.emit('removeDoc', id);
+                }
+            })
+        }
+        window.addEventListener('init-swiper', event => {
+            console.log('Evento "init-swiper" recibido. Reinicializando Swiper...');
+            document.querySelectorAll('.swiper-container.theme-slider').forEach(container => {
+                let config = {};
+                try {
+                    config = JSON.parse(container.getAttribute('data-swiper'));
+                } catch (e) {
+                    console.error("Error parseando data-swiper:", e);
+                }
+                new Swiper(container, config);
+            });
+        });
+        loadCamera = function() {
+            document.querySelector("#photoUpload").click();
+        }
+    </script>
 </div>

@@ -105,6 +105,7 @@
                       </div>
                   </a>
               </li>
+              
                 <li class="nav-item">
                     <!-- label-->
                     <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
@@ -114,12 +115,36 @@
                             <hr class="mb-0 navbar-vertical-divider" />
                         </div>
                     </div>
-                    <!-- parent pages--><a class="nav-link" href="#" role="button" aria-expanded="false"">
-                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
-                                    class="fas fa-horse"></span></span><span class="nav-link-text ps-1">Calibre de
-                                Cable</span>
+                     <!-- parent pages--><a class="nav-link dropdown-indicator" href="#user" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="user">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span class="fas fa-user"></span></span><span class="nav-link-text ps-1">Calculos Importantes</span>
                         </div>
-                    </a>
+                      </a>
+                      <ul class="nav collapse false" id="user">
+                        <li class="nav-item"><a class="nav-link" href="{{route('calculos.ajustes')}}" aria-expanded="false">
+                            <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Ajustes en tapaderas y ejes</span>
+                            </div>
+                          </a>
+                          <!-- more inner pages-->
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="../pages/user/settings.html" aria-expanded="false">
+                            <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Uso de C3/C4</span>
+                            </div>
+                          </a>
+                          <!-- more inner pages-->
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="../pages/user/settings.html" aria-expanded="false">
+                            <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Calibre Cable de Salida</span>
+                            </div>
+                          </a>
+                          <!-- more inner pages-->
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="../pages/user/settings.html" aria-expanded="false">
+                            <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Conexiones</span>
+                            </div>
+                          </a>
+                          <!-- more inner pages-->
+                        </li>
+                      </ul>
 
                 </li>
 

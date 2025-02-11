@@ -22,6 +22,10 @@ class Foto extends Model
     // Tipo de la llave primaria
     protected $keyType = 'int';
 
+    public const NAMEPLATE = 13;
+    PUBLIC CONST INVENTORY = 12;
+    PUBLIC CONST MOTOR = 2;
+    public const TRABAJO = 3;
 
 
     // Relación con el modelo Motor
@@ -39,6 +43,10 @@ class Foto extends Model
     public function fotosTrabajo()
     {
         return $this->hasMany(FotosTrabajo::class, 'id_foto');
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'id_user');
     }
     
 }

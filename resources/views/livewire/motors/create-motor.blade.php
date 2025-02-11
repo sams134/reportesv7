@@ -82,7 +82,7 @@
                                 <div class="col-6">
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">OS</span>
-                                        <input class="form-control" type="text" wire:model="os">
+                                        <input class="form-control" type="text" wire:model.defer="os" >
                                         @error('os')
                                             <div class="alert alert-danger my-1 py-1" role="alert"> {{ $message }}</div>
                                         @enderror
@@ -311,6 +311,24 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="mb-3 row ps-5">
+
+                                <div class="form-check col-4">
+                                    <input class="form-check-input" type="radio" value="1"
+                                        wire:model="phases" />
+                                    <label class="form-check-label">Monof&aacute;sico</label>
+                                </div>
+                                <div class="form-check col-4">
+                                    <input class="form-check-input" type="radio" value="3"
+                                        wire:model="phases" />
+                                    <label class="form-check-label">Trif&aacute;sico</label>
+                                </div>
+                                <div class="form-check col-4">
+                                    <input class="form-check-input" type="radio" value="4"
+                                        wire:model="phases" />
+                                    <label class="form-check-label">DC</label>
+                                </div>
+                            </div>
                             <div class="col-12 pt-2">
                                 <div class="form-check form-switch align-bottom">
                                     <input class="form-check-input" id="flexSwitchCheckChecked" type="checkbox"
@@ -423,63 +441,94 @@
                         <div class="row">
                             <div class="col-6 col-lg-3">
                                 <button class="btn btn-falcon-primary me-1 mb-1" type="button"
-                                    id="cameraBtnPhotoMotor1">
+                                    id="cameraBtnPhotoMotor1" wire:loading.attr="disabled" wire:target="photosMotor.0"
+                                    onclick="document.querySelector('#cameraPhotoMotor1').click()">
                                     <div class="img-thumbnail">
                                         Cargue Foto Vista 1
                                     </div>
-                                    @if ($photosMotor[0] != '')
-                                        <img src="{{ $photosMotor[0]->temporaryUrl() }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail">
-                                    @else
-                                        <img src="{{ asset('img/motors/m1.png') }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail">
-                                    @endif
-
+                                    <div wire:loading wire:target="photosMotor.0">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                    <div wire:loading.remove wire:target="photosMotor.0">
+                                        @if ($photosMotor[0] != '')
+                                            <img src="{{ $photosMotor[0]->temporaryUrl() }}" style="width:100%"
+                                                class="rounded-soft img-thumbnail">
+                                        @else
+                                            <img src="{{ asset('img/motors/m1.png') }}" style="width:100%"
+                                                class="rounded-soft img-thumbnail">
+                                        @endif
+                                    </div>
                                 </button>
                             </div>
                             <div class="col-6 col-lg-3">
                                 <button class="btn btn-falcon-primary me-1 mb-1" type="button"
-                                    id="cameraBtnPhotoMotor2">
+                                    id="cameraBtnPhotoMotor2" wire:loading.attr="disabled" wire:target="photosMotor.1"
+                                    onclick="document.querySelector('#cameraPhotoMotor2').click()">
                                     <div class="img-thumbnail">
                                         Cargue Foto Vista 2
                                     </div>
-                                    @if ($photosMotor[1] != '')
-                                        <img src="{{ $photosMotor[1]->temporaryUrl() }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail">
-                                    @else
-                                        <img src="{{ asset('img/motors/m2.png') }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail">
-                                    @endif
+                                    <div wire:loading wire:target="photosMotor.1">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                    <div wire:loading.remove wire:target="photosMotor.1">
+                                        @if ($photosMotor[1] != '')
+                                            <img src="{{ $photosMotor[1]->temporaryUrl() }}" style="width:100%"
+                                                class="rounded-soft img-thumbnail">
+                                        @else
+                                            <img src="{{ asset('img/motors/m2.png') }}" style="width:100%"
+                                                class="rounded-soft img-thumbnail">
+                                        @endif
+                                    </div>
                                 </button>
                             </div>
                             <div class="col-6 col-lg-3">
                                 <button class="btn btn-falcon-primary me-1 mb-1" type="button"
-                                    id="cameraBtnPhotoMotor3">
+                                    id="cameraBtnPhotoMotor3" wire:loading.attr="disabled" wire:target="photosMotor.2"
+                                    onclick="document.querySelector('#cameraPhotoMotor3').click()">
                                     <div class="img-thumbnail">
                                         Cargue Foto Vista 3
                                     </div>
-                                    @if ($photosMotor[2] != '')
-                                        <img src="{{ $photosMotor[2]->temporaryUrl() }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail">
-                                    @else
-                                        <img src="{{ asset('img/motors/m3.png') }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail">
-                                    @endif
+                                    <div wire:loading wire:target="photosMotor.2">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                    <div wire:loading.remove wire:target="photosMotor.2">
+                                        @if ($photosMotor[2] != '')
+                                            <img src="{{ $photosMotor[2]->temporaryUrl() }}" style="width:100%"
+                                                class="rounded-soft img-thumbnail">
+                                        @else
+                                            <img src="{{ asset('img/motors/m3.png') }}" style="width:100%"
+                                                class="rounded-soft img-thumbnail">
+                                        @endif
+                                    </div>
                                 </button>
                             </div>
                             <div class="col-6 col-lg-3">
                                 <button class="btn btn-falcon-primary me-1 mb-1" type="button"
-                                    id="cameraBtnPhotoMotor4">
+                                    id="cameraBtnPhotoMotor4" wire:loading.attr="disabled" wire:target="photosMotor.3"
+                                    onclick="document.querySelector('#cameraPhotoMotor4').click()">
                                     <div class="img-thumbnail">
                                         Cargue Foto Vista 4
                                     </div>
-                                    @if ($photosMotor[3] != '')
-                                        <img src="{{ $photosMotor[3]->temporaryUrl() }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail">
-                                    @else
-                                        <img src="{{ asset('img/motors/m4.png') }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail">
-                                    @endif
+                                    <div wire:loading wire:target="photosMotor.3">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                    <div wire:loading.remove wire:target="photosMotor.3">
+                                        @if ($photosMotor[3] != '')
+                                            <img src="{{ $photosMotor[3]->temporaryUrl() }}" style="width:100%"
+                                                class="rounded-soft img-thumbnail">
+                                        @else
+                                            <img src="{{ asset('img/motors/m4.png') }}" style="width:100%"
+                                                class="rounded-soft img-thumbnail">
+                                        @endif
+                                    </div>
                                 </button>
                             </div>
                         </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Metalizados;
 
 use App\Models\Motor;
+use App\Models\MotorMetalizado;
 use Livewire\Component;
 
 class MetalizadosIndex extends Component
@@ -10,7 +11,10 @@ class MetalizadosIndex extends Component
     
     public $search = '';
     public $sort = 'id_motor', $direction = 'desc';
-    public function render()
+    protected $listeners = [
+        'closeNewMetalizado' => 'render',
+    ];
+   /*  public function render()
     {
         $user = auth()->user();
 
@@ -39,5 +43,19 @@ class MetalizadosIndex extends Component
         }
  
         return view('livewire.metalizados.metalizados-index',compact('motores'));
+    } */
+
+
+    public function render()
+    {
+        $user = auth()->user();
+        $metalizados = MotorMetalizado::with([
+            'cliente',
+            'motor'
+        ]);
+        $metalizados = $metalizados->where('year', 'like', 'MET%');
+        $metalizados = $metalizados->orderBy('year', 'desc')->orderBy('os', 'desc')->paginate(100);
+       
+        return view('livewire.metalizados.metalizados-index')->with('metalizados', $metalizados);
     }
 }

@@ -21,7 +21,7 @@ class IndexCustomers extends Component
                     ->orWhereHas('contactos',function ($q) use ($search){
                         $q->where('contacto', 'like', '%' . $search . '%');
                     })
-                    ->orderBy('cliente','asc')->paginate(20);
+                    ->orderBy('cliente','asc')->paginate(100);
         return view('livewire.customers.index-customers',compact('customers'));
     }
     public function removeCustomer($id_cliente){

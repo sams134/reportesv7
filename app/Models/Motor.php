@@ -70,7 +70,14 @@ class Motor extends Model
     }
     public function contactos()
     {
-        return $this->belongsToMany(Contacto::class, 'informar_a_contactos', 'id_motor', 'id_contacto');
+        return $this->belongsToMany(
+            \App\Models\Contacto::class, // Modelo relacionado
+            'informar_a_contactos',      // Nombre de la tabla pivot
+            'id_motor',                  // Clave foránea en la tabla pivot para este modelo (Motor)
+            'id_contacto',               // Clave foránea en la tabla pivot para el modelo relacionado (Contacto)
+            'id_motor',                  // Clave primaria en el modelo Motor
+            'id'                         // Clave primaria en el modelo Contacto
+        )->withTimestamps();
     }
     public function bitacoras()
     {
@@ -107,5 +114,9 @@ class Motor extends Model
     public function balanceo()
     {
         return $this->hasOne(Balanceo::class, 'motor_id', 'id_motor');
+    }
+    public function metalizados()
+    {
+        return $this->hasMany(MotorMetalizado::class, 'id_motor', 'id_motor');
     }
 }

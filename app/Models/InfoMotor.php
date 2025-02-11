@@ -27,6 +27,10 @@ class InfoMotor extends Model
 
     protected $guarded = [];
 
+    public function getEmergenciaValueAttribute()
+    {
+        return $this->attributes['emergencia'];
+    }
     public function getEmergenciaAttribute($value)
     {
         switch ($value) {
@@ -44,6 +48,7 @@ class InfoMotor extends Model
                 return 'Desconocido'; // Si el valor no coincide con ningún caso
         }
     }
+   
     public function getCotizarAttribute($value)
     {
         return $value == 1 ? 'No, Primero Cotizar' : 'Si, Empezar a trabajar';

@@ -28,7 +28,7 @@ class CreateMotor extends Component
     public $photosMotor = ['', '', '', ''];
     public $step = 0;
     //placa de datos
-    public $equipmentName, $equipmentType = null, $selectedEquipmentTypeName, $potencia, $aproximado = false, $powerUnit = 0, $rpm, $marca, $serie, $modelo, $voltaje, $amperaje, $frame, $hz, $inverter, $pf, $eff;
+    public $equipmentName, $equipmentType = null, $selectedEquipmentTypeName, $potencia, $aproximado = false, $powerUnit = 0, $rpm, $marca, $serie, $modelo, $voltaje, $amperaje, $frame, $hz, $inverter, $pf, $eff,$phases;
 
     public $listeners = ['next', 'prev', 'newCustomerAdded', 'render', 'store'];
     protected $rules = [
@@ -100,6 +100,7 @@ class CreateMotor extends Component
     {
         unset($this->nameplates[$key]);
     }
+   
     public function next()
     {
         if ($this->step == 4) {
@@ -201,7 +202,7 @@ class CreateMotor extends Component
 
     public function store()
     {
-
+       
         try {
             $this->validate();
 
@@ -242,8 +243,11 @@ class CreateMotor extends Component
                 'hz' => $this->hz,
                 'pf' => $this->pf,
                 'eff' => $this->eff,
+                'phases' => $this->phases,
                 'recibido' => Auth::user()->name,
+                'comentarios' => $this->comentariosCliente,
                 'id_tipoequipo' => $this->equipmentType,
+                'inverter_duty' => $this->inverter,
                 'fecha_ingreso' => date('Y-m-d', strtotime($this->inDate)),
             ]);
 
@@ -252,6 +256,10 @@ class CreateMotor extends Component
                 throw new \Exception('No se pudo crear el motor');
             }
 
+            //Guardar info Contactos
+            $ids = collect($this->emailToReal)->pluck('id')->toArray();
+            $motor->contactos()->attach($ids);
+
             $this->saveInventory($motor->id_motor);
             $this->saveInfoMotor($motor);
 
@@ -259,7 +267,7 @@ class CreateMotor extends Component
 
             $this->savePhotos($this->photoInventory, $folderPath, 12, $motor->id_motor);
             $this->savePhotos($this->nameplates, $folderPath, 13, $motor->id_motor);
-            $this->savePhotos($this->photosMotor, $folderPath, 2, $motor->id_motor);
+            $this->savePhotos($this->photosMotor, $folderPath, 3, $motor->id_motor);
 
             // Redirigir a la vista de listado de motores con mensaje de éxito
             return redirect()->route('motores.index')->with('success', 'La OS ' . $this->year . '-' . $this->os . ' fue guardado exitosamente.');
@@ -282,46 +290,48 @@ class CreateMotor extends Component
         if ($photos) {
             foreach ($photos as $photo) {
                 // Crear la imagen con Intervention
-                $image = Image::make($photo);
+                if ($photo != "") {
+                    $image = Image::make($photo);
 
-                // Corregir la orientación basada en los metadatos EXIF
-                if ($image->exif('Orientation')) {
-                    $orientation = $image->exif('Orientation');
-                    switch ($orientation) {
-                        case 3:
-                            $image->rotate(180); // Rotar 180 grados
-                            break;
-                        case 6:
-                            $image->rotate(-90); // Rotar 90 grados en sentido horario
-                            break;
-                        case 8:
-                            $image->rotate(90); // Rotar 90 grados en sentido antihorario
-                            break;
+                    // Corregir la orientación basada en los metadatos EXIF
+                    if ($image->exif('Orientation')) {
+                        $orientation = $image->exif('Orientation');
+                        switch ($orientation) {
+                            case 3:
+                                $image->rotate(180); // Rotar 180 grados
+                                break;
+                            case 6:
+                                $image->rotate(-90); // Rotar 90 grados en sentido horario
+                                break;
+                            case 8:
+                                $image->rotate(90); // Rotar 90 grados en sentido antihorario
+                                break;
+                        }
                     }
+
+                    // Redimensionar la imagen
+                    $image->resize(1024, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    });
+
+                    // Generar un nombre único para la imagen
+                    $uniqueName = uniqid('img_', true) . '.' . $photo->getClientOriginalExtension();
+
+                    // Definir la ruta de la imagen
+                    $imagePath = $folderPath . '/' . $uniqueName;
+
+                    // Guardar la imagen usando el Storage
+                    Storage::disk('public')->put($imagePath, (string) $image->encode());
+
+                    // Guardar la información en la tabla 'fotos'
+                    Foto::create([
+                        'foto' => $imagePath,
+                        'thumb' => $imagePath,
+                        'id_motor' => $motorId,
+                        'type' => $type,
+                    ]);
                 }
-
-                // Redimensionar la imagen
-                $image->resize(1024, null, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                });
-
-                // Generar un nombre único para la imagen
-                $uniqueName = uniqid('img_', true) . '.' . $photo->getClientOriginalExtension();
-
-                // Definir la ruta de la imagen
-                $imagePath = $folderPath . '/' . $uniqueName;
-
-                // Guardar la imagen usando el Storage
-                Storage::disk('public')->put($imagePath, (string) $image->encode());
-
-                // Guardar la información en la tabla 'fotos'
-                Foto::create([
-                    'foto' => $imagePath,
-                    'thumb' => $imagePath,
-                    'id_motor' => $motorId,
-                    'type' => $type,
-                ]);
             }
         }
     }
@@ -336,6 +346,7 @@ class CreateMotor extends Component
             'email' => isset($this->contactList[0]) ? $this->contactList[0]->email : 'Sin email',
             'telefono' => isset($this->contactList[0]) ? $this->contactList[0]->telefono : 'Sin teléfono',
             'cotizar' => $this->preAutorizado == true ? 0 : 1,
+            'reales' => $this->aproximado == true ? 1 : 0,
         ]);
     }
     public function saveInventory($id_motor)

@@ -1,4 +1,4 @@
-@props(['active' => 1, ])
+@props(['active' => 1, 'editing' => false])
 
 <div class="card theme-wizard mb-5">
     <div class="card-header bg-light pt-3 pb-2">
@@ -74,3 +74,6 @@
         </div>
     </div>
 </div>
+<script>
+    var editing = @json($editing);
+    </script>

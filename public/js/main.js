@@ -213,7 +213,7 @@ if (cameraBtnNameplate)
    cameraBtnNameplate.addEventListener('click',function(){
         document.querySelector("#cameraNameplate").click();
    });
-
+/* 
    const cameraBtnPhotoMotor1 = document.querySelector('#cameraBtnPhotoMotor1');
 if (cameraBtnPhotoMotor1)
    cameraBtnPhotoMotor1.addEventListener('click',function(){
@@ -235,7 +235,7 @@ if (cameraBtnPhotoMotor3)
    if (cameraBtnPhotoMotor4)
       cameraBtnPhotoMotor4.addEventListener('click',function(){
            document.querySelector("#cameraPhotoMotor4").click();
-      });
+      }); */
 
 
 

@@ -4392,6 +4392,7 @@ var wizardInit = function wizardInit() {
  
     var cardFooter = wizard.querySelector('.theme-wizard .card-footer');
     var count = 0;
+    
 
     
 
@@ -4435,13 +4436,10 @@ var wizardInit = function wizardInit() {
 
 
           if (count > tabToggleButtonEl.length - 2) {
-            //item.classList.add('done');
-          //  nextButton.classList.add('d-none');
-           nextButton.textContent ="Guardar"
-          } else {
-           // nextButton.classList.remove('d-none');
-           nextButton.textContent ="Siguiente"
-          } // prev-button removing
+            nextButton.textContent = editing ? "Editar" : "Guardar";
+        } else {
+            nextButton.textContent = "Siguiente";
+        }
 
 
           if (count > 0) {

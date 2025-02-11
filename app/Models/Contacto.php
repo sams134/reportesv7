@@ -22,7 +22,8 @@ class Contacto extends Model
     }
     public function motors()
     {
-        return $this->belongsToMany(Motor::class, 'informar_a_contactos', 'id_contacto', 'id_motor');
+        return $this->belongsToMany(Motor::class, 'informar_a_contactos', 'id_contacto', 'id_motor')
+        ->withTimestamps();
     }
 
 }

@@ -36,4 +36,8 @@ class Cliente extends Model
     {
         return $this->hasMany(Contacto::class, 'id_cliente', 'id_cliente');
     }
+    public function metalizados()
+    {
+        return $this->hasMany(MotorMetalizado::class, 'id_cliente', 'id_cliente');
+    }
 }

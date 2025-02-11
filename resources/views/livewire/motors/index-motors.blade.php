@@ -150,9 +150,9 @@
                                 </td>
                                 <td class="text-end">
                                     <div>
-                                        <button class="btn p-0" type="button" data-bs-toggle="tooltip"
-                                            data-bs-placement="top" title="Editar"><span
-                                                class="text-500 fas fa-edit"></span></button>
+                                        <a class="btn p-0" type="button" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" title="Editar" href="{{route('motores.edit',$motor)}}"><span
+                                                class="text-500 fas fa-edit"></span></a>
                                         <button class="btn p-0 ms-2" data-bs-toggle="tooltip" data-bs-placement="top"
                                             title="Eliminar" onClick="removeMotor({{ $motor->id_motor }})"><span
                                                 class="text-500 fas fa-trash-alt"></span></button>
@@ -183,5 +183,6 @@
     @push('scripts')
         <script src="{{ asset('js/main.js') }}"></script>
     @endpush
+    
 
 </div>
