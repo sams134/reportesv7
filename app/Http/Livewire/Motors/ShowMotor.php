@@ -13,7 +13,8 @@ class ShowMotor extends Component
     public $motor;
     public $equipo,$statuses,$newStatus,$full_gallery=false;
     public $doc,$photo;
-    protected $listeners = ['removeDoc'];
+    public $finalizado = false;
+    protected $listeners = ['removeDoc','render','finalizar'];
 
     public function mount(Motor $motor)
     {
@@ -24,6 +25,9 @@ class ShowMotor extends Component
 
     public function render()
     {
+        $this->dispatchBrowserEvent('init-swiper');
+        if ($this->motor->fin)
+          $finalizado = true;
         return view('livewire.motors.show-motor')->with(["Carbon" => 'Carbon\Carbon']);
     }
     public function loadStatusModal(Motor $motor)
@@ -99,6 +103,13 @@ class ShowMotor extends Component
         $this->full_gallery = true;
         $this->render();
         
+    }
+    public function finalizar()
+    {
+        $this->motor->status_id = Status::FINALIZADO;
+        $this->motor->fin = now();
+        $this->motor->save();
+        $this->render();
     }
     
 }

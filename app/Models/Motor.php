@@ -119,4 +119,13 @@ class Motor extends Model
     {
         return $this->hasMany(MotorMetalizado::class, 'id_motor', 'id_motor');
     }
+    public function looks()
+    {
+        return $this->belongsToMany(
+            \App\Models\User::class,
+            'looks',        // Tabla pivot
+            'motor_id',     // Clave foránea en la tabla pivot para este modelo (Motor)
+            'user_id'       // Clave foránea en la tabla pivot para el modelo relacionado (User)
+        )->withTimestamps();
+    }
 }

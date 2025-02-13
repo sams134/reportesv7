@@ -51,6 +51,7 @@ class AsignacionesModal extends Component
         }
         $this->dispatchBrowserEvent('hide-modal');
         $this->emitTo('motors.index-motors', 'render');
+        $this->emitTo('motors.show-motor', 'render');
     }
     public function render()
     {

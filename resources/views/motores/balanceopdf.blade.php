@@ -145,12 +145,12 @@ $left = 50; // Margen izquierdo
         <p style="font-size: 17px;position:absolute;top:{{ $top3 + 760 }}px;left:525px;font-weight:200;width:200px"> {{number_format($motor->balanceo->gin_initial_right/28.3495,3)}} oz-in</p>
 
         <p style="font-size: 17px;position:absolute;top:{{ $top3 + 810 }}px;left:245px;font-weight:200;width:200px"> {{number_format($motor->balanceo->balanceoSteps->last()->mils_left,3)}} mil @ {{number_format($motor->balanceo->balanceoSteps->last()->angle_left,1)}}°</p>
-        <p style="font-size: 17px;position:absolute;top:{{ $top3 + 830 }}px;left:245px;font-weight:200;width:200px"> {{number_format($motor->balanceo->gin_final_left,3)}} g-in</p>
-        <p style="font-size: 17px;position:absolute;top:{{ $top3 + 850 }}px;left:245px;font-weight:200;width:200px"> {{number_format($motor->balanceo->gin_final_left/28.3495,3)}} oz-in</p>
+        <p style="font-size: 17px;position:absolute;top:{{ $top3 + 830 }}px;left:245px;font-weight:200;width:200px"> {{number_format($motor->balanceo->gin_final_left*$motor->balanceo->left_radius,3)}} g-in</p>
+        <p style="font-size: 17px;position:absolute;top:{{ $top3 + 850 }}px;left:245px;font-weight:200;width:200px"> {{number_format($motor->balanceo->gin_final_left*$motor->balanceo->left_radius/28.3495,3)}} oz-in</p>
 
         <p style="font-size: 17px;position:absolute;top:{{ $top3 + 810 }}px;left:525px;font-weight:200;width:200px"> {{number_format($motor->balanceo->balanceoSteps->last()->mils_right,3)}} mil @ {{number_format($motor->balanceo->balanceoSteps->last()->angle_right,1)}}°</p>
-        <p style="font-size: 17px;position:absolute;top:{{ $top3 + 830 }}px;left:525px;font-weight:200;width:200px"> {{number_format($motor->balanceo->gin_final_right,3)}} g-in</p>
-        <p style="font-size: 17px;position:absolute;top:{{ $top3 + 850 }}px;left:525px;font-weight:200;width:200px"> {{number_format($motor->balanceo->gin_final_right/28.3495,3)}} oz-in</p>
+        <p style="font-size: 17px;position:absolute;top:{{ $top3 + 830 }}px;left:525px;font-weight:200;width:200px"> {{number_format($motor->balanceo->gin_final_right*$motor->balanceo->right_radius,3)}} g-in</p>
+        <p style="font-size: 17px;position:absolute;top:{{ $top3 + 850 }}px;left:525px;font-weight:200;width:200px"> {{number_format($motor->balanceo->gin_final_right*$motor->balanceo->right_radius/28.3495,3)}} oz-in</p>
 
         <p style="font-size: 19px;position:absolute;top:{{ $top3 + 995 }}px;left:260px;font-weight:200;width:200px"> {{number_format($motor->balanceo->grade,2)}}</p>
         <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1020 }}px;left:280px;font-weight:200;width:200px"> Off</p>

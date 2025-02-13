@@ -93,4 +93,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(MaterialesPedido::class, 'id_user');
     }
+    public function looks()
+    {
+        return $this->belongsToMany(
+            \App\Models\Motor::class,
+            'looks',       // Tabla pivot
+            'user_id',     // Clave foránea en la tabla pivot para este modelo (User)
+            'motor_id'     // Clave foránea en la tabla pivot para el modelo relacionado (Motor)
+        )->withTimestamps();
+    }
 }

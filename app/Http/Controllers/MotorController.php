@@ -55,9 +55,46 @@ class MotorController extends Controller
      * @param  \App\Models\Motor  $motor
      * @return \Illuminate\Http\Response
      */
-    public function show(Motor $motor)
+    public function showAndSave(Motor $motor)
     {
-        //
+        $userId = auth()->id();
+
+        // Verificar si ya existe la combinación motor_id - user_id
+        $exists = \App\Models\Look::where('user_id', $userId)
+            ->where('motor_id', $motor->id_motor)
+            ->exists();
+
+        if ($exists) {
+            // Si ya existe, opcionalmente actualizamos el timestamp
+            \App\Models\Look::where('user_id', $userId)
+                ->where('motor_id', $motor->id_motor)
+                ->update(['updated_at' => now()]);
+        } else {
+            // Contar cuántos registros existen para este usuario
+            $count = \App\Models\Look::where('user_id', $userId)->count();
+
+            if ($count < 10) {
+                // Si hay menos de 10, creamos un nuevo registro
+                \App\Models\Look::create([
+                    'motor_id' => $motor->id_motor,
+                    'user_id'  => $userId,
+                ]);
+            } else {
+                // Si ya hay 10, actualizamos el registro más antiguo
+                $oldest = \App\Models\Look::where('user_id', $userId)
+                    ->orderBy('created_at', 'asc')
+                    ->first();
+
+                if ($oldest) {
+                    $oldest->update([
+                        'motor_id' => $motor->id_motor,
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->route('motores.show', $motor);
     }
 
     /**
@@ -128,6 +165,7 @@ class MotorController extends Controller
         // Generar la imagen en memoria y obtenerla en base64
         $left_diagram = $this->dibujarDiagrama($motor, "left");
         $right_diagram = $this->dibujarDiagrama($motor, "right");
+        
 
         // Pasar la imagen base64 a la vista
         $html = view('motores.balanceopdf')->with([
@@ -146,8 +184,30 @@ class MotorController extends Controller
 
         return $pdf->inline('balanceo.pdf');
     }
+    public function downloadPdfMateriales(Motor $motor)
+    {
+        $user = auth()->user();
 
-    public function dibujarDiagrama(Motor $motor,$side = "left")
+        // Pasar la imagen base64 a la vista
+        $html = view('motores.materialesPdf')->with([
+            'motor' => $motor,
+            'tecnico' => $user->name,
+
+        ])->render();
+
+        // Generar PDF
+        $pdf = PDF::loadHTML($html)
+            ->setOption('load-error-handling', 'ignore') // Ignorar errores de carga
+            ->setOption('enable-local-file-access', true)
+            ->setOption('no-stop-slow-scripts', true)
+            ->setOption('javascript-delay', 5000);
+
+        return $pdf->inline('materiales.pdf');
+    }
+
+
+
+    public function dibujarDiagrama(Motor $motor, $side = "left")
     {
         // Dimensiones del lienzo
         $width = 600;
@@ -169,7 +229,7 @@ class MotorController extends Controller
 
         // Definir tolerancia
         $tolerance = $motor->balanceo->mil_tolerance;
-        
+
 
         // Dibujar círculos concéntricos
         for ($r = 0; $r <= 250; $r += 25) {
@@ -212,31 +272,28 @@ class MotorController extends Controller
         }
 
         // **Dibujar líneas de balanceo con flechas**
-       $puntos = [];
-        
-        if ($side === "left")
-        {
-            foreach ($motor->balanceo->balanceoSteps as $step)
-            {
+        $puntos = [];
+
+        if ($side === "left") {
+            foreach ($motor->balanceo->balanceoSteps as $step) {
                 $puntos[] = [$step->mils_left, $step->angle_left];
             }
-        }else{
-            foreach ($motor->balanceo->balanceoSteps as $step)
-            {
+        } else {
+            foreach ($motor->balanceo->balanceoSteps as $step) {
                 $puntos[] = [$step->mils_right, $step->angle_right];
             }
         }
-        $max = 
-        max(array_merge(
-            $motor->balanceo->balanceoSteps->pluck('mils_left')->toArray(),
-            $motor->balanceo->balanceoSteps->pluck('mils_right')->toArray()
-        ));
+        $max =
+            max(array_merge(
+                $motor->balanceo->balanceoSteps->pluck('mils_left')->toArray(),
+                $motor->balanceo->balanceoSteps->pluck('mils_right')->toArray()
+            ));
         for ($i = 0; $i < count($puntos) - 1; $i++) {
             list($r1, $theta1) = $puntos[$i];
             list($r2, $theta2) = $puntos[$i + 1];
 
-            list($x1, $y1) = $this->polarToCartesian($r1, $theta1, $cx, $cy,$max *1.2);
-            list($x2, $y2) = $this->polarToCartesian($r2, $theta2, $cx, $cy,$max*1.2);
+            list($x1, $y1) = $this->polarToCartesian($r1, $theta1, $cx, $cy, $max * 1.2);
+            list($x2, $y2) = $this->polarToCartesian($r2, $theta2, $cx, $cy, $max * 1.2);
 
             // Determinar color (rojo si radio >= tolerancia, verde si < tolerancia)
             $color = ($r2 < $tolerance) ? $green : $red;
@@ -253,16 +310,16 @@ class MotorController extends Controller
 
         return 'data:image/png;base64,' . base64_encode($imageData);
     }
-     // **Función para convertir coordenadas polares a cartesianas**
-    function polarToCartesian($r, $theta, $cx, $cy,$max)
-        {
-            
-            $r = $r * 250 / $max;
-            $thetaRad = deg2rad($theta);
-            $x = $cx + $r * cos($thetaRad);
-            $y = $cy - $r * sin($thetaRad);
-            return [$x, $y];
-        }
+    // **Función para convertir coordenadas polares a cartesianas**
+    function polarToCartesian($r, $theta, $cx, $cy, $max)
+    {
+
+        $r = $r * 250 / $max;
+        $thetaRad = deg2rad($theta);
+        $x = $cx + $r * cos($thetaRad);
+        $y = $cy - $r * sin($thetaRad);
+        return [$x, $y];
+    }
     // **Función para dibujar una línea con una flecha al final**
     function dibujarLineaConFlecha(&$image, $x1, $y1, $x2, $y2, $colorLinea, $colorFlecha)
     {

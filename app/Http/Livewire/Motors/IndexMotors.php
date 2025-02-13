@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Motors;
 use App\Models\Motor;
 use App\Models\Status;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -96,6 +97,8 @@ class IndexMotors extends Component
             $motores = $motores->orderBy($this->sort, $this->direction)
                 ->paginate(100);
         }
+
+       
 
         return view('livewire.motors.index-motors', compact('motores'))
             ->with(["Carbon" => 'Carbon\Carbon']);

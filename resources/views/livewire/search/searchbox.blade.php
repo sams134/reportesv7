@@ -1,7 +1,7 @@
-<div class="search-box" data-list='{"valueNames":["title"]}'>
+<div class="search-box w-100" data-list='{"valueNames":["title"]}'>
     <form class="position-relative" data-bs-toggle="search" data-bs-display="static">
-        <input class="form-control search-input fuzzy-search" type="search"
-            placeholder="Search..." aria-label="Search" />
+        <input class="form-control search-input fuzzy-search" type="search" placeholder="Buscar" aria-label="Search"
+            wire:model="search" />
         <span class="fas fa-search search-box-icon"></span>
 
     </form>
@@ -9,127 +9,154 @@
         data-bs-dismiss="search">
         <div class="btn-close-falcon" aria-label="Close"></div>
     </div>
-    <div class="dropdown-menu border font-base start-0 mt-2 py-0 overflow-hidden w-100">
-        <div class="scrollbar list py-3" style="max-height: 24rem;">
+    <div class="dropdown-menu border font-base start-0 mt-2 py-0 overflow-hidden w-100 {{ $search ? 'show' : '' }}">
+        <div class="scrollbar list py-3" style="max-height: 28rem;">
             <h6 class="dropdown-header fw-medium text-uppercase px-card fs--2 pt-0 pb-2">
-                Recently Browsed</h6><a
-                class="dropdown-item fs--1 px-card py-1 hover-primary"
-                href="../../app/events/event-detail.html">
-                <div class="d-flex align-items-center">
-                    <span class="fas fa-circle me-2 text-300 fs--2"></span>
+                Recientemente Buscados</h6>
+            @if (count(Auth::user()->looks) > 0)
+                @foreach (Auth::user()->looks()->orderBy('created_at', 'asc')->take(3)->get() as $look)
+                
+                    <a class="dropdown-item px-card py-1 fs-0" href="{{ route('motores.look', $look) }}" style="color:#888;font-size:10px;">
+                        <div class="d-flex align-items-center justify-between">
+                            @if (
+                                $look->fotos &&
+                                    $look->fotos->count() > 0 &&
+                                    Storage::exists('public' . $look->fotos->first()->thumb))
+                                <div class="avatar avatar-m status-offline">
+                                    <img class="rounded-circle"
+                                        src="{{ asset('storage' . $look->fotos->first()->thumb) }}"
+                                        alt="" />
+                                </div>
+                            @else
+                                <div class="avatar avatar-m status-offline">
+                                    <img class="rounded-circle" src="{{ asset('img/default-avatar.png') }}"
+                                        alt="No hay foto" />
+                                </div>
+                            @endif
 
-                    <div class="fw-normal title">Pages <span
-                            class="fas fa-chevron-right mx-1 text-500 fs--2"
-                            data-fa-transform="shrink-2"></span> Events</div>
-                </div>
-            </a>
-            <a class="dropdown-item fs--1 px-card py-1 hover-primary"
-                href="../../app/e-commerce/customers.html">
-                <div class="d-flex align-items-center">
-                    <span class="fas fa-circle me-2 text-300 fs--2"></span>
 
-                    <div class="fw-normal title">E-commerce <span
-                            class="fas fa-chevron-right mx-1 text-500 fs--2"
-                            data-fa-transform="shrink-2"></span> Customers</div>
-                </div>
-            </a>
+                            <span class="mx-1 small"> {{ $look->fullos }}:</span>
+                            <span class="small">{{ Str::limit($look->cliente->cliente, 30, '...') }}</span>
+                            <x-status-badge class="ms-auto" status_id="{{ $look->status_id }}"> </x-status-badge>
 
-            <hr class="bg-200 dark__bg-900" />
-            <h6 class="dropdown-header fw-medium text-uppercase px-card fs--2 pt-0 pb-2">
-                Suggested Filter</h6><a class="dropdown-item px-card py-1 fs-0"
-                href="../../app/e-commerce/customers.html">
-                <div class="d-flex align-items-center"><span
-                        class="badge fw-medium text-decoration-none me-2 badge-soft-warning">customers:</span>
-                    <div class="flex-1 fs--1 title">All customers list</div>
-                </div>
-            </a>
-            <a class="dropdown-item px-card py-1 fs-0"
-                href="../../app/events/event-detail.html">
-                <div class="d-flex align-items-center"><span
-                        class="badge fw-medium text-decoration-none me-2 badge-soft-success">events:</span>
-                    <div class="flex-1 fs--1 title">Latest events in current month</div>
-                </div>
-            </a>
-            <a class="dropdown-item px-card py-1 fs-0"
-                href="../../app/e-commerce/product/product-grid.html">
-                <div class="d-flex align-items-center"><span
-                        class="badge fw-medium text-decoration-none me-2 badge-soft-info">products:</span>
-                    <div class="flex-1 fs--1 title">Most popular products</div>
-                </div>
-            </a>
 
-            <hr class="bg-200 dark__bg-900" />
-            <h6 class="dropdown-header fw-medium text-uppercase px-card fs--2 pt-0 pb-2">
-                Files</h6><a class="dropdown-item px-card py-2" href="#!">
-                <div class="d-flex align-items-center">
-                    <div class="file-thumbnail me-2"><img
-                            class="border h-100 w-100 fit-cover rounded-3"
-                            src="/img/products/3-thumb.png" alt="" /></div>
-                    <div class="flex-1">
-                        <h6 class="mb-0 title">iPhone</h6>
-                        <p class="fs--2 mb-0 d-flex"><span
-                                class="fw-semi-bold">Antony</span><span
-                                class="fw-medium text-600 ms-2">27 Sep at 10:30 AM</span>
-                        </p>
-                    </div>
-                </div>
-            </a>
-            <a class="dropdown-item px-card py-2" href="#!">
-                <div class="d-flex align-items-center">
-                    <div class="file-thumbnail me-2"><img class="img-fluid"
-                            src="/img/icons/zip.png" alt="" /></div>
-                    <div class="flex-1">
-                        <h6 class="mb-0 title">Falcon v1.8.2</h6>
-                        <p class="fs--2 mb-0 d-flex"><span
-                                class="fw-semi-bold">John</span><span
-                                class="fw-medium text-600 ms-2">30 Sep at 12:30 PM</span>
-                        </p>
-                    </div>
-                </div>
-            </a>
+                        </div>
+                    </a>
+                @endforeach
+                @endif
 
-            <hr class="bg-200 dark__bg-900" />
-            <h6 class="dropdown-header fw-medium text-uppercase px-card fs--2 pt-0 pb-2">
-                Members</h6><a class="dropdown-item px-card py-2"
-                href="../../pages/user/profile.html">
-                <div class="d-flex align-items-center">
-                    <div class="avatar avatar-l status-online me-2">
-                        <img class="rounded-circle" src="/img/team/1.jpg"
-                            alt="" />
+                <hr class="bg-200 dark__bg-900" />
+                <h6 class="dropdown-header fw-medium text-uppercase px-card fs--2 pt-0 pb-2">
+                    Equipos Encontrados</h6>
+                @if ($search && count($motores) > 0)
+                    @foreach ($motores->take(5) as $motor)
+                        <a class="dropdown-item px-card py-1 fs-0" href="{{ route('motores.look', $motor) }}">
+                            <div class="d-flex align-items-center justify-between">
+                                @if ($motor->fotos && $motor->fotos->count() > 0 && Storage::exists('public' . $motor->fotos->first()->thumb))
+                                    <div class="avatar avatar-m status-offline">
+                                        <img class="rounded-circle"
+                                            src="{{ asset('storage' . $motor->fotos->first()->thumb) }}"
+                                            alt="" />
+                                    </div>
+                                @else
+                                    <div class="avatar avatar-m status-offline">
+                                        <img class="rounded-circle" src="{{ asset('img/default-avatar.png') }}"
+                                            alt="No hay foto" />
+                                    </div>
+                                @endif
 
-                    </div>
-                    <div class="flex-1">
-                        <h6 class="mb-0 title">Anna Karinina</h6>
-                        <p class="fs--2 mb-0 d-flex">Technext Limited</p>
-                    </div>
-                </div>
-            </a>
-            <a class="dropdown-item px-card py-2" href="../../pages/user/profile.html">
-                <div class="d-flex align-items-center">
-                    <div class="avatar avatar-l me-2">
-                        <img class="rounded-circle" src="/img/team/2.jpg"
-                            alt="" />
 
-                    </div>
-                    <div class="flex-1">
-                        <h6 class="mb-0 title">Antony Hopkins</h6>
-                        <p class="fs--2 mb-0 d-flex">Brain Trust</p>
-                    </div>
-                </div>
-            </a>
-            <a class="dropdown-item px-card py-2" href="../../pages/user/profile.html">
-                <div class="d-flex align-items-center">
-                    <div class="avatar avatar-l me-2">
-                        <img class="rounded-circle" src="/img/team/3.jpg"
-                            alt="" />
+                                <span class="mx-1"> {{ $motor->fullos }}:</span>
+                                <span>{{ Str::limit($motor->cliente->cliente, 30, '...') }}</span>
+                                <x-status-badge class="ms-auto" status_id="{{ $motor->status_id }}"> </x-status-badge>
 
+                            </div>
+                        </a>
+                    @endforeach
+                    @if (count($motores) > 5)
+                        <a class="dropdown-item px-card py-1 fs-0" href="{{ route('motores.index.search',$search) }}">
+                            <div class="d-flex align-items-center justify-between badge badge-soft-info">
+                                @if (count($motores) > 30)
+                                <span class="mx-1">Hay m&aacute;s de 30 coincidencias, Ver Todas</span>
+                                @else
+                                <span class="mx-1">Hay {{count($motores)}} coincidencias, Ver Todas</span>
+                                @endif
+                               
+                            </div>
+                        </a>
+                        
+                    @endif
+                @endif
+
+
+                <hr class="bg-200 dark__bg-900" />
+                <h6 class="dropdown-header fw-medium text-uppercase px-card fs--2 pt-0 pb-2">
+                    Metalizados</h6>
+                    @if ($search && count($metalizados) > 0)
+                    @foreach ($metalizados->take(5) as $motor)
+                        <a class="dropdown-item px-card py-1 fs-0" href="{{ route('motores.look', $motor) }}">
+                            <div class="d-flex align-items-center justify-between">
+                                @if ($motor->fotos && $motor->fotos->count() > 0 && Storage::exists('public' . $motor->fotos->first()->thumb))
+                                    <div class="avatar avatar-m status-offline">
+                                        <img class="rounded-circle"
+                                            src="{{ asset('storage' . $motor->fotos->first()->thumb) }}"
+                                            alt="" />
+                                    </div>
+                                @else
+                                    <div class="avatar avatar-m status-offline">
+                                        <img class="rounded-circle" src="{{ asset('img/default-avatar.png') }}"
+                                            alt="No hay foto" />
+                                    </div>
+                                @endif
+
+
+                                <span class="mx-1"> {{ $motor->fullos }}:</span>
+                                <span>{{ Str::limit($motor->cliente->cliente, 30, '...') }}</span>
+                                <x-status-badge class="ms-auto" status_id="{{ $motor->status_id }}"> </x-status-badge>
+
+                            </div>
+                        </a>
+                    @endforeach
+                @endif
+
+                <hr class="bg-200 dark__bg-900" />
+                <h6 class="dropdown-header fw-medium text-uppercase px-card fs--2 pt-0 pb-2">
+                    Members</h6><a class="dropdown-item px-card py-2" href="../../pages/user/profile.html">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-l status-online me-2">
+                            <img class="rounded-circle" src="/img/team/1.jpg" alt="" />
+
+                        </div>
+                        <div class="flex-1">
+                            <h6 class="mb-0 title">Anna Karinina</h6>
+                            <p class="fs--2 mb-0 d-flex">Technext Limited</p>
+                        </div>
                     </div>
-                    <div class="flex-1">
-                        <h6 class="mb-0 title">Emma Watson</h6>
-                        <p class="fs--2 mb-0 d-flex">Google</p>
+                </a>
+                <a class="dropdown-item px-card py-2" href="../../pages/user/profile.html">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-l me-2">
+                            <img class="rounded-circle" src="/img/team/2.jpg" alt="" />
+
+                        </div>
+                        <div class="flex-1">
+                            <h6 class="mb-0 title">Antony Hopkins</h6>
+                            <p class="fs--2 mb-0 d-flex">Brain Trust</p>
+                        </div>
                     </div>
-                </div>
-            </a>
+                </a>
+                <a class="dropdown-item px-card py-2" href="../../pages/user/profile.html">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-l me-2">
+                            <img class="rounded-circle" src="/img/team/3.jpg" alt="" />
+
+                        </div>
+                        <div class="flex-1">
+                            <h6 class="mb-0 title">Emma Watson</h6>
+                            <p class="fs--2 mb-0 d-flex">Google</p>
+                        </div>
+                    </div>
+                </a>
 
         </div>
         <div class="text-center mt-n3">

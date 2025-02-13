@@ -55,6 +55,7 @@ class CreateBalanceo extends Component
 
     public function mount(Motor $motor)
     {
+        
         $this->motor = $motor;
         if ($this->motor->balanceo()->exists()) {
             $this->editing = true;
@@ -411,8 +412,8 @@ class CreateBalanceo extends Component
             'dimensionB' => number_format((float)$this->dimensionB, 3, '.', ''),
             'gin_initial_right' => number_format((float)$this->gin_initial_right, 3, '.', ''),
             'gin_initial_left' => number_format((float)$this->gin_initial_left, 3, '.', ''),
-            'gin_final_right' => number_format((float)$this->gin_final_right * $this->right_radius, 3, '.', ''),
-            'gin_final_left' => number_format((float)$this->gin_final_left * $this->left_radius, 3, '.', ''),
+            'gin_final_right' => number_format((float)$this->gin_final_right, 3, '.', ''),
+            'gin_final_left' => number_format((float)$this->gin_final_left, 3, '.', ''),
             'key_drive_wide' => number_format((float)$this->key_drive_wide, 2, '.', ''),
             'key_drive_thick' => number_format((float)$this->key_drive_thick, 2, '.', ''),
             'key_drive_long' => number_format((float)$this->key_drive_length, 2, '.', ''),
@@ -452,8 +453,8 @@ class CreateBalanceo extends Component
             'dimensionB' => number_format((float)$this->dimensionB, 3, '.', ''),
             'gin_initial_right' => number_format((float)$this->gin_initial_right, 3, '.', ''),
             'gin_initial_left' => number_format((float)$this->gin_initial_left, 3, '.', ''),
-            'gin_final_right' => number_format((float)$this->gin_final_right * $this->right_radius, 3, '.', ''),
-            'gin_final_left' => number_format((float)$this->gin_final_left * $this->left_radius, 3, '.', ''),
+            'gin_final_right' => number_format((float)$this->gin_final_right, 3, '.', ''),
+            'gin_final_left' => number_format((float)$this->gin_final_left, 3, '.', ''),
             'key_drive_wide' => number_format((float)$this->key_drive_wide, 2, '.', ''),
             'key_drive_thick' => number_format((float)$this->key_drive_thick, 2, '.', ''),
             'key_drive_long' => number_format((float)$this->key_drive_length, 2, '.', ''),
@@ -480,6 +481,7 @@ class CreateBalanceo extends Component
 
     public function viewPdf()
     {
+        
         if (!$this->editing)
             $this->saveBalanceo();
         else

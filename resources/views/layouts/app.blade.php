@@ -83,20 +83,14 @@
                         <div class="d-flex align-items-center"><span class="font-sans-serif">Reportes</span>
                         </div>
                     </a>
-                    <ul class="navbar-nav align-items-center d-none d-lg-block">
+                    <ul class="navbar-nav align-items-center d-none d-lg-block" style="width:600px">
                         <li class="nav-item">
 
 
                           @livewire('search.searchbox')
                         </li>
                     </ul>
-                    <ul class="navbar-nav navbar-nav-icons ms-auto flex-row align-items-center">
-
-
-                        <li class="nav-item dropdown">
-                           {{--  @livewire('u-i.profile-dropdown') --}}
-                        </li>
-                    </ul>
+                   
                 </nav>
                 @if (session()->has('success'))
                     <div class="alert alert-success border-2 d-flex align-items-center" role="alert">

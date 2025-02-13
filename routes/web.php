@@ -62,9 +62,11 @@ Route::middleware([
     Route::get('/motores/create', CreateMotor::class)->name('motores.create');
     Route::get('/motores/{motor}/edit',EditMotor::class)->name('motores.edit');
     Route::get('/motores/{motor}',ShowMotor::class)->name('motores.show');
+    Route::get('/motores/lookfor/{motor}',[MotorController::class,'showAndSave'])->name('motores.look');
     Route::get('/motores/pdfIngreso/{motor}',[MotorController::class,'downloadPdf'])->name('motores.downloadPdf');
     Route::get('/motores/pdf-densidades/{motor}',[MotorController::class,'downloadPdfDensidades'])->name('motores.downloadPdfDensidades');
     Route::get('/motores/pdf-balanceo/{motor}',[MotorController::class,'downloadPdfBalanceo'])->name('motores.downloadPdfBalanceo');
+    Route::get('/motores/pdf-materiales/{motor}',[MotorController::class,'downloadPdfMateriales'])->name('motores.downloadPdfMateriales');
     Route::get('/motores/createBalanceo/{motor}',CreateBalanceo::class)->name('motores.createBalanceo');
     Route::get('/materiales',MaterialesIndex::class)->name('materiales.index');
 
