@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Motor;
-
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
+use Carbon\Carbon;
 
 class MotorController extends Controller
 {
@@ -14,7 +15,12 @@ class MotorController extends Controller
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
+     * 
      */
+
+     const JUEVES = 4;
+    
+    const DOMINGO = 7;
     public function index()
     {
         //
@@ -204,6 +210,63 @@ class MotorController extends Controller
 
         return $pdf->inline('materiales.pdf');
     }
+    public function downloadPdfEnvio(Motor $motor)
+    {
+        $user = auth()->user();
+
+        // Pasar la imagen base64 a la vista
+        $html = view('pdfs.envio')->with([
+            'motor' => $motor,
+            'foto' => $motor->fotos->where('type', 100)->last(),
+
+        ])->render();
+
+        // Generar PDF
+        $pdf = PDF::loadHTML($html)
+            ->setOption('load-error-handling', 'ignore') // Ignorar errores de carga
+            ->setOption('enable-local-file-access', true)
+            ->setOption('no-stop-slow-scripts', true)
+            ->setOption('javascript-delay', 5000);
+
+        return $pdf->inline('envio.pdf');
+    }
+    public function downloadPdfProduccion($week_selected=0)
+    {
+        $userio = auth()->user();
+        $user = User::find($userio->id);
+        $initial_day = self::JUEVES;
+        $targetDay = ($initial_day == self::DOMINGO) ? 0 : $initial_day;
+        $baseDate = Carbon::now()->previous($targetDay);
+        $initialDate = $baseDate->copy()->addWeeks($week_selected);
+        $initial_date = $initialDate;
+        $final_date = $initialDate->copy()->addDays(7)->subSecond();
+
+        $produccion = $user->produccion($initial_date, $final_date);
+        $horas_extra = $user->horasExtras($initial_date, $final_date);
+        $other_works = $user->otherWorksProduccion($initial_date, $final_date);
+
+
+        // Pasar la imagen base64 a la vista
+        $html = view('pdfs.produccionPdf')->with([
+            'user' => $user,
+            'init' => $initial_date, 
+            'final' => $final_date,
+            'produccion' => $produccion,
+            'horas_extras' => $horas_extra,
+            'other_works' => $other_works,
+
+        ])->render();
+
+        // Generar PDF
+        $pdf = PDF::loadHTML($html)
+            ->setOption('load-error-handling', 'ignore') // Ignorar errores de carga
+            ->setOption('enable-local-file-access', true)
+            ->setOption('no-stop-slow-scripts', true)
+            ->setOption('javascript-delay', 5000);
+
+        return $pdf->inline('envio.pdf');
+    }
+
 
 
 

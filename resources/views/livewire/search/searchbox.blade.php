@@ -1,7 +1,9 @@
 <div class="search-box w-100" data-list='{"valueNames":["title"]}'>
     <form class="position-relative" data-bs-toggle="search" data-bs-display="static">
-        <input class="form-control search-input fuzzy-search" type="search" placeholder="Buscar" aria-label="Search"
-            wire:model="search" />
+        <input id="searchInput" class="form-control search-input fuzzy-search" type="search" placeholder="Buscar" aria-label="Search"
+        wire:model="search"
+        onkeydown="if(event.key==='Enter'){ event.preventDefault(); window.location.href='{{ url('motores/index/search') }}/' + this.value; }" 
+        wire:blur="resetSearch"/>
         <span class="fas fa-search search-box-icon"></span>
 
     </form>
@@ -73,7 +75,7 @@
                             </div>
                         </a>
                     @endforeach
-                    @if (count($motores) > 5)
+                    @if (count($motores) > 0)
                         <a class="dropdown-item px-card py-1 fs-0" href="{{ route('motores.index.search',$search) }}">
                             <div class="d-flex align-items-center justify-between badge badge-soft-info">
                                 @if (count($motores) > 30)
@@ -120,43 +122,7 @@
                 @endif
 
                 <hr class="bg-200 dark__bg-900" />
-                <h6 class="dropdown-header fw-medium text-uppercase px-card fs--2 pt-0 pb-2">
-                    Members</h6><a class="dropdown-item px-card py-2" href="../../pages/user/profile.html">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-l status-online me-2">
-                            <img class="rounded-circle" src="/img/team/1.jpg" alt="" />
-
-                        </div>
-                        <div class="flex-1">
-                            <h6 class="mb-0 title">Anna Karinina</h6>
-                            <p class="fs--2 mb-0 d-flex">Technext Limited</p>
-                        </div>
-                    </div>
-                </a>
-                <a class="dropdown-item px-card py-2" href="../../pages/user/profile.html">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-l me-2">
-                            <img class="rounded-circle" src="/img/team/2.jpg" alt="" />
-
-                        </div>
-                        <div class="flex-1">
-                            <h6 class="mb-0 title">Antony Hopkins</h6>
-                            <p class="fs--2 mb-0 d-flex">Brain Trust</p>
-                        </div>
-                    </div>
-                </a>
-                <a class="dropdown-item px-card py-2" href="../../pages/user/profile.html">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar avatar-l me-2">
-                            <img class="rounded-circle" src="/img/team/3.jpg" alt="" />
-
-                        </div>
-                        <div class="flex-1">
-                            <h6 class="mb-0 title">Emma Watson</h6>
-                            <p class="fs--2 mb-0 d-flex">Google</p>
-                        </div>
-                    </div>
-                </a>
+                
 
         </div>
         <div class="text-center mt-n3">

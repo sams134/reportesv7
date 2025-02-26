@@ -15,8 +15,11 @@ class IndexMotors extends Component
     public $search;
     public $equipo, $statuses, $newStatus;
     public $sort = 'fullos', $direction = 'desc';
+    public $boards;
+    public $selectedMotors = [];
+    public $cards = false,$ver="Todos";
 
-    protected $listeners = ['removeMotor', 'render'];
+    protected $listeners = ['removeMotor', 'render','boardStored' => 'render'];
     public function mount($search = '')
     {
         $this->search = $search;
@@ -26,7 +29,7 @@ class IndexMotors extends Component
     public function render()
     {
         $user = auth()->user();
-
+        $this->boards = $user->boards;
         // Iniciar la consulta con relaciones
         $motores = Motor::with([
             'cliente',         // Relación con clientes
@@ -57,7 +60,7 @@ class IndexMotors extends Component
                     $osSearch = trim($parts[1]);   // Por ejemplo "56"
                     // Asegurarse de que OS tenga 4 dígitos
                     $osSearch = str_pad($osSearch, 4, '0', STR_PAD_LEFT);
-                    $motores = $motores->where('year','like', "%$yearSearch")
+                    $motores = $motores->where('year', 'like', "%$yearSearch")
                         ->where('os', 'like', "$osSearch%");
                 }
             }
@@ -82,6 +85,13 @@ class IndexMotors extends Component
             }
         }
 
+        if ($this->cards) {
+
+            $motores = $motores->orderBy('year', 'desc')
+                ->orderBy('os', 'desc')
+                ->paginate(30);
+           
+        }else{
         // Ordenar y paginar según la propiedad $sort
         if ($this->sort === "fullos") {
             $motores = $motores->orderBy('year', $this->direction)
@@ -97,8 +107,8 @@ class IndexMotors extends Component
             $motores = $motores->orderBy($this->sort, $this->direction)
                 ->paginate(100);
         }
+    }
 
-       
 
         return view('livewire.motors.index-motors', compact('motores'))
             ->with(["Carbon" => 'Carbon\Carbon']);
@@ -144,5 +154,33 @@ class IndexMotors extends Component
     {
         $motor = Motor::find($id);
         $this->emit('showAsignacionesModalP1', $motor);
+    }
+    public function addToBoard($boardId)
+    {
+        $cant = 0;
+        foreach ($this->selectedMotors as $motorId) {
+            // Verificar si ya existe un pin para este board, motor y tipo
+            $exists = \App\Models\Pin::where('board_id', $boardId)
+                        ->where('pinable_id', $motorId)
+                        ->where('pinable_type', 'App\\Models\\Motor')
+                        ->exists();
+    
+            if (!$exists) {
+                \App\Models\Pin::create([
+                    'user_id'      => auth()->id(),
+                    'board_id'     => $boardId,
+                    'pinable_id'   => $motorId,
+                    'pinable_type' => 'App\\Models\\Motor',
+                ]);
+                $cant++;
+            }
+        }
+        $this->selectedMotors = [];
+        $board = \App\Models\Board::find($boardId);
+        $this->emit('boardUpdated', $board->name,$cant);
+    }
+    public function toggleView()
+    {
+        $this->cards = !$this->cards;
     }
 }

@@ -329,6 +329,7 @@ class CreateMotor extends Component
                         'foto' => $imagePath,
                         'thumb' => $imagePath,
                         'id_motor' => $motorId,
+                        'user_id' => Auth::id(),  // ID del usuario autenticado
                         'type' => $type,
                     ]);
                 }

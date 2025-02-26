@@ -61,6 +61,20 @@ class Motor extends Model
     {
         return $this->belongsToMany(User::class, 'asignacions', 'id_motor', 'id_user')
             ->withPivot('asignado_por', 'responsabilidad')
+            ->withTimestamps()
+            ->where('userType', User::TECNICO);
+    }
+    public function ayudantes()
+    {
+        return $this->belongsToMany(User::class, 'asignacions', 'id_motor', 'id_user')
+            ->withPivot('asignado_por', 'responsabilidad')
+            ->withTimestamps()
+            ->where('userType', User::AYUDANTES);
+    }
+    public function asignados()
+    {
+        return $this->belongsToMany(User::class, 'asignacions', 'id_motor', 'id_user')
+            ->withPivot('asignado_por', 'responsabilidad')
             ->withTimestamps();
     }
 
@@ -127,5 +141,32 @@ class Motor extends Model
             'motor_id',     // Clave foránea en la tabla pivot para este modelo (Motor)
             'user_id'       // Clave foránea en la tabla pivot para el modelo relacionado (User)
         )->withTimestamps();
+    }
+    public function envioFinal()
+    {
+        return $this->hasOne(Envio::class, 'id_motor', 'id_motor')
+            ->where('tipo_envio', '1');
+    }
+
+    public function enviosParciales()
+    {
+        return $this->hasMany(Envio::class, 'id_motor', 'id_motor')
+            ->where('tipo_envio', '2');
+    }
+    public function horasExtras()
+    {
+        return $this->hasMany(HorasExtra::class, 'id_motor', 'id_motor');
+    }
+    public function totalHorasExtras()
+    {
+        return $this->horasExtras()->sum('hours');
+    }
+    public function tipoTrabajo()
+    {
+        return $this->belongsTo(\App\Models\TipoTrabajo::class, 'id_trabajo', 'id');
+    }
+    public function pins()
+    {
+        return $this->morphMany(Pin::class, 'pinable');
     }
 }

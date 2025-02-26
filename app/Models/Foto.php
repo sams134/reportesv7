@@ -26,6 +26,7 @@ class Foto extends Model
     PUBLIC CONST INVENTORY = 12;
     PUBLIC CONST MOTOR = 2;
     public const TRABAJO = 3;
+    public const FIN = 100;
 
 
     // Relación con el modelo Motor

@@ -12,6 +12,8 @@ class PedidoMateriales extends Component
     public $motor;
     public $materiales;
 
+    public $listeners = ['motorFinalizado'=>'render'];
+
     public function mount(Motor $motor)
     {
        $this->motor = $motor;

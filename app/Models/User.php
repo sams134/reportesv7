@@ -58,6 +58,7 @@ class User extends Authenticatable
     public const PRUEBAS = '5';
     public const TECNICO = '6';
     public const TORNOS = '7';
+    public const AYUDANTES = '8';
 
     /**
      * The accessors to append to the model's array form.
@@ -101,5 +102,58 @@ class User extends Authenticatable
             'user_id',     // Clave foránea en la tabla pivot para este modelo (User)
             'motor_id'     // Clave foránea en la tabla pivot para el modelo relacionado (Motor)
         )->withTimestamps();
+    }
+    // Horas extras solicitadas por el usuario
+    public function horasExtrasSolicitadas()
+    {
+        return $this->hasMany(HorasExtra::class, 'user_id', 'id');
+    }
+
+    // Horas extras autorizadas por el usuario
+    public function horasExtrasAutorizadas()
+    {
+        return $this->hasMany(HorasExtra::class, 'autorizado_por', 'id');
+    }
+    public function otherWorks()
+    {
+        return $this->hasMany(\App\Models\OtherWork::class, 'user_id', 'id');
+    }
+
+    // horas extras entre initial date y final date
+    public function horasExtras($initial_date, $final_date)
+    {
+        return HorasExtra::where('user_id', $this->id)
+            ->where('init', '>=', $initial_date)
+            ->where('final', '<=', $final_date)
+            ->get();
+    }
+    public function produccion($initial_date, $final_date)
+    {
+        return $this->motors()
+            ->whereBetween('fin', [$initial_date, $final_date])
+            ->get();
+    }
+    public function otherWorksProduccion($initial_date, $final_date)
+    {
+        return $this->otherWorks()
+            ->whereBetween('fecha', [$initial_date, $final_date])
+            ->get();
+    }
+    public function boards()
+    {
+        return $this->hasMany(\App\Models\Board::class, 'owner_id', 'id');
+    }
+    public function sharedBoards()
+    {
+        return $this->belongsToMany(
+            \App\Models\Board::class,
+            'shared_boards',  // Tabla pivot
+            'user_id',        // Clave foránea en la tabla pivot para User
+            'board_id'        // Clave foránea en la tabla pivot para Board
+        )->withTimestamps();
+    }
+    public function pins()
+    {
+        return $this->hasMany(Pin::class);
     }
 }

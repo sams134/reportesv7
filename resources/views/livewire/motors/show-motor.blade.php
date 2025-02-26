@@ -34,6 +34,14 @@
                                             class="far fa-user mx-3"></i>{{ $tecnico->name }} </span></a>
                             </p>
                         @endforeach
+                        <HR></HR>
+                        @foreach ($motor->ayudantes as $ayudante)
+                            <p class="my-1">
+                                <a href="{{ route('motores.index.search', $ayudante->name) }}"> <span><i
+                                            class="far fa-user mx-3"></i>{{ $ayudante->name }} </span></a>
+                            </p>
+                            
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -59,9 +67,12 @@
                                 </button>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <button class="btn btn-falcon-primary me-1 mb-1 little-button" type="button">
+                                @livewire('admin.horas-extras', ['motor' => $motor])
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <a class="btn btn-falcon-primary me-1 mb-1 little-button" href="{{ route('motores.downloadPdf', $motor) }}">
                                     <span><i class="far fa-file-pdf mx-1"></i> Ver PDF Ingreso </span></a>
-                                </button>
+                                </a>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <a href="{{ route('motores.downloadPdfDensidades', $motor) }}"
@@ -272,9 +283,7 @@
                                 </small>
                             @else
                                 <div style="d-block">
-                                    <button class="btn btn-falcon-primary me-1 mb-1" type="button"
-                                        style="font-size:12px" onclick="finalizar({{ $motor->id_motor }})">Finalizar
-                                    </button>
+                                   @livewire('motors.create-fin', ['motor' => $motor])
                                 </div>
                             @endif
 
@@ -285,9 +294,10 @@
                         <td>Fecha de Entrega</td>
                         <td>
                             <div style="d-block">
-                                <button class="btn btn-falcon-primary me-1 mb-1" type="button"
-                                    style="font-size:12px">Gen. Env&iacute;o
-                                </button>
+                                <a class="btn btn-falcon-primary me-1 mb-1 @if(!$motor->fin) disabled @endif" type="button" 
+                                @if($motor->fin) href="{{ route('admin.createEnvio', $motor) }}" @endif
+                                style="font-size:12px">Hacer Envio Final
+                            </a>
                             </div>
 
                         </td>
@@ -368,7 +378,7 @@
                                     }
                                 }'>
                         <div class="swiper-wrapper">
-                            @foreach ($motor->fotos as $foto)
+                            @foreach ($motor->fotos->sortByDesc('id') as $foto)
                                 <div class="swiper-slide">
                                     <img class="slider-img" src="{{ asset('storage' . $foto->foto) }}"
                                         alt="Foto"
@@ -437,6 +447,68 @@
                 </div>
 
                 @livewire('motors.show-pedido', ['motor' => $motor])
+                <div class="d-flex me-1 my-3">
+                    <a class="btn btn-falcon-danger me-1 mb-1 little-button" type="button"
+                        href="{{ route('motores.downloadPdfMateriales', $motor) }}" target="_blank">
+                        <i class="far fa-file-pdf mx-1"></i> Imprimir PDF
+                    </a>
+                    @livewire('motors.pedido-materiales', ['motor' => $motor])
+                </div>
+
+            </x-pretty-card>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <x-pretty-card>
+                <div class="d-flex">
+                    <h3>Horas Extra</h3>
+                </div>
+                <div class="table-responsive scrollbar" style="max-height: 350px; overflow: auto;">
+                    <span wire:loading> Loading</span>
+                    <table class="table mb-0 minitabla table-hover table-striped" style="font-size: 12px;"
+                        wire:loading.class="opacity-50">
+                        <thead class="text-black bg-200">
+                            <tr>
+                                
+                                <th class="align-middle" width="10%">Horas</th>
+                                <th class="align-middle" width="10%">Fecha</th>
+                                <th class="align-middle" >Usuario</th>
+                                <th class="align-middle" width="40%">Descripcion</th>
+                                <th class="align-middle" width="15%">Autorizado Por:</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bulk-select-body">
+                           @foreach ($motor->horasExtras as $hora)
+                                <tr>
+                                    <td class="align-middle">{{ number_format($hora->hours, 1) }}</td>
+                                    <td class="align-middle">
+                                        Inicio:
+                                        {{ucfirst(\Carbon\Carbon::parse($hora->init)->locale('es')->isoFormat('dddd D [de] MMMM h:mm A')) }}
+                                        <br>Final: {{ucfirst(\Carbon\Carbon::parse($hora->final)->locale('es')->isoFormat('dddd D [de] MMMM h:mm A')) }}
+                                    </td>
+                                    <td class="align-middle">{{ $hora->user->name }}</td>
+                                    <td class="align-middle">{{ $hora->descripcion }}</td>
+                                    <td class="align-middle">
+                                        @if($hora->autorizado_por == $hora->user->id)
+                                            <span>Sistema</span>
+                                        @else
+                                            <span >{{ $hora->autorizadoPor->name }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                            <tr class="bg-soft-primary">
+                                
+                                <td colspan="5" class="fw-bold text-xl text-center" style="font-size: 16px"> Total de Horas Extra: {{ number_format(ceil($motor->horasExtras->sum('hours')), 0) }} horas</td>
+                            </tr>
+                               
+                        </tbody>
+                    </table>
+                   
+                    
+                </div>
+                
                 <div class="d-flex me-1 my-3">
                     <a class="btn btn-falcon-danger me-1 mb-1 little-button" type="button"
                         href="{{ route('motores.downloadPdfMateriales', $motor) }}" target="_blank">

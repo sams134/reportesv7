@@ -38,32 +38,39 @@
 
                     </ul>
                 </li>
+
+                @php
+                    $user = Auth::user();
+                @endphp
+
+                @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::OFICINA, \App\Models\User::ADMIN]))
+                    <li class="nav-item">
+                        <!-- label-->
+                        <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
+                            <div class="col-auto navbar-vertical-label">Clientes
+                            </div>
+                            <div class="col ps-0">
+                                <hr class="mb-0 navbar-vertical-divider" />
+                            </div>
+                        </div>
+                        <!-- parent pages--><a class="nav-link" href="{{ route('clientes.index') }}" role="button"
+                            aria-expanded="false">
+                            <div class="d-flex align-items-center"><span class="nav-link-icon"><span
+                                        class="fas fa-users"></span></span><span class="nav-link-text ps-1">Clientes</span>
+                            </div>
+                        </a>
+                        <!-- parent pages--><a class="nav-link" href="#" role="button" aria-expanded="false">
+                            <div class="d-flex align-items-center"><span class="nav-link-icon"><span
+                                        class="fas fa-user-plus"></span></span><span class="nav-link-text ps-1">Agregar
+                                    Clientes</span>
+                            </div>
+                        </a>
+                    </li>
+                @endif
                 <li class="nav-item">
                     <!-- label-->
                     <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
-                        <div class="col-auto navbar-vertical-label">Clientes
-                        </div>
-                        <div class="col ps-0">
-                            <hr class="mb-0 navbar-vertical-divider" />
-                        </div>
-                    </div>
-                    <!-- parent pages--><a class="nav-link" href="{{ route('clientes.index') }}" role="button"
-                        aria-expanded="false">
-                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
-                                    class="fas fa-users"></span></span><span class="nav-link-text ps-1">Clientes</span>
-                        </div>
-                    </a>
-                    <!-- parent pages--><a class="nav-link" href="#" role="button" aria-expanded="false">
-                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
-                                    class="fas fa-user-plus"></span></span><span class="nav-link-text ps-1">Agregar
-                                Clientes</span>
-                        </div>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <!-- label-->
-                    <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
-                        <div class="col-auto navbar-vertical-label">Motores
+                        <div class="col-auto navbar-vertical-label">Motores 
                         </div>
                         <div class="col ps-0">
                             <hr class="mb-0 navbar-vertical-divider" />
@@ -76,6 +83,7 @@
                                 Motores</span>
                         </div>
                     </a>
+                    @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::OFICINA, \App\Models\User::ADMIN, \App\Models\User::PRUEBAS]))
                     <!-- parent pages--><a class="nav-link" href="{{ route('motores.create') }}" role="button"
                         aria-expanded="false">
                         <div class="d-flex align-items-center"><span class="nav-link-icon"><span
@@ -83,7 +91,10 @@
                                 nuevo equipo</span>
                         </div>
                     </a>
+                    @endif
                 </li>
+                @livewire('boards.boards-navigation')
+                @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::OFICINA, \App\Models\User::ADMIN, \App\Models\User::PRUEBAS,\App\Models\User::TORNOS]))
                 <li class="nav-item">
                   <!-- label-->
                   <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
@@ -105,7 +116,7 @@
                       </div>
                   </a>
               </li>
-              
+              @endif
                 <li class="nav-item">
                     <!-- label-->
                     <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
@@ -116,7 +127,7 @@
                         </div>
                     </div>
                      <!-- parent pages--><a class="nav-link dropdown-indicator" href="#user" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="user">
-                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span class="fas fa-user"></span></span><span class="nav-link-text ps-1">Calculos Importantes</span>
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span class="fas fa-calculator"></span></span><span class="nav-link-text ps-1">Calculos Importantes</span>
                         </div>
                       </a>
                       <ul class="nav collapse false" id="user">
@@ -157,90 +168,23 @@
                             <hr class="mb-0 navbar-vertical-divider" />
                         </div>
                     </div>
-                    <!-- parent pages--><a class="nav-link" href="../../../documentation/getting-started.html"
+                    <!-- parent pages--><a class="nav-link" href="{{route('admin.produccion')}}" 
                         role="button" aria-expanded="false">
                         <div class="d-flex align-items-center"><span class="nav-link-icon"><span
-                                    class="fas fa-rocket"></span></span><span class="nav-link-text ps-1">Listado de
-                                Potreros</span>
+                                    class="fas fa-rocket"></span></span><span class="nav-link-text ps-1">Produccion y Horas</span>
                         </div>
                     </a>
-                    <!-- parent pages--><a class="nav-link dropdown-indicator" href="#customization" role="button"
-                        data-bs-toggle="collapse" aria-expanded="false" aria-controls="customization">
-                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
-                                    class="fas fa-wrench"></span></span><span
-                                class="nav-link-text ps-1">Herramientas</span>
-                        </div>
-                    </a>
-                    <ul class="nav collapse false" id="customization">
-                        <li class="nav-item"><a class="nav-link"
-                                href="../../../documentation/customization/configuration.html" aria-expanded="false">
-                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Sillas de
-                                        Montar</span>
-                                </div>
-                            </a>
-                            <!-- more inner pages-->
-                        </li>
-                        <li class="nav-item"><a class="nav-link"
-                                href="../../../documentation/customization/styling.html" aria-expanded="false">
-                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Bombas de
-                                        Fumigar</span>
-                                </div>
-                            </a>
-                            <!-- more inner pages-->
-                        </li>
-                        <li class="nav-item"><a class="nav-link"
-                                href="../../../documentation/customization/dark-mode.html" aria-expanded="false">
-                                <div class="d-flex align-items-center"><span
-                                        class="nav-link-text ps-1">Maquinas</span>
-                                </div>
-                            </a>
-                            <!-- more inner pages-->
-                        </li>
-                        <li class="nav-item"><a class="nav-link"
-                                href="../../../documentation/customization/plugin.html" aria-expanded="false">
-                                <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Carros</span>
-                                </div>
-                            </a>
-                            <!-- more inner pages-->
-                        </li>
-                    </ul>
+                  
                     <!-- parent pages--><a class="nav-link" href="../../../documentation/gulp.html" role="button"
                         aria-expanded="false">
                         <div class="d-flex align-items-center"><span class="nav-link-icon"><span
-                                    class="fab fa-gulp"></span></span><span class="nav-link-text ps-1">Vecinos</span>
+                                    class="fab fa-gulp"></span></span><span class="nav-link-text ps-1">Solicitar Viaticos</span>
                         </div>
                     </a>
 
                 </li>
 
-                <li class="nav-item">
-                    <!-- label-->
-                    <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
-                        <div class="col-auto navbar-vertical-label">Empleados
-                        </div>
-                        <div class="col ps-0">
-                            <hr class="mb-0 navbar-vertical-divider" />
-                        </div>
-                    </div>
-                    <!-- parent pages--><a class="nav-link" href="#" role="button" aria-expanded="false"">
-                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
-                                    class="fas fa-horse"></span></span><span class="nav-link-text ps-1">Listado de
-                                empleados</span>
-                        </div>
-                    </a>
-                    <!-- parent pages--><a class="nav-link" href="#" role="button" aria-expanded="false"">
-                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
-                                    class="fas fa-horse"></span></span><span
-                                class="nav-link-text ps-1">Planillas</span>
-                        </div>
-                    </a>
-                    <!-- parent pages--><a class="nav-link" href="#" role="button" aria-expanded="false"">
-                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
-                                    class="fas fa-horse"></span></span><span
-                                class="nav-link-text ps-1">Prestamos</span>
-                        </div>
-                    </a>
-                </li>
+                
                 <li class="nav-item">
                     <!-- label-->
                     <div class="row navbar-vertical-label-wrapper mt-3 mb-2">

@@ -116,9 +116,6 @@ class Searchbox extends Component
                         })
                             ->orWhereHas('cliente.contactos', function ($query) use ($search) {
                                 $query->where('contacto', 'like', "%$search%");
-                            })
-                            ->orWhereHas('tecnicos', function ($query) use ($search) {
-                                $query->where('name', 'like', "%$search%");
                             });
                     });
                 }
@@ -131,4 +128,8 @@ class Searchbox extends Component
 
         return view('livewire.search.searchbox');
     }
+    public function resetSearch()
+{
+    $this->search = '';
+}
 }

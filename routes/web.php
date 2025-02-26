@@ -3,7 +3,10 @@
 use App\Http\Controllers\Calculos;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\MotorController;
+use App\Http\Livewire\Admin\CreateEnvio;
+use App\Http\Livewire\Admin\Produccion;
 use App\Http\Livewire\Balanceo\CreateBalanceo;
+use App\Http\Livewire\Boards\IndexBoard;
 use App\Http\Livewire\Customers\IndexCustomers;
 use App\Http\Livewire\Motors\IndexMotors;
 use Illuminate\Support\Facades\Route;
@@ -76,6 +79,17 @@ Route::middleware([
 
     //Calculos
     Route::get('/calculos/ajustes', [Calculos::class, 'ajustesShow'])->name('calculos.ajustes');
+
+
+    //admin
+    Route::get('/admin/CreateEnvio/{motor}', CreateEnvio::class)->name('admin.createEnvio');
+    Route::get('/admin/envioPDF/{motor}', [MotorController::class,'downloadPdfEnvio'])->name('admin.envioPDF');
+    Route::get('/admin/produccion',Produccion::class)->name('admin.produccion');
+    Route::get('/admin/produccionPDF', [MotorController::class,'downloadPdfProduccion'])->name('admin.produccionPDF');
+    Route::get('/admin/produccionPDF/{fecha}', [MotorController::class,'downloadPdfProduccion'])->name('admin.produccionPDF.fecha');
+
+    //boards
+    Route::get('/boards/{board}', IndexBoard::class)->name('boards.index');
 
 
     //API

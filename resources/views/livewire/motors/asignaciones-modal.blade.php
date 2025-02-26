@@ -1,5 +1,5 @@
 <div wire:ignore.self class="modal fade" id="asignacionesModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 40%">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 80%">
         <div class="modal-content position-relative">
             <div class="position-absolute top-0 end-0 mt-2 me-2 z-index-1">
                 <button class="btn-close btn btn-sm btn-circle d-flex flex-center transition-base"
@@ -32,7 +32,7 @@
                             </x-pretty-card>
                         </div>
                         <div class="row">
-                            <div class="col-12">
+                            <div class="col-12 col-sm-6">
                                 <x-pretty-card>
                                     <div class="table-responsive scrollbar" style="max-height: 60vh; overflow-y: auto;">
                                         <h3>Listado de Técnicos</h3>
@@ -47,6 +47,32 @@
                                                             <!-- Se usa una clave única para cada técnico en el array tecnicoSelected -->
                                                             <input class="form-check-input" id="flexSwitchCheckDefault_{{ $tecnico->id }}" type="checkbox"
                                                                 wire:model="tecnicoSelected.{{ $tecnico->id }}" />
+                                                            <label class="form-check-label" for="flexSwitchCheckDefault_{{ $tecnico->id }}">
+                                                                {{ $tecnico->name }}
+                                                            </label>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </table>
+                                    </div>
+                                </x-pretty-card>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <x-pretty-card>
+                                    <div class="table-responsive scrollbar" style="max-height: 60vh; overflow-y: auto;">
+                                        <h3>Listado de Ayudantes</h3>
+                                        <table class="table table-hover">
+                                            @foreach ($ayudantes as $tecnico)
+                                                <tr>
+                                                    <td style="width:70px">
+                                                        <img src="{{ asset($tecnico->foto) }}" alt="" class="avatar" style="max-height: 80px; max-width: 50px;">
+                                                    </td>
+                                                    <td>
+                                                        <div class="form-check form-switch">
+                                                            <!-- Se usa una clave única para cada técnico en el array tecnicoSelected -->
+                                                            <input class="form-check-input" id="flexSwitchCheckDefault_{{ $tecnico->id }}" type="checkbox"
+                                                                wire:model="ayudanteSelected.{{ $tecnico->id }}" />
                                                             <label class="form-check-label" for="flexSwitchCheckDefault_{{ $tecnico->id }}">
                                                                 {{ $tecnico->name }}
                                                             </label>

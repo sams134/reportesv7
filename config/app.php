@@ -69,7 +69,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    //'timezone' => 'America/Guatemala',
+    'timezone' => 'Asia/Kolkata',
+    //'timezone' => 'Australia/Sydney',
 
     /*
     |--------------------------------------------------------------------------

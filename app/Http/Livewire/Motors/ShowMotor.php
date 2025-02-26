@@ -14,7 +14,7 @@ class ShowMotor extends Component
     public $equipo,$statuses,$newStatus,$full_gallery=false;
     public $doc,$photo;
     public $finalizado = false;
-    protected $listeners = ['removeDoc','render','finalizar'];
+    protected $listeners = ['removeDoc','render','motorFinalizado'=>'render'];
 
     public function mount(Motor $motor)
     {
@@ -104,12 +104,6 @@ class ShowMotor extends Component
         $this->render();
         
     }
-    public function finalizar()
-    {
-        $this->motor->status_id = Status::FINALIZADO;
-        $this->motor->fin = now();
-        $this->motor->save();
-        $this->render();
-    }
+    
     
 }
