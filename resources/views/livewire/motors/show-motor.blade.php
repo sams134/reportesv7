@@ -90,9 +90,9 @@
                                 @livewire('motors.pedido-materiales', ['motor' => $motor])
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <button class="btn btn-falcon-primary me-1 mb-1 little-button" type="button">
+                                <a href="{{route('pruebas.index',$motor)}}" class="btn btn-falcon-primary me-1 mb-1 little-button" type="button">
                                     <span><i class="fas fa-charging-station mx-1"></i>Registrar Pruebas </span></a>
-                                </button>
+                                </a>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <a href="{{ route('motores.createBalanceo', $motor) }}"
@@ -230,21 +230,23 @@
                         }
                     </style>
                     @foreach ($motor->Documentos as $documento)
-                        <div class="card document-card"
-                            style="width: 200px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                        <div class="card document-card d-flex flex-column justify-content-between"
+                            style="width: 180px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
                             <a href="{{ asset('storage' . $documento->documento) }}" target="_blank">
                                 <img src="{{ asset('img/pdflogo.png') }}" alt="PDF Logo"
                                     style="width: 30%; display: block; margin: 0 auto;">
                             </a>
-                            <div class="card-footer"
+                            <div class="card-footer d-flex flex-column justify-content-end"
                                 style="padding: 0.5rem; text-align: center; background-color: #f8f9fa;">
                                 <a href="{{ asset('storage' . $documento->documento) }}" target="_blank"
-                                    style="text-decoration: none; color: inherit;">
+                                    style="text-decoration: none; color: inherit;font-size:13px">
                                     {{ $documento->titulo }}
                                 </a>
+                                <p>
                                 <button class="btn btn-danger btn-sm me-1 mb-1" type="button"
                                     onclick="removeDoc({{ $documento->id }})">Eliminar
                                 </button>
+                            </p>
                             </div>
                         </div>
                     @endforeach
@@ -272,7 +274,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Fecha de Finalizacion</td>
+                        <td>Fecha de Finalizaci&oacute;n</td>
                         <td>
                             @if ($motor->fin)
                                 <div style="d-block">
@@ -339,7 +341,7 @@
     <div class="row">
         <div class="col-12">
             <x-pretty-card>
-                <h3>Imagenes</h3>
+                <h3>Im&aacute;genes</h3>
                 <div class="card mb-3">
                     <div class="card-body">
                         <div class="d-flex ">
@@ -509,14 +511,7 @@
                     
                 </div>
                 
-                <div class="d-flex me-1 my-3">
-                    <a class="btn btn-falcon-danger me-1 mb-1 little-button" type="button"
-                        href="{{ route('motores.downloadPdfMateriales', $motor) }}" target="_blank">
-                        <i class="far fa-file-pdf mx-1"></i> Imprimir PDF
-                    </a>
-                    @livewire('motors.pedido-materiales', ['motor' => $motor])
-                </div>
-
+                
             </x-pretty-card>
         </div>
     </div>

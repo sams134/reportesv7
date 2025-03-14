@@ -144,7 +144,7 @@
                          <tr @if($index % 2 == 0) style="background-color: #f2f2f2;" @endif>
                             <td>{{ucfirst(\Carbon\Carbon::parse($hora->init)->locale('es')->isoFormat('dddd D [de] MMMM')) }}</td>
                             <td>{{ number_format($hora->hours, 2) }} horas</td>
-                            <td><a href="{{route('motores.show',$motor)}}"> <span class="fw-bold">{{$hora->motor->fullOS}}</span>
+                            <td><a href="{{route('motores.show',$hora->motor)}}"> <span class="fw-bold">{{$hora->motor->fullOS}}</span>
                                 <br> {{$hora->motor->potencia}}</a>
                             </td>
                             <td>{{$hora->motor->cliente->cliente}}</td>

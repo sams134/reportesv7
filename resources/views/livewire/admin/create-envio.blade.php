@@ -1,6 +1,6 @@
 <div>
     <x-page-title>
-        <x-slot:title>Crear Documento de Env&iacute;o </x-slot:title>
+        <x-slot:title>Crear Documento de Env&iacute;o para OS: <a href="{{route('motores.show',$motor)}}">{{$motor->fullos}}</a></x-slot:title>
         Este envio implica que el equipo sale de la empresa
     </x-page-title>
     <div class="row">

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
+use setasign\Fpdi\Fpdi;
 use Carbon\Carbon;
 
 class MotorController extends Controller
@@ -188,7 +189,31 @@ class MotorController extends Controller
             ->setOption('no-stop-slow-scripts', true)
             ->setOption('javascript-delay', 5000);
 
-        return $pdf->inline('balanceo.pdf');
+            $pdfContent = $pdf->output();
+
+            // Definir la ruta de almacenamiento
+            $folderPath = '/uploads/' . "2M" . $motor->year . '-' . $motor->os . '/Documentos';
+            // Asegurarse de que la carpeta exista; puedes usar Storage::makeDirectory si es necesario:
+            Storage::disk('public')->makeDirectory($folderPath);
+        
+            // Generar un nombre de archivo único para el PDF
+            $uniqueFileName = 'balanceo_' . time() . '.pdf';
+        
+            // Guardar el PDF en disco
+            Storage::disk('public')->put($folderPath . '/' . $uniqueFileName, $pdfContent);
+        
+            // Registrar el documento en la base de datos
+            $document = $motor->documentos()->create([
+                'titulo'    => $uniqueFileName,
+                'documento' => $folderPath . '/' . $uniqueFileName,
+                'id_user'   => $user->id,
+            ]);
+        
+            // Devolver el PDF en línea para verlo en pantalla
+            return response($pdfContent, 200)
+                   ->header('Content-Type', 'application/pdf')
+                   ->header('Content-Disposition', 'inline; filename="balanceo.pdf"');
+        
     }
     public function downloadPdfMateriales(Motor $motor)
     {
@@ -267,7 +292,38 @@ class MotorController extends Controller
         return $pdf->inline('envio.pdf');
     }
 
+    public function joinPDFs(Motor $motor)
+    {
+        $pdf = new Fpdi();
+        $files = [];
+        foreach($motor->documentos as $documento)
+          $files[] = $documento->documento;
+    
+      
+          foreach ($files as $file) {
+            // Obtiene el número de páginas del PDF
+            $absolutePath = public_path('storage' . $file);
 
+            $pageCount = $pdf->setSourceFile($absolutePath);
+            // Importa cada página
+            for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+                $templateId = $pdf->importPage($pageNo);
+                $size = $pdf->getTemplateSize($templateId);
+        
+                // Añade una página con el mismo tamaño que la plantilla
+                $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+                $pdf->useTemplate($templateId);
+            }
+        }
+        
+        // Guardar el PDF combinado
+       // $pdf->Output('F', storage_path('app/public/combined.pdf'));
+       $content = $pdf->Output('S', 'combined.pdf');
+       return response($content, 200)
+    ->header('Content-Type', 'application/pdf')
+    ->header('Content-Disposition', 'inline; filename="combined.pdf"');
+
+    }
 
 
     public function dibujarDiagrama(Motor $motor, $side = "left")

@@ -12,13 +12,13 @@
         <span class="badge badge-soft-primary">Diagnóstico</span>
         @break
     @case(2)
-        <span class="badge badge-soft-info">Diagnóstico pendiente de autorización</span>
+        <span class="badge badge-soft-info">Pend. de autorización</span>
         @break
     @case(3)
-        <span class="badge badge-soft-info">Autorizado Parcial / Ver Pendientes</span>
+        <span class="badge badge-soft-info">Aut Parcial</span>
         @break
     @case(4)
-        <span class="badge badge-soft-success">Autorizado Completamente</span>
+        <span class="badge badge-soft-success">Aut. Completamente</span>
         @break
     @case(5)
         <span class="badge badge-soft-warning">Retrasado</span>
@@ -39,7 +39,7 @@
         <span class="badge badge-soft-warning">En Traslado</span>
         @break
     @case(11)
-        <span class="badge badge-soft-secondary">Entregado sin reparación</span>
+        <span class="badge badge-soft-secondary">Entregado S/R</span>
         @break
     @case(12)
         <span class="badge badge-soft-info">EPF</span>

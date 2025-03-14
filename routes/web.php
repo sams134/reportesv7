@@ -3,6 +3,7 @@
 use App\Http\Controllers\Calculos;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\MotorController;
+use App\Http\Controllers\ReportesController;
 use App\Http\Livewire\Admin\CreateEnvio;
 use App\Http\Livewire\Admin\Produccion;
 use App\Http\Livewire\Balanceo\CreateBalanceo;
@@ -19,6 +20,7 @@ use App\Http\Livewire\Metalizados\MetalizadosIndex;
 use App\Http\Livewire\Motors\CreateMotor;
 use App\Http\Livewire\Motors\EditMotor;
 use App\Http\Livewire\Motors\ShowMotor;
+use App\Http\Livewire\Pruebas\PruebasIndex;
 use App\Models\BalanceoArt;
 
 /*
@@ -91,6 +93,10 @@ Route::middleware([
     //boards
     Route::get('/boards/{board}', IndexBoard::class)->name('boards.index');
 
+    //pruebas
+    Route::get('/motors/pruebas/{motor}',PruebasIndex::class)->name('pruebas.index');
+    Route::get('/motors/reporte/{motor}', [ReportesController::class,'generateReport'])->name('pruebas.reporte');
+  // Route::get('/motors/pruebas/{motor}',[MotorController::class,'joinPDFs'])->name('pruebas.index');
 
     //API
     Route::get('/balanceo/arts', function () {

@@ -2,7 +2,7 @@
     <form class="position-relative" data-bs-toggle="search" data-bs-display="static">
         <input id="searchInput" class="form-control search-input fuzzy-search" type="search" placeholder="Buscar" aria-label="Search"
         wire:model="search"
-        onkeydown="if(event.key==='Enter'){ event.preventDefault(); window.location.href='{{ url('motores/index/search') }}/' + this.value; }" 
+        onkeydown="if(event.key==='Enter'){ event.preventDefault(); window.location.href='{{ url('motores/search') }}/' + this.value; }" 
         wire:blur="resetSearch"/>
         <span class="fas fa-search search-box-icon"></span>
 

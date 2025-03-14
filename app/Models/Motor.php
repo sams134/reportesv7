@@ -169,4 +169,12 @@ class Motor extends Model
     {
         return $this->morphMany(Pin::class, 'pinable');
     }
+    public function ajustes()
+    {
+        return $this->hasMany(MotorAjuste::class, 'id_motor', 'id_motor');
+    }
+    public function pruebasRealizadas()
+    {
+        return $this->hasMany(PruebaMotor::class, 'id_motor', 'id_motor');
+    }
 }

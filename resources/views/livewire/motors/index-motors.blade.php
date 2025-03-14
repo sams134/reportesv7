@@ -36,7 +36,7 @@
                 <input class="form-control" id="basic-form-name" type="text"
                     placeholder="Ingrese OS, nombre de equipo, cliente o t&eacute;cnico" wire:model="search" />
             </div>
-            {{$search}}
+          
         </div>
 
        
@@ -69,22 +69,22 @@
             <span wire:loading> Loading</span>
             <div class="px-2"> {{ $motores->links('pagination::bootstrap-5') }}</div>
             <div class="table-responsive scrollbar">
-            <table class="table table-hover table-striped overflow-hidden fs--1" wire:loading.remove>
+            <table class="table table-hover table-striped overflow-hidden fs--1" style="font-size: 0.5rem" wire:loading.remove>
                 <thead class="bg-300 text-dark">
                 <tr class="text-800">
                     <th style="width:30px"><input type="checkbox" name="" id=""> </th>
                     <th style="width:1rem"></th>
-                    <th class="sort" style="width:15%;cursor: pointer;" wire:click="sortBy('fullos')">
+                    <th class="sort" style="width:13%;cursor: pointer;" wire:click="sortBy('fullos')">
                     Orden de Servicio
                     <i
                         class="fa {{ $sort === 'fullos' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'fullos' ? 'text-success' : '' }}"></i>
                     </th>
-                    <th class="sort" wire:click="sortBy('id_cliente')">
+                    <th class="sort" style="width:20%;cursor: pointer;" wire:click="sortBy('id_cliente')">
                     Cliente
                     <i
                         class="fa {{ $sort === 'id_cliente' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'id_cliente' ? 'text-success' : '' }}"></i>
                     </th>
-                    <th class="sort" wire:click="sortBy('hp')">
+                    <th class="sort" style="width:11%;cursor: pointer;" wire:click="sortBy('hp')">
                     Potencia
                     <i
                         class="fa {{ $sort === 'hp' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'hp' ? 'text-success' : '' }}"></i>
@@ -183,14 +183,14 @@
                         <!-- Al hacer clic, se emite el evento 'openAsignacionesModal' con el id del motor -->
 
                         @foreach ($motor->tecnicos as $tecnico)
-                        <div class="avatar avatar-xl">
+                        <div class="avatar avatar-l">
 
                             <img src="{{ asset($tecnico->foto) }}" alt=""
                             class="rounded-circle mt-2">
 
                         </div>
                         @endforeach
-                        <div class="avatar avatar-xl">
+                        <div class="avatar avatar-m">
                         <button class="btn rounded-circle border border-dark p-0"
                             style="width: 30px; height: 30px;"
                             wire:click="$emit('openAsignacionesModal', {{ $motor->id_motor }})">
@@ -234,12 +234,14 @@
                 <div class="col-12 col-sm-6 col-xl-3" wire:loading.remove>
                     <div class="card overflow-hidden" style="margin-bottom: 1rem;">
                         <div class="card-img-top d-flex justify-content-center align-items-center" style="height: 10rem; overflow: hidden;">
+                            <a href="{{ route('motores.show', $motor) }}">
                             @if ($motor->fotos && $motor->fotos->count() > 0 && Storage::exists('public' . $motor->fotos->first()->thumb))
                                 <img class="img-fluid" src="{{ asset('storage' . $motor->fotos->first()->thumb) }}"
                                     alt="Foto del pin" style="max-height: 10rem; object-fit: cover;" />
                             @else
                                 <img class="img-fluid" src="{{ asset('img/default-avatar.png') }}" alt="No hay foto" style="object-fit:contain;max-height: 10rem; " />
                             @endif
+                            </a>
                         </div>
                         <div class="card-body">
                             <h5 class="card-title">
