@@ -11,7 +11,7 @@ use Livewire\Component;
 
 class Bearings extends Component
 {
-    public $rodamientos, $grasas;
+    public $rodamientos, $grasas,$rpm=null;
 
 
     public $bearings, $motor,$marcas;
@@ -35,8 +35,10 @@ class Bearings extends Component
             $this->bearings[$i]['r'] = $this->bearings[$i]['ajuste'] ? $this->bearings[$i]['ajuste']->r : null;
             $this->bearings[$i]['s'] = $this->bearings[$i]['ajuste'] ? $this->bearings[$i]['ajuste']->s : null;
             $this->bearings[$i]['t'] = $this->bearings[$i]['ajuste'] ? $this->bearings[$i]['ajuste']->t : null;
+            $this->rpm = $this->rpm==null?($this->bearings[$i]['ajuste'] ? $this->bearings[$i]['ajuste']->rpm : null):$this->rpm;
             $this->bearings[$i]['bearing'] = $this->bearings[$i]['ajuste'] ? Rodamiento::where('id', $this->bearings[$i]['ajuste']->rodamiento_id)->first() : null;
             $this->bearings[$i]['designacion'] = $this->printDesignation($this->bearings[$i]);
+            
             
         }
 
@@ -70,15 +72,18 @@ class Bearings extends Component
     public function saveBearing($id)
     {
 
-        $this->validate([
+
+        $validacion = [
             'bearings.' . $id . '.rodamiento_id' => 'required',
             'bearings.' . $id . '.sellos' => 'required',
             'bearings.' . $id . '.juego_radial' => 'required',
             'bearings.' . $id . '.jaula' => 'required',
             'bearings.' . $id . '.grasa_id' => 'required',
             'bearings.' . $id . '.aislado' => 'required',
-        ]);
-        
+            'rpm' => 'required|integer|min:1',
+            'bearings.' . $id . '.rodamiento_marca_id' => 'required',
+        ];
+       $this->validate($validacion);
         if ($id % 2 != 0) {
             $this->validate([
                 'bearings.' . $id . '.p' => 'required',
@@ -98,6 +103,7 @@ class Bearings extends Component
             }
         }
         if ($this->bearings[$id]['ajuste']) {
+            
             $ajuste = MotorAjuste::find($this->bearings[$id]['ajuste']['id']);
             $ajuste->update([
                 'rodamiento_id' => $this->bearings[$id]['rodamiento_id'],
@@ -107,11 +113,13 @@ class Bearings extends Component
                 'grasa_id' => $this->bearings[$id]['grasa_id'],
                 'aislado' => $this->bearings[$id]['aislado'],
                 'rodamiento_marca_id' => $this->bearings[$id]['rodamiento_marca_id'],
+                'rpm' => (int)$this->rpm,
                 'p' => $this->bearings[$id]['p'],
                 'q' => $this->bearings[$id]['q']?$this->bearings[$id]['q']:$this->bearings[$id]['p'],
                 'r' => $this->bearings[$id]['r']?$this->bearings[$id]['r']:($this->bearings[$id]['p']+$this->bearings[$id]['q'])/2,
                 's' => $this->bearings[$id]['s'],
                 't' => $this->bearings[$id]['t'],
+                
             ]);
         } else
             MotorAjuste::create([
@@ -125,11 +133,13 @@ class Bearings extends Component
                 'rodamiento_marca_id' => $this->bearings[$id]['rodamiento_marca_id'],
                 'carga_opuesto' => intdiv($id, 2),
                 'initial_final' => $id % 2,
+                'rpm' => (int)$this->rpm,
                 'p' => $this->bearings[$id]['p'],
                 'q' => $this->bearings[$id]['q']?$this->bearings[$id]['q']:$this->bearings[$id]['p'],
                 'r' => $this->bearings[$id]['r']?$this->bearings[$id]['r']:($this->bearings[$id]['p']+$this->bearings[$id]['q'])/2,
                 's' => $this->bearings[$id]['s'],
                 't' => $this->bearings[$id]['t'],
+                
             ]);
         switch ($id) {
             case 0:

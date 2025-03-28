@@ -13,6 +13,7 @@ class Motor extends Model
 {
     use HasFactory;
     protected $guarded = [];
+
     protected $table = 'motors';
 
     // Llave primaria
@@ -176,5 +177,13 @@ class Motor extends Model
     public function pruebasRealizadas()
     {
         return $this->hasMany(PruebaMotor::class, 'id_motor', 'id_motor');
+    }
+    public function temps()
+    {
+        return $this->hasMany(\App\Models\Temperatura::class, 'id_motor', 'id_motor');
+    }
+    public function jobs()
+    {
+        return $this->hasMany(\App\Models\Job::class, 'id_motor', 'id_motor');
     }
 }

@@ -156,4 +156,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(Pin::class);
     }
+    
+
+    public function jobsAssignedByMe()
+    {
+        return $this->hasMany(\App\Models\JobAssigned::class, 'assigned_by', 'id');
+    }
+    public function jobsAssigned()
+    {
+        return $this->belongsToMany(\App\Models\Job::class, 'jobs_assigned', 'user_id', 'job_id')
+            ->withPivot('assigned_by')
+            ->withTimestamps();
+    }
 }

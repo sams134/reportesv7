@@ -46,9 +46,9 @@ class MotorAjuste extends Model
     }
 
     // Relación: Usuario que toma la decisión
-    public function userDecision()
+    public function userMedidaEje()
     {
-        return $this->belongsTo(\App\Models\User::class, 'user_decision_id', 'id');
+        return $this->belongsTo(\App\Models\User::class, 'user_medida_eje_id', 'id');
     }
 
 }

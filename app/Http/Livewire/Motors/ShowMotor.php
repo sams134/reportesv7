@@ -30,11 +30,11 @@ class ShowMotor extends Component
           $finalizado = true;
         return view('livewire.motors.show-motor')->with(["Carbon" => 'Carbon\Carbon']);
     }
-    public function loadStatusModal(Motor $motor)
+    public function loadStatusModal($id_motor)
     {
-        $this->equipo = $motor;
+        $this->equipo = Motor::find($id_motor);
         $this->newStatus = $this->equipo->status_id;
-
+  
     }
     public function updateStatus()
     {
@@ -48,7 +48,7 @@ class ShowMotor extends Component
     }
     public function updatedDoc()
     {
-        $folderPath = '/uploads/' . "2M" . $this->motor->year . '-' . $this->motor->os . '/Documentos';
+        $folderPath = '/uploads/' . $this->motor->year . '-' . $this->motor->os . '/Documentos';
         
         $this->validate([
             'doc' => 'required|file|mimes:pdf',
@@ -81,7 +81,7 @@ class ShowMotor extends Component
     }
     public function updatedPhoto()
     {
-        $folderPath = '/uploads/' . "2M" . $this->motor->year . '-' . $this->motor->os . '/Fotos/Proceso';
+        $folderPath = '/uploads/' . $this->motor->year . '-' . $this->motor->os . '/Fotos/Proceso';
         
         $this->validate([
             'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg',

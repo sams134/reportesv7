@@ -120,6 +120,11 @@
                 @error('bearings.0.grasa_id')
                     <span class="error" style="color: red">{{ $message }}</span><br>
                 @enderror
+                <label for="Juego">RPM motor (valor m&aacute;s alto)</label>
+                <input class="form-control" id="exampleFormControlInput1" type="number" step="1" placeholder="{{$motor->rpm}}" wire:model="rpm"/>
+                @error('rpm')
+                    <span class="error" style="color: red">{{ $message }}</span><br>
+                @enderror
                 <button class="btn btn-{{ !$bearings[0]['ajuste'] ? 'primary' : 'warning' }} me-1 mt-3"
                     type="button" wire:click="saveBearing(0)">
                     @if ($bearings[0]['ajuste'])
@@ -252,6 +257,7 @@
                 @error('bearings.1.grasa_id')
                     <span class="error" style="color: red">{{ $message }}</span><br>
                 @enderror
+               
                 @if ($bearings[1]['bearing'])
                     <h5 class="mt-2">Medidas Externas Rodamiento</h5>
                     <div class="input-group mb-3"><span class="input-group-text" id="">@ 0°</span>
@@ -309,6 +315,9 @@
                         Guardar Rodamiento
                     @endif
                 </button>
+                @error('rpm')
+                <span class="error" style="color: red">{{ $message }}</span><br>
+            @enderror
                 <h4 class="mt-2">
                     {{ $bearings[1]['designacion'] != '' ? 'Designacion: ' . $bearings[1]['designacion'] : '' }}</h4>
             </div>
@@ -430,6 +439,7 @@
                 @error('bearings.2.grasa_id')
                     <span class="error" style="color: red">{{ $message }}</span><br>
                 @enderror
+               
                 <button class="btn btn-{{ !$bearings[2]['ajuste'] ? 'primary' : 'warning' }} me-1 mt-3"
                     type="button" wire:click="saveBearing(2)">
                     @if ($bearings[2]['ajuste'])
@@ -438,6 +448,9 @@
                         Guardar Rodamiento
                     @endif
                 </button>
+                @error('rpm')
+                <span class="error" style="color: red">{{ $message }}</span><br>
+            @enderror
                 <h4 class="mt-2">
                     {{ $bearings[2]['designacion'] != '' ? 'Designacion: ' . $bearings[2]['designacion'] : '' }}</h4>
             </div>
@@ -562,6 +575,7 @@
                 @error('bearings.3.grasa_id')
                     <span class="error" style="color: red">{{ $message }}</span><br>
                 @enderror
+                
                 @if ($bearings[3]['bearing'])
                     <h5 class="mt-2">Medidas Externas Rodamiento</h5>
                     <div class="input-group mb-3"><span class="input-group-text" id="">@ 0°</span>
@@ -618,6 +632,9 @@
                         Guardar Rodamiento
                     @endif
                 </button>
+                @error('rpm')
+                <span class="error" style="color: red">{{ $message }}</span><br>
+            @enderror
                 <h4 class="mt-2">
                     {{ $bearings[3]['designacion'] != '' ? 'Designacion: ' . $bearings[3]['designacion'] : '' }}</h4>
             </div>

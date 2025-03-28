@@ -139,7 +139,7 @@
                 <tr>
                     <td style="font-weight: bold;width:100px">OS:</td>
                     <td colspan="2">{{ $motor->fullos }}</td>
-                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->tipoequipo->name }}</td>
+                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}</td>
                 </tr>
                 <tr>
                     <td style="font-weight: bold;width:100px">Potencia:</td>
@@ -334,7 +334,7 @@
                     <tr>
                         <td style="font-weight: bold;width:100px">OS:</td>
                         <td colspan="2">{{ $motor->fullos }}</td>
-                        <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->tipoequipo->name }}
+                        <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}
                         </td>
                     </tr>
                     <tr>
@@ -667,6 +667,442 @@
             </div>
         @endforeach
 
+
+        @foreach ($rodamientos as $index => $rodamiento)
+            <div
+                style="position: absolute;top:{{ $page2 * (4 + $index) + 0 }}px;width:100%;height:1327px;border:3px solid #333">
+                <div style="position: relative; width:100%;background:#000044;height:25px;"></div>
+                <div style="position: relative; width:100%;background:#550000;height:25px;"></div>
+                <table class="cajilla" style="width: 100%;border-collapse: collapse;">
+                    <tr>
+                        <td colspan="3" style="font-weight: bold;">INFORME TECNICO DE MANTENIMIENTO</td>
+                        <td style="font-weight: bold;">Inicio:</td>
+                        <td>{{ \Carbon\Carbon::parse($motor->fecha_ingreso)->format('d/m/Y') }}</td>
+                        <td rowspan="4" style="width:200px"> <img src="{{ public_path('img/logo.jpg') }}"
+                                alt="Logo" style="max-height: 100px"></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;width:100px">CLIENTE:</td>
+                        <td colspan="2">{{ $motor->cliente->cliente }}</td>
+                        <td style="font-weight: bold;">Fin:</td>
+                        <td>{{ \Carbon\Carbon::parse($motor->fin)->format('d/m/Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;width:100px">OS:</td>
+                        <td colspan="2">{{ $motor->fullos }}</td>
+                        <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;width:100px">Potencia:</td>
+                        <td>{{ $motor->potencia }}</td>
+                        <td style="font-weight: bold;">RPM:</td>
+                        <td colspan="2">{{ $motor->rpm }}</td>
+                    </tr>
+                </table>
+                <div style="position: relative;width:100%;text-align:center;text-transform: uppercase;">
+                    <h1>Eje {{ $rodamiento['title'] }}</h1>
+                    <table style="width:100%;position: relative;top:-15px" class="">
+                        <tr>
+                            <td style="width:2%"></td>
+                            <td>
+                                <table style="width: 100%;border-collapse: collapse;" class="border-2">
+                                    <colgroup>
+                                        <col style="width:100px">
+                                        <col style="width:100px">
+                                        <col style="width:100px">
+                                        <col style="width:100px">
+                                        <col style="width:100px">
+                                        <col style="width:100px">
+                                        <col style="width:100px">
+                                        <col style="width:100px">
+                                    </colgroup>
+                                    <tr>
+                                        <td style="background: #000033;color:#ddd" colspan="8">Datos del rodamiento
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold">Codigo</td>
+                                        <td colspan="2"> {{ $rodamiento['codigo'] }}</td>
+                                        <td style="background: #000033;color:#ddd"></td>
+                                        <td colspan="2" style="font-weight: bold">Juego Radial</td>
+                                        <td colspan="2">{{ $rodamiento['juego_radial'] }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold">Marca</td>
+                                        <td colspan="2"> {{ $rodamiento['marca'] }}</td>
+                                        <td style="background: #000033;color:#ddd"></td>
+                                        <td colspan="2" style="font-weight: bold">Sellos</td>
+                                        <td colspan="2">{{ $rodamiento['sellos'] }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: bold">Jaula</td>
+                                        <td colspan="2"> {{ $rodamiento['jaula'] }}</td>
+                                        <td style="background: #000033;color:#ddd"></td>
+                                        <td colspan="2" style="font-weight: bold">Grasa a Utilizar</td>
+                                        <td colspan="2">{{ $rodamiento['grasa'] }}</td>
+                                    </tr>
+
+                                </table>
+                            </td>
+                            <td style="width:2%"></td>
+                        </tr>
+                    </table>
+                    <table style="position: relative;width:100%;text-align:center;top:-15px">
+                        <tr>
+                            <td width="2%"></td>
+                            <td style="border: 2px solid #333;">
+                                <table style="width: 100%;border-collapse: collapse;text-transform:none"
+                                    class="rodamiento">
+                                    <tr>
+                                        <td width="38%" style="text-align: left;margin-left:20px">
+                                            <img src="{{ $rodamiento['img'] }}" alt=""
+                                                style="max-width: {{ $rodamiento['tipo'] == 2 ? '300' : '200' }}px">
+                                        </td>
+                                        <td style="vertical-align: top">
+                                            <table style="width: 100%;border-collapse: collapse;">
+                                                <tr>
+                                                    <td colspan="3" style="border-bottom: 2px solid #555">
+                                                        <span style="font-size: 24px">Dimensiones</span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>d</td>
+                                                    <td> {{ $rodamiento['medidas']['diametro_interno'] }} mm </td>
+                                                    <td> Diámetro del agujero</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>D</td>
+                                                    <td> {{ $rodamiento['medidas']['diametro_externo'] }} mm </td>
+                                                    <td> Diámetro exterior</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>B</td>
+                                                    <td> {{ $rodamiento['medidas']['ancho'] }} mm </td>
+                                                    <td>Ancho </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>d<sub>1</sub></td>
+                                                    <td> ≈ {{ $rodamiento['medidas']['diametro_resalte'] }} mm </td>
+                                                    <td>Diámetro del resalte </td>
+                                                </tr>
+                                                @if ($rodamiento['tipo'] == 1)
+                                                    <tr>
+                                                        <td>D<sub>2</sub></td>
+                                                        <td> ≈ {{ $rodamiento['medidas']['diametro_rebaje'] }} mm </td>
+                                                        <td>Diámetro del rebaje </td>
+                                                    </tr>
+                                                @endif
+                                                @if ($rodamiento['tipo'] == 2)
+                                                    <tr>
+                                                        <td>F</td>
+                                                        <td> min {{ $rodamiento['medidas']['F'] }} mm </td>
+                                                        <td>Diámetro del camino de rodadura del aro interior </td>
+                                                    </tr>
+                                                @endif
+                                                <tr>
+                                                    <td>r<sub>1,2</sub></td>
+                                                    <td> min {{ $rodamiento['medidas']['chaflan'] }} mm </td>
+                                                    <td>Dimensión del chaflán </td>
+                                                </tr>
+                                                @if ($rodamiento['tipo'] == 2)
+                                                    <tr>
+                                                        <td>r<sub>3,4</sub></td>
+                                                        <td> min {{ $rodamiento['medidas']['r3_4'] }} mm </td>
+                                                        <td>Dimensión del chaflán </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>s<sub></sub></td>
+                                                        <td> min {{ $rodamiento['medidas']['s'] }} mm </td>
+                                                        <td>Desplazamiento axial admisible</td>
+                                                    </tr>
+                                                @endif
+
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td width="2%"></td>
+                        </tr>
+                    </table>
+                    <table style="position: relative;width:100%;text-align:center;top:-5px;border-collapse:collapse"
+                        class="">
+                        <colgroup>
+                            <col width="2%">
+                            <col width="38%">
+                            <col width="8%">
+                            <col width="50%">
+                            <col width="2%">
+                        </colgroup>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <table style="width:100%;border-collapse:collapse;text-transform:none"
+                                    class="border-1 padding-3">
+                                    <tr>
+                                        <td colspan="3"
+                                            style="background: #000033;color:#ddd;font-size:13px;font-weight:bold;padding:5px">
+                                            MEDIDAS EXTERNAS DEL COJINETE @ 25.3 °C </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background: #333;color:#ddd">A @ 0</td>
+                                        <td>{{ number_format($rodamiento['rod']['s'],3) }}</td>
+                                        <td>mm</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background: #333;color:#ddd">B @ 120</td>
+                                        <td>{{ number_format(($rodamiento['rod']['s']+ $rodamiento['rod']['t'])/2,3)}}</td>
+                                        <td>mm</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background: #333;color:#ddd">A @ 240</td>
+                                        <td>{{ number_format($rodamiento['rod']['t'],3) }}</td>
+                                        <td>mm</td>
+                                    </tr>
+                                </table>
+                                <div style="width:100%;border:2px solid #333;margin-top:20px">
+                                    <img src="{{ public_path('img/ejes.png') }}" alt="Logo"
+                                        style="max-width: 60%;border">
+                                    <div style="width:100%;background:#000033;color:#ddd;padding:2px">PROCEDIMENTO DE
+                                        MEDIDAS</div>
+                                </div>
+
+                            </td>
+                            <td></td>
+                            <td style="vertical-align: top">
+                                <table style="width:100%;border-collapse:collapse;text-transform:none"
+                                    class="border-1">
+                                    <colgroup>
+                                        <col style="width:65%;background:#333;color:#ddd">
+                                        <col style="width:20%">
+                                        <col>
+                                    </colgroup>
+                                    <tr>
+                                        <td colspan="3"
+                                            style="background: #000033;color:#ddd;font-size:15px;font-weight:bold;padding:5px">
+                                            Tolerancia Recomendada</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color:#ddd;text-align: left;">Regimen de Tolerancia: </td>
+                                        <td colspan="2">{{$rodamiento['rod']['rodamiento']['eje_ball_tol']}} (ISO 286)</td>
+
+                                    </tr>
+                                    <tr>
+                                        <td style="color:#ddd;text-align: left;">Máximo Ajuste (ISO 286):</td>
+                                        <td>(-) {{ $rodamiento['rod']['rodamiento']['eje_ball_max'] * 1000 }}</td>
+                                        <td>μm</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color:#ddd;text-align: left;">M&iacute;nimo Ajuste (ISO 286):</td>
+                                        <td>(-) {{ $rodamiento['rod']['rodamiento']['eje_ball_min'] * 1000 }}</td>
+                                        <td>μm</td>
+                                    </tr>
+                                   
+                                </table>
+                                <p style="text-align: left;margin-top:0px;font-size:12px;"><i>(+)Holgura /
+                                    (-)Interferencia</i></p>
+                                <table
+                                    style="width:100%;border-collapse:collapse;text-transform:none;margin-top:15px;font-weight:800"
+                                    class="border-1 padding-3">
+                                    <colgroup>
+                                        <col style="width:20%">
+                                        <col style="width:40%;">
+                                        <col style="width:40%">
+                                    </colgroup>
+                                    <tr>
+                                        <td colspan="3"
+                                            style="background: #000033;color:#ddd;font-size:15px;font-weight:bold;padding:5px">
+                                            Medidas de Alojamientos @ 25.3 °C</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PUNTO</td>
+                                        <td>INICIAL [mm]</td>
+                                        <td>FINAL [mm]</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Punto 1</td>
+                                        <td>{{ number_format($rodamiento['rodInicial']['e1'], 4) }}</td>
+                                        <td>{{ number_format($rodamiento['rod']['e1'], 4) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Punto 2</td>
+                                        <td>{{ number_format($rodamiento['rodInicial']['e2'], 4) }}</td>
+                                        <td>{{ number_format($rodamiento['rod']['e2'], 4) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Punto 3</td>
+                                        <td>{{ number_format($rodamiento['rodInicial']['e3'], 4) }}</td>
+                                        <td>{{ number_format($rodamiento['rod']['e3'], 4) }}</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <td>TOL MAX:</td>
+                                        @php
+                                            $diff = $rodamiento['alojamientoInicialMax'] - $rodamiento['cojineteMin'];
+                                            $color =
+                                                $diff > $rodamiento['rod']['rodamiento']['probable_min'] &&
+                                                $diff < $rodamiento['rod']['rodamiento']['probable_max']
+                                                    ? '#00aa00'
+                                                    : '#dd0000';
+                                        @endphp
+                                        <td style="background:{{ $color }}">
+                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff * 1000), 0) }}
+                                            μm
+                                        </td>
+                                        @php
+                                            $diff = $rodamiento['alojamientoFinalMax'] - $rodamiento['cojineteMin'];
+                                            $color =
+                                                $diff > $rodamiento['rod']['rodamiento']['probable_min'] &&
+                                                $diff < $rodamiento['rod']['rodamiento']['probable_max']
+                                                    ? '#00aa00'
+                                                    : '#dd0000';
+                                        @endphp
+                                        <td style="background:{{ $color }}">
+                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff * 1000), 0) }}
+                                            μm
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>TOL MIN:</td>
+                                        @php
+                                            $diff = $rodamiento['alojamientoInicialMin'] - $rodamiento['cojineteMax'];
+                                            $color =
+                                                $diff > $rodamiento['rod']['rodamiento']['probable_min'] &&
+                                                $diff < $rodamiento['rod']['rodamiento']['probable_max']
+                                                    ? '#00aa00'
+                                                    : '#dd0000';
+                                        @endphp
+                                        <td style="background:{{ $color }}">
+
+                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff * 1000), 0) }}
+                                            μm
+                                        </td>
+                                        @php
+                                            $diff = $rodamiento['alojamientoFinalMin'] - $rodamiento['cojineteMax'];
+                                            $color =
+                                                $diff > $rodamiento['rod']['rodamiento']['probable_min'] &&
+                                                $diff < $rodamiento['rod']['rodamiento']['probable_max']
+                                                    ? '#00aa00'
+                                                    : '#dd0000';
+                                        @endphp
+                                        <td style="background:{{ $color }}">
+
+                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff * 1000), 0) }}
+                                            μm
+
+                                        </td>
+                                    </tr>
+
+                                </table>
+                            </td>
+                            <td></td>
+                        </tr>
+                    </table>
+                    <p style="text-align: left;font-size:20px;font-weight:bold;margin-left:15px;margin-top:5px">NOTAS COMPLEMENTARIAS</p>
+                </div>
+            </div>
+        @endforeach
+        @php
+           $fotos = $motor->fotos->where('addToReport',1);
+
+        @endphp
+
+        @for($i=0;$i<$fotos->count();$i++)
+        
+        <div style="position: absolute;top:{{ $page2 * (6 + ( intdiv($i,2))) + 0 }}px;width:100%;height:1327px;border:3px solid #333">
+            <div style="position: relative; width:100%;background:#000044;height:25px;"></div>
+            <div style="position: relative; width:100%;background:#550000;height:25px;"></div>
+            <table class="cajilla" style="width: 100%;border-collapse: collapse;">
+                <tr>
+                    <td colspan="3" style="font-weight: bold;">INFORME TECNICO DE MANTENIMIENTO</td>
+                    <td style="font-weight: bold;">Inicio:</td>
+                    <td>{{ \Carbon\Carbon::parse($motor->fecha_ingreso)->format('d/m/Y') }}</td>
+                    <td rowspan="4" style="width:200px"> <img src="{{ public_path('img/logo.jpg') }}"
+                            alt="Logo" style="max-height: 100px"></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;width:100px">CLIENTE:</td>
+                    <td colspan="2">{{ $motor->cliente->cliente }}</td>
+                    <td style="font-weight: bold;">Fin:</td>
+                    <td>{{ \Carbon\Carbon::parse($motor->fin)->format('d/m/Y') }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;width:100px">OS:</td>
+                    <td colspan="2">{{ $motor->fullos }}</td>
+                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;width:100px">Potencia:</td>
+                    <td>{{ $motor->potencia }}</td>
+                    <td style="font-weight: bold;">RPM:</td>
+                    <td colspan="2">{{ $motor->rpm }}</td>
+                </tr>
+            </table>
+            <div style="position: relative;width:100%;text-align:center;text-transform: uppercase;">
+                <h1>Fotografias </h1>
+                <img src="{{ public_path('storage' . $fotos[$i]->foto) }}" alt="Imagen de Entrada"
+                style="position: relative;max-height:500px;max-width: 90%; border-radius: 4px;margin-top:20px">
+                <table style="width:100%">
+                    <tr>
+                        <td width="5%"></td>
+                        <td style="border:2px solid #333;padding:5px;background:#000033;color:#ddd">Comentario</td>
+                        <td width="5%"></td>
+                    </tr>
+                </table>
+                @if($i+1 < $fotos->count())
+                <img src="{{ public_path('storage' . $fotos[++$i]->foto) }}" alt="Imagen de Entrada"
+                style="position: relative;max-height:500px;max-width: 90%; border-radius: 4px;margin-top:20px">
+                <table style="width:100%">
+                    <tr>
+                        <td width="5%"></td>
+                        <td style="border:2px solid #333;padding:5px;background:#000033;color:#ddd">Comentario</td>
+                        <td width="5%"></td>
+                    </tr>
+                </table>
+                @endif
+            </div>
+        </div>
+            
+        @endfor
+
+        <div style="position: absolute;top:{{ $page2 * (6 + intdiv($fotos->count(),2)+1)  }}px;width:100%;height:1327px;border:3px solid #333">
+            <div style="position: relative; width:100%;background:#000044;height:25px;"></div>
+            <div style="position: relative; width:100%;background:#550000;height:25px;"></div>
+            <table class="cajilla" style="width: 100%;border-collapse: collapse;">
+                <tr>
+                    <td colspan="3" style="font-weight: bold;">INFORME TECNICO DE MANTENIMIENTO</td>
+                    <td style="font-weight: bold;">Inicio:</td>
+                    <td>{{ \Carbon\Carbon::parse($motor->fecha_ingreso)->format('d/m/Y') }}</td>
+                    <td rowspan="4" style="width:200px"> <img src="{{ public_path('img/logo.jpg') }}"
+                            alt="Logo" style="max-height: 100px"></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;width:100px">CLIENTE:</td>
+                    <td colspan="2">{{ $motor->cliente->cliente }}</td>
+                    <td style="font-weight: bold;">Fin:</td>
+                    <td>{{ \Carbon\Carbon::parse($motor->fin)->format('d/m/Y') }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;width:100px">OS:</td>
+                    <td colspan="2">{{ $motor->fullos }}</td>
+                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;width:100px">Potencia:</td>
+                    <td>{{ $motor->potencia }}</td>
+                    <td style="font-weight: bold;">RPM:</td>
+                    <td colspan="2">{{ $motor->rpm }}</td>
+                </tr>
+            </table>
+            <div style="position: relative;width:100%;text-align:center;text-transform: uppercase;">
+                <h1>Temperaturas </h1>
+                <img src="data:image/png;base64,{{ base64_encode($motor->temperaturas) }}" alt="Imagen de Entrada"
+                style="position: relative;max-height:500px;max-width: 90%; border-radius: 4px;margin-top:20px">
+            </div>
+        </div>
 
         {{--  @for ($i = 3; $i < 11; $i++)
             <div style="position: absolute;top:{{ $page2 * $i + 0 }}px;width:100%;height:1327px;border:3px solid #333">

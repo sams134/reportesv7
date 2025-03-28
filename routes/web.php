@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Calculos;
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\Graficas;
 use App\Http\Controllers\MotorController;
 use App\Http\Controllers\ReportesController;
 use App\Http\Livewire\Admin\CreateEnvio;
@@ -17,8 +18,10 @@ use App\Http\Livewire\Customers\ShowCustomers;
 use App\Http\Livewire\Materiales\MaterialesIndex;
 use App\Http\Livewire\Metalizados\MetalizadosCreate;
 use App\Http\Livewire\Metalizados\MetalizadosIndex;
+use App\Http\Livewire\Motors\CreateJob;
 use App\Http\Livewire\Motors\CreateMotor;
 use App\Http\Livewire\Motors\EditMotor;
+use App\Http\Livewire\Motors\ShowJob;
 use App\Http\Livewire\Motors\ShowMotor;
 use App\Http\Livewire\Pruebas\PruebasIndex;
 use App\Models\BalanceoArt;
@@ -63,7 +66,8 @@ Route::middleware([
 
 
     Route::get('/motores', IndexMotors::class)->name('motores.index');
-    Route::get('/motores/search/{search}', IndexMotors::class)->name('motores.index.search');
+
+    Route::get('/motores/search/{search?}', IndexMotors::class)->name('motores.index.search');
     Route::get('/motores/create', CreateMotor::class)->name('motores.create');
     Route::get('/motores/{motor}/edit',EditMotor::class)->name('motores.edit');
     Route::get('/motores/{motor}',ShowMotor::class)->name('motores.show');
@@ -74,6 +78,10 @@ Route::middleware([
     Route::get('/motores/pdf-materiales/{motor}',[MotorController::class,'downloadPdfMateriales'])->name('motores.downloadPdfMateriales');
     Route::get('/motores/createBalanceo/{motor}',CreateBalanceo::class)->name('motores.createBalanceo');
     Route::get('/materiales',MaterialesIndex::class)->name('materiales.index');
+
+    //jobs
+    Route::get('/motores/create-job/{motor}', CreateJob::class)->name('motors.createJob');
+    Route::get('/motores/showJob/{job}', ShowJob::class)->name('motors.showJob');
 
     Route::get('/metalizados', MetalizadosIndex::class)->name('metalizados.index');
     Route::get('/metalizados/create', MetalizadosCreate::class)->name('metalizados.create');
@@ -102,5 +110,6 @@ Route::middleware([
     Route::get('/balanceo/arts', function () {
         return response()->json(BalanceoArt::orderBy('id', 'desc')->get());
     });
+    Route::POST('/api/save-temperature-chart', [Graficas::class, 'saveTemperatureChart']);
    
 });

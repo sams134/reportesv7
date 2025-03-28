@@ -22,7 +22,7 @@
                         <span>{{ $motor->cliente->cliente }}</span>
                         <p>
                             <button data-bs-toggle="modal" data-bs-target="#error-modal" class="bg-transparent border-0"
-                                wire:click="loadStatusModal({{ $motor }})">
+                                wire:click="loadStatusModal({{ $motor->id_motor }})">
                                 <x-status-badge status_id="{{ $motor->status_id }}" data-bs-toggle="modal"
                                     data-bs-target="#error-modal" />
                             </button>
@@ -34,14 +34,24 @@
                                             class="far fa-user mx-3"></i>{{ $tecnico->name }} </span></a>
                             </p>
                         @endforeach
-                        <HR></HR>
-                        @foreach ($motor->ayudantes as $ayudante)
-                            <p class="my-1">
-                                <a href="{{ route('motores.index.search', $ayudante->name) }}"> <span><i
-                                            class="far fa-user mx-3"></i>{{ $ayudante->name }} </span></a>
-                            </p>
-                            
-                        @endforeach
+                        @if ($motor->ayudantes->count() > 0)
+                            <HR>
+                            </HR>
+                            @foreach ($motor->ayudantes as $ayudante)
+                                <p class="my-1">
+                                    <a href="{{ route('motores.index.search', $ayudante->name) }}"> <span><i
+                                                class="far fa-user mx-3"></i>{{ $ayudante->name }} </span></a>
+                                </p>
+                            @endforeach
+                        @endif
+                        <HR>
+                        </HR>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a class="btn btn-falcon-danger me-1 mb-1 little-button"
+                                href="{{ route('motors.createJob', $motor) }}">
+                                <span><i class="fas fa-plus mx-1"></i> Agregar Trabajo a OS </span></a>
+                            </a>
+                        </li>
                     </div>
                 </div>
             </div>
@@ -70,19 +80,22 @@
                                 @livewire('admin.horas-extras', ['motor' => $motor])
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <a class="btn btn-falcon-primary me-1 mb-1 little-button" href="{{ route('motores.downloadPdf', $motor) }}">
+                                <a class="btn btn-falcon-primary me-1 mb-1 little-button"
+                                    href="{{ route('motores.downloadPdf', $motor) }}">
                                     <span><i class="far fa-file-pdf mx-1"></i> Ver PDF Ingreso </span></a>
                                 </a>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <a href="{{ route('motores.downloadPdfDensidades', $motor) }}"
-                                    class="btn btn-falcon-primary me-1 mb-1 little-button @if($motor->fin) disabled @endif" type="button">
+                                    class="btn btn-falcon-primary me-1 mb-1 little-button @if ($motor->fin) disabled @endif"
+                                    type="button">
                                     <span><i class="far fa-file-pdf mx-1"></i> Hoja Densidades </span></a>
                                 </a>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <button class="btn btn-falcon-primary me-1 mb-1 little-button" type="button"
-                                    wire:click="$emit('openAsignacionesModal', {{ $motor->id_motor }})" @if($motor->fin) disabled @endif>
+                                    wire:click="$emit('openAsignacionesModal', {{ $motor->id_motor }})"
+                                    @if ($motor->fin) disabled @endif>
                                     <span><i class="fas fa-user-plus mx-1"></i> Asignar a Tecnico </span></a>
                                 </button>
                             </li>
@@ -90,7 +103,8 @@
                                 @livewire('motors.pedido-materiales', ['motor' => $motor])
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <a href="{{route('pruebas.index',$motor)}}" class="btn btn-falcon-primary me-1 mb-1 little-button" type="button">
+                                <a href="{{ route('pruebas.index', $motor) }}"
+                                    class="btn btn-falcon-primary me-1 mb-1 little-button" type="button">
                                     <span><i class="fas fa-charging-station mx-1"></i>Registrar Pruebas </span></a>
                                 </a>
                             </li>
@@ -168,6 +182,28 @@
                 </table>
             </x-pretty-card>
             <x-pretty-card>
+                <h3>Trabajos Adicionales</h3>
+                <div class="row">
+                   
+                    @if (count($motor->jobs)>0)
+                    @foreach ($motor->jobs as $job)
+                    <div class="card document-card d-flex flex-column justify-content-between"
+                        style="width: 180px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                        <a href="{{route('motors.showJob',$job)}}" >
+                           <img src="{{ asset('storage' . $job->images->first()->image) }}" alt="" style="max-width: 100%" class="mt-1 rounded">
+                           <p style="font-size:18px;" class="text-center mb-0">{{$job->fullos}}</p>
+                        <p style="font-size:12px;color:#666;font-style:italic;" class="text-center">{{$job->jobType->name}}</p>
+                        </a>
+                    </div>
+                @endforeach
+                    @else
+                       <p>No hay trabajos adicionales generados </p>
+                    @endif
+                    
+                </div>
+
+            </x-pretty-card>
+            <x-pretty-card>
                 <h3>Inventario de Partes</h3>
                 <table class="table table-hover table-striped table-bordered table-datos">
                     <tr>
@@ -243,14 +279,15 @@
                                     {{ $documento->titulo }}
                                 </a>
                                 <p>
-                                <button class="btn btn-danger btn-sm me-1 mb-1" type="button"
-                                    onclick="removeDoc({{ $documento->id }})">Eliminar
-                                </button>
-                            </p>
+                                    <button class="btn btn-danger btn-sm me-1 mb-1" type="button"
+                                        onclick="removeDoc({{ $documento->id }})">Eliminar
+                                    </button>
+                                </p>
                             </div>
                         </div>
                     @endforeach
-                    <input type="file" id="documentUpload" wire:model="doc" accept=".pdf" style="display: none;">
+                    <input type="file" id="documentUpload" wire:model="doc" accept=".pdf"
+                        style="display: none;">
                 </div>
             </x-pretty-card>
             <x-pretty-card>
@@ -285,7 +322,7 @@
                                 </small>
                             @else
                                 <div style="d-block">
-                                   @livewire('motors.create-fin', ['motor' => $motor])
+                                    @livewire('motors.create-fin', ['motor' => $motor])
                                 </div>
                             @endif
 
@@ -296,10 +333,11 @@
                         <td>Fecha de Entrega</td>
                         <td>
                             <div style="d-block">
-                                <a class="btn btn-falcon-primary me-1 mb-1 @if(!$motor->fin) disabled @endif" type="button" 
-                                @if($motor->fin) href="{{ route('admin.createEnvio', $motor) }}" @endif
-                                style="font-size:12px">Hacer Envio Final
-                            </a>
+                                <a class="btn btn-falcon-primary me-1 mb-1 @if (!$motor->fin) disabled @endif"
+                                    type="button"
+                                    @if ($motor->fin) href="{{ route('admin.createEnvio', $motor) }}" @endif
+                                    style="font-size:12px">Hacer Envio Final
+                                </a>
                             </div>
 
                         </td>
@@ -321,7 +359,7 @@
         }
 
         .card-gallery {
-            max-height: 250px;
+            height: 300px;
             overflow: hidden;
             padding: 2px;
         }
@@ -387,6 +425,15 @@
                                         ondblclick="openImageModal('{{ asset('storage' . $foto->foto) }}')" />
                                 </div>
                             @endforeach
+                            @foreach($motor->jobs as $job)
+                                @foreach ($job->images as $foto)
+                                <div class="swiper-slide">
+                                    <img class="slider-img" src="{{ asset('storage' . $foto->image) }}"
+                                        alt="Foto"
+                                        ondblclick="openImageModal('{{ asset('storage' . $foto->image) }}')" />
+                                </div>
+                                @endforeach
+                            @endforeach
                         </div>
                         <div class="swiper-nav">
                             <div class="swiper-button-next swiper-button-white"></div>
@@ -418,6 +465,30 @@
                                         </div>
                                     </div>
                                 </div>
+                            @endforeach
+                            @foreach($motor->jobs as $job)
+                                @foreach ($job->images as $foto)
+                                     <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12 my-2">
+                                         <div class="card card-gallery">
+                                              <img class="card-img-top" src="{{ asset('storage' . $foto->image) }}"
+                                                    alt="Foto"
+                                                    ondblclick="openImageModal('{{ asset('storage' . $foto->image) }}')">
+                                              <div class="card-footer">
+                                                    <p style="font-size: 12px">
+                                                     <span class="fw-bold">Fecha Foto: </span>
+                                                     {{ Carbon\Carbon::parse($foto->created_at)->format('d/m/Y') }}
+                                                    </p>
+                                                    @if ($foto->user)
+                                                     <p style="font-size: 12px">
+                                                          <span class="fw-bold">Foto Tomada por: </span>
+                                                          {{ $foto->user->name }}
+                                                     </p>
+                                                    @endif
+                                                    <p class="card-text">{{ $foto->comentario }}</p>
+                                              </div>
+                                         </div>
+                                        </div>    
+                                @endforeach
                             @endforeach
                         </div>
                     </div>
@@ -472,46 +543,49 @@
                         wire:loading.class="opacity-50">
                         <thead class="text-black bg-200">
                             <tr>
-                                
+
                                 <th class="align-middle" width="10%">Horas</th>
                                 <th class="align-middle" width="10%">Fecha</th>
-                                <th class="align-middle" >Usuario</th>
+                                <th class="align-middle">Usuario</th>
                                 <th class="align-middle" width="40%">Descripcion</th>
                                 <th class="align-middle" width="15%">Autorizado Por:</th>
                             </tr>
                         </thead>
                         <tbody id="bulk-select-body">
-                           @foreach ($motor->horasExtras as $hora)
+                            @foreach ($motor->horasExtras as $hora)
                                 <tr>
                                     <td class="align-middle">{{ number_format($hora->hours, 1) }}</td>
                                     <td class="align-middle">
                                         Inicio:
-                                        {{ucfirst(\Carbon\Carbon::parse($hora->init)->locale('es')->isoFormat('dddd D [de] MMMM h:mm A')) }}
-                                        <br>Final: {{ucfirst(\Carbon\Carbon::parse($hora->final)->locale('es')->isoFormat('dddd D [de] MMMM h:mm A')) }}
+                                        {{ ucfirst(\Carbon\Carbon::parse($hora->init)->locale('es')->isoFormat('dddd D [de] MMMM h:mm A')) }}
+                                        <br>Final:
+                                        {{ ucfirst(\Carbon\Carbon::parse($hora->final)->locale('es')->isoFormat('dddd D [de] MMMM h:mm A')) }}
                                     </td>
                                     <td class="align-middle">{{ $hora->user->name }}</td>
                                     <td class="align-middle">{{ $hora->descripcion }}</td>
                                     <td class="align-middle">
-                                        @if($hora->autorizado_por == $hora->user->id)
+                                        @if ($hora->autorizado_por == $hora->user->id)
                                             <span>Sistema</span>
                                         @else
-                                            <span >{{ $hora->autorizadoPor->name }}</span>
+                                            <span>{{ $hora->autorizadoPor->name }}</span>
                                         @endif
                                     </td>
                                 </tr>
                             @endforeach
                             <tr class="bg-soft-primary">
-                                
-                                <td colspan="5" class="fw-bold text-xl text-center" style="font-size: 16px"> Total de Horas Extra: {{ number_format(ceil($motor->horasExtras->sum('hours')), 0) }} horas</td>
+
+                                <td colspan="5" class="fw-bold text-xl text-center" style="font-size: 16px"> Total
+                                    de Horas Extra: {{ number_format(ceil($motor->horasExtras->sum('hours')), 0) }}
+                                    horas</td>
                             </tr>
-                               
+
                         </tbody>
                     </table>
-                   
-                    
+
+
                 </div>
-                
-                
+
+
             </x-pretty-card>
         </div>
     </div>

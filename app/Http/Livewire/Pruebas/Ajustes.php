@@ -98,12 +98,12 @@ class Ajustes extends Component
         $this->ajustes[$i][$j]['rod']->options_tornero_id = $this->options[$i][$j]['id'];
         $this->ajustes[$i][$j]['rod']->recomendacion = $this->options[$i][$j]['decision'];
         $this->ajustes[$i][$j]['rod']->user_medida_id = auth()->user()->id;
-        $this->ajustes[$i][$j]['rod']->user_decision_id = auth()->user()->id;
         $this->ajustes[$i][$j]['rod']->save();
         $inicial_final = $i == 0 ? 'iniciales' : 'finales';
         $carga_opuesto = $j == 0 ? 'de carga ' : 'opuesto a la carga ';
         $this->mount($this->motor);
         $this->emit('savedMedidas', "Se actualizaron las medidas $inicial_final del lado $carga_opuesto");
+        $this->emit('updateMedidas',$this->ajustes);
     }
 
     public function finalizar()

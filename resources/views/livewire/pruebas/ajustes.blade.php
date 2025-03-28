@@ -155,206 +155,12 @@
                         </div>
                         <div class="card">
                             <div class="card-body">
+                                @livewire('pruebas.ajustes-tabla',[$ajustes,0,0,$allowed_final])
+                                {{-- Revision de Ajustes Iniciales Carga --}}
                                 @if ($ajustes[0][0]['ax'])
                                     <div class="text-center">
-                                        <div class="text-start text-primary" style="font-size: 1.2rem;">
-                                            @if ($allowed_final && $ajustes[1][0]['rod']['p'])
-                                                * Medidas comparadas contra las medidas del rodamiento a instalar
-                                            @else
-                                                * Medidas comparadas contra las teoricas del rodamiento
-                                            @endif
-                                            @php
-                                                $medida_max =
-                                                    $allowed_final && $ajustes[1][0]['rod']['p']
-                                                        ? max(
-                                                            $ajustes[1][0]['rod']['p'],
-                                                            $ajustes[1][0]['rod']['q'],
-                                                            $ajustes[1][0]['rod']['r'],
-                                                        )
-                                                        : $ajustes[0][0]['rod']['rodamiento']['diametro_externo'];
-                                                $medida_min =
-                                                    $allowed_final && $ajustes[1][0]['rod']['p']
-                                                        ? min(
-                                                            $ajustes[1][0]['rod']['p'],
-                                                            $ajustes[1][0]['rod']['q'],
-                                                            $ajustes[1][0]['rod']['r'],
-                                                        )
-                                                        : $ajustes[0][0]['rod']['rodamiento']['diametro_externo'];
-                                            @endphp
-                                        </div>
-
                                         <div class="table-responsive scrollbar">
-                                            <table class="table table-hover tolerancias" style="font-size: 12px">
-                                                <thead>
-                                                    <tr>
-                                                        <th scope="col">Medida</th>
-                                                        <th scope="col">Valor [mm]</th>
-                                                        <th scope="col">Medida</th>
-                                                        <th scope="col">Valor [mm]</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr class="hover-actions-trigger">
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Medida
-                                                            Mayor
-                                                        </td>
-                                                        <td class="align-middle text-nowrap">
-                                                            {{ App\Http\Livewire\Pruebas\Ajustes::findMax($ajustes[0][0]) }}
-                                                        </td>
-                                                        <td class="align-middle text-nowrap  bg-soft-primary">Medida
-                                                            menor
-                                                        </td>
-                                                        <td class="align-middle text-nowrap">
-                                                            {{ App\Http\Livewire\Pruebas\Ajustes::findMin($ajustes[0][0]) }}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">x̅ media
-                                                        </td>
-                                                        <td>{{ App\Http\Livewire\Pruebas\Ajustes::findMean($ajustes[0][0]) }}
-                                                        </td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">
-                                                            <i>D<sub>m</sub> </i> desviacion
-                                                        </td>
-                                                        <td>{{ App\Http\Livewire\Pruebas\Ajustes::findDeviation($ajustes[0][0]) }}%
-                                                            @if (App\Http\Livewire\Pruebas\Ajustes::findDeviation($ajustes[0][0]) > 0.1)
-                                                                <img src="{{ asset('img/alert.png') }}"
-                                                                    alt="" style="max-width: 15px"
-                                                                    class="mt-1">
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Medida
-                                                            Max.
-                                                            Rodamiento</td>
-                                                        <td>{{ number_format($medida_max, 3) }}
-                                                        </td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Medida
-                                                            Min.
-                                                            Rodamiento</td>
-                                                        <td>{{ number_format($medida_min, 3) }}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">TOL. EASA
-                                                            AR-100</td>
-                                                        <td>+(0-{{ number_format($ajustes[0][0]['rod']['rodamiento']['H6'] * 1000, 0) }})
-                                                            μm</td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">TOL. ISO
-                                                            286
-                                                        </td>
-                                                        <td>+({{ number_format($ajustes[0][0]['rod']['rodamiento']['probable_min'] * 1000, 0) }}-{{ number_format($ajustes[0][0]['rod']['rodamiento']['probable_max'] * 1000, 0) }})
-                                                            μm</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                            Minimo (ISO 286)
-                                                        </td>
-                                                        <td>
-                                                            @php
-                                                                $diff_min =
-                                                                    App\Http\Livewire\Pruebas\Ajustes::findMin(
-                                                                        $ajustes[0][0],
-                                                                    ) - $medida_max;
-                                                                $diff_min *= 1000;
-                                                            @endphp
-                                                            {{ ($diff_min > 0 ? '(+)' : ($diff_min < 0 ? '(-)' : '')) . number_format(abs($diff_min), 0) }}
-                                                            μm
-                                                        </td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                            M&aacute;ximo (ISO 286)
-                                                        </td>
-                                                        <td>
-                                                            @php
-                                                                $diff =
-                                                                    App\Http\Livewire\Pruebas\Ajustes::findMax(
-                                                                        $ajustes[0][0],
-                                                                    ) - $medida_min;
-                                                                $diff *= 1000;
-                                                            @endphp
-                                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff), 0) }}
-                                                            μm
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                            Minimo
-                                                            (EASA AR-100)</td>
-                                                        <td>
-                                                            @php
-                                                                $diff_min =
-                                                                    App\Http\Livewire\Pruebas\Ajustes::findMin(
-                                                                        $ajustes[0][0],
-                                                                    ) -
-                                                                    $ajustes[0][0]['rod']['rodamiento'][
-                                                                        'diametro_externo'
-                                                                    ];
-                                                                $diff_min *= 1000;
-                                                            @endphp
-                                                            {{ ($diff_min > 0 ? '(+)' : ($diff_min < 0 ? '(-)' : '')) . number_format(abs($diff_min), 0) }}
-                                                            μm
-                                                        </td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                            M&aacute;ximo (EASA AR-100)
-                                                        </td>
-                                                        <td>
-                                                            @php
-                                                                $diff =
-                                                                    App\Http\Livewire\Pruebas\Ajustes::findMax(
-                                                                        $ajustes[0][0],
-                                                                    ) -
-                                                                    $ajustes[0][0]['rod']['rodamiento'][
-                                                                        'diametro_externo'
-                                                                    ];
-                                                                $diff *= 1000;
-                                                            @endphp
-                                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff), 0) }}
-                                                            μm
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
                                             <div class="row">
-                                                <div class="col-6">
-                                                    @if (App\Http\Livewire\Pruebas\Ajustes::findDeviation($ajustes[0][0]) > 0.1)
-                                                        <p class="w-100 text-start my-0">
-                                                            <img src="{{ asset('img/alert.png') }}" alt=""
-                                                                style="max-width: 15px" class="mt-1">
-                                                            <span class="text-danger">Demasiada Ovalacion</span>
-                                                        </p>
-                                                    @endif
-                                                    @if ($diff_min < 0 || $diff_min < $ajustes[0][0]['rod']['rodamiento']['probable_min'] * 1000)
-                                                        <p class="w-100 text-start my-0">
-                                                            <img src="{{ asset('img/alert.png') }}" alt=""
-                                                                style="max-width: 15px" class="">
-                                                            <span class="text-danger">Ajuste demasiado apretado</span>
-                                                        </p>
-                                                    @endif
-
-                                                    @if (
-                                                        (App\Http\Livewire\Pruebas\Ajustes::findMax($ajustes[0][0]) -
-                                                            $ajustes[0][0]['rod']['rodamiento']['diametro_externo']) *
-                                                            1000 >
-                                                            $ajustes[0][0]['rod']['rodamiento']['H6'] * 1000)
-                                                        <p class="w-100 text-start my-0">
-                                                            <img src="{{ asset('img/warning.jpg') }}" alt=""
-                                                                style="max-width: 15px" class="">
-                                                            <span class="text-danger">Ajuste holgado, no cumple con
-                                                                norma
-                                                                EASA (AR-100)</span>
-                                                        </p>
-                                                    @endif
-                                                    @if ($diff > $ajustes[0][0]['rod']['rodamiento']['probable_max'] * 1000)
-                                                        <p class="w-100 text-start my-0">
-                                                            <img src="{{ asset('img/alert.png') }}" alt=""
-                                                                style="max-width: 15px" class="mt-1">
-                                                            <span class="text-danger">Ajuste demasiado holgado, no
-                                                                cumple
-                                                                con norma SKF (ISO 286)</span>
-                                                        </p>
-                                                    @endif
-                                                </div>
                                                 <div class="col-6 text-start">
                                                     <h4>Decisi&oacute;n del tornero</h4>
                                                     <select class="form-select" aria-label="Default select example"
@@ -366,9 +172,6 @@
                                                             </option>
                                                         @endforeach
                                                     </select>
-
-                                                    * Medidas tomadas por
-                                                    {{ $ajustes[0][0]['rod']['userMedida']['name'] }}
                                                 </div>
                                             </div>
                                             <div class="row">
@@ -379,6 +182,11 @@
                                                     <textarea class="form-control" id="exampleFormControlTextarea1" style="text-transform: capitalize" rows="2"
                                                         wire:model="options.0.0.decision"></textarea>
                                                 </div>
+                                                <div>
+                                                    * Medidas tomadas por
+                                                {{ $ajustes[0][0]['rod']['userMedida']['name'] }}
+                                                </div>
+                                                
                                             </div>
                                         </div>
                                     </div>
@@ -460,7 +268,6 @@
                                                 </div>
                                                 <style>
                                                     @media (max-width: 768px) {
-
                                                         .input-group-text,
                                                         .form-control {
                                                             font-size: 0.6rem;
@@ -540,198 +347,11 @@
                             </div>
                             <div class="card">
                                 <div class="card-body">
+                                    @livewire('pruebas.ajustes-tabla',[$ajustes,1,0,$allowed_final])
                                   @if($ajustes[1][0]['ax'])
                                     <div class="text-center">
-                                        <div class="text-start text-primary" style="font-size: 1.2rem;">
-
-                                            * Medidas comparadas contra las medidas del rodamiento a instalar
-
-                                            @php
-                                                $medida_max = max(
-                                                    $ajustes[1][0]['rod']['p'],
-                                                    $ajustes[1][0]['rod']['q'],
-                                                    $ajustes[1][0]['rod']['r'],
-                                                );
-                                                $medida_min = min(
-                                                    $ajustes[1][0]['rod']['p'],
-                                                    $ajustes[1][0]['rod']['q'],
-                                                    $ajustes[1][0]['rod']['r'],
-                                                );
-                                            @endphp
-                                        </div>
-
                                         <div class="table-responsive scrollbar">
-                                            <table class="table table-hover tolerancias" style="font-size: 12px">
-                                                <thead>
-                                                    <tr>
-                                                        <th scope="col">Medida</th>
-                                                        <th scope="col">Valor [mm]</th>
-                                                        <th scope="col">Medida</th>
-                                                        <th scope="col">Valor [mm]</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr class="hover-actions-trigger">
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Medida
-                                                            Mayor
-                                                        </td>
-                                                        <td class="align-middle text-nowrap">
-                                                            {{ App\Http\Livewire\Pruebas\Ajustes::findMax($ajustes[1][0]) }}
-                                                        </td>
-                                                        <td class="align-middle text-nowrap  bg-soft-primary">Medida
-                                                            menor
-                                                        </td>
-                                                        <td class="align-middle text-nowrap">
-                                                            {{ App\Http\Livewire\Pruebas\Ajustes::findMin($ajustes[1][0]) }}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">x̅ media
-                                                        </td>
-                                                        <td>{{ App\Http\Livewire\Pruebas\Ajustes::findMean($ajustes[1][0]) }}
-                                                        </td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">
-                                                            <i>D<sub>m</sub> </i> desviacion
-                                                        </td>
-                                                        <td>{{ App\Http\Livewire\Pruebas\Ajustes::findDeviation($ajustes[1][0]) }}%
-                                                            @if (App\Http\Livewire\Pruebas\Ajustes::findDeviation($ajustes[1][0]) > 0.1)
-                                                                <img src="{{ asset('img/alert.png') }}"
-                                                                    alt="" style="max-width: 15px"
-                                                                    class="mt-1">
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Medida
-                                                            Max.
-                                                            Rodamiento</td>
-                                                        <td>{{ number_format($medida_max, 3) }}
-                                                        </td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Medida
-                                                            Min.
-                                                            Rodamiento</td>
-                                                        <td>{{ number_format($medida_min, 3) }}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">TOL. EASA
-                                                            AR-100</td>
-                                                        <td>+(0-{{ number_format($ajustes[1][0]['rod']['rodamiento']['H6'] * 1000, 0) }})
-                                                            μm</td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">TOL. ISO
-                                                            286
-                                                        </td>
-                                                        <td>+({{ number_format($ajustes[1][0]['rod']['rodamiento']['probable_min'] * 1000, 0) }}-{{ number_format($ajustes[1][0]['rod']['rodamiento']['probable_max'] * 1000, 0) }})
-                                                            μm</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                            Minimo (ISO 286)
-                                                        </td>
-                                                        <td>
-                                                            @php
-                                                                $diff_min =
-                                                                    App\Http\Livewire\Pruebas\Ajustes::findMin(
-                                                                        $ajustes[1][0],
-                                                                    ) - $medida_max;
-                                                                $diff_min *= 1000;
-                                                            @endphp
-                                                            {{ ($diff_min > 0 ? '(+)' : ($diff_min < 0 ? '(-)' : '')) . number_format(abs($diff_min), 0) }}
-                                                            μm
-                                                        </td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                            M&aacute;ximo (ISO 286)
-                                                        </td>
-                                                        <td>
-                                                            @php
-                                                                $diff =
-                                                                    App\Http\Livewire\Pruebas\Ajustes::findMax(
-                                                                        $ajustes[1][0],
-                                                                    ) - $medida_min;
-                                                                $diff *= 1000;
-                                                            @endphp
-                                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff), 0) }}
-                                                            μm
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                            Minimo
-                                                            (EASA AR-100)</td>
-                                                        <td>
-                                                            @php
-                                                                $diff_min =
-                                                                    App\Http\Livewire\Pruebas\Ajustes::findMin(
-                                                                        $ajustes[1][0],
-                                                                    ) -
-                                                                    $ajustes[1][0]['rod']['rodamiento'][
-                                                                        'diametro_externo'
-                                                                    ];
-                                                                $diff_min *= 1000;
-                                                            @endphp
-                                                            {{ ($diff_min > 0 ? '(+)' : ($diff_min < 0 ? '(-)' : '')) . number_format(abs($diff_min), 0) }}
-                                                            μm
-                                                        </td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                            M&aacute;ximo (EASA AR-100)
-                                                        </td>
-                                                        <td>
-                                                            @php
-                                                                $diff =
-                                                                    App\Http\Livewire\Pruebas\Ajustes::findMax(
-                                                                        $ajustes[1][0],
-                                                                    ) -
-                                                                    $ajustes[1][0]['rod']['rodamiento'][
-                                                                        'diametro_externo'
-                                                                    ];
-                                                                $diff *= 1000;
-                                                            @endphp
-                                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff), 0) }}
-                                                            μm
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
                                             <div class="row">
-                                                <div class="col-6">
-                                                    @if (App\Http\Livewire\Pruebas\Ajustes::findDeviation($ajustes[1][0]) > 0.1)
-                                                        <p class="w-100 text-start my-0">
-                                                            <img src="{{ asset('img/alert.png') }}" alt=""
-                                                                style="max-width: 15px" class="mt-1">
-                                                            <span class="text-danger">Demasiada Ovalacion</span>
-                                                        </p>
-                                                    @endif
-                                                    @if ($diff_min < 0 || $diff_min < $ajustes[1][0]['rod']['rodamiento']['probable_min'] * 1000)
-                                                        <p class="w-100 text-start my-0">
-                                                            <img src="{{ asset('img/alert.png') }}" alt=""
-                                                                style="max-width: 15px" class="">
-                                                            <span class="text-danger">Ajuste demasiado apretado</span>
-                                                        </p>
-                                                    @endif
-
-                                                    @if (
-                                                        (App\Http\Livewire\Pruebas\Ajustes::findMax($ajustes[1][0]) -
-                                                            $ajustes[1][0]['rod']['rodamiento']['diametro_externo']) *
-                                                            1000 >
-                                                            $ajustes[1][0]['rod']['rodamiento']['H6'] * 1000)
-                                                        <p class="w-100 text-start my-0">
-                                                            <img src="{{ asset('img/warning.jpg') }}" alt=""
-                                                                style="max-width: 15px" class="">
-                                                            <span class="text-danger">Ajuste holgado, no cumple con
-                                                                norma
-                                                                EASA (AR-100)</span>
-                                                        </p>
-                                                    @endif
-                                                    @if ($diff > $ajustes[1][0]['rod']['rodamiento']['probable_max'] * 1000)
-                                                        <p class="w-100 text-start my-0">
-                                                            <img src="{{ asset('img/alert.png') }}" alt=""
-                                                                style="max-width: 15px" class="mt-1">
-                                                            <span class="text-danger">Ajuste demasiado holgado, no
-                                                                cumple
-                                                                con norma SKF (ISO 286)</span>
-                                                        </p>
-                                                    @endif
-                                                </div>
                                                 <div class="col-6 text-start">
                                                     <h4>Decisi&oacute;n del tornero</h4>
                                                     <select class="form-select" aria-label="Default select example"
@@ -742,12 +362,6 @@
                                                                 {{ $decision->decision }}</option>
                                                         @endforeach
                                                     </select>
-
-                                                    @if ($ajustes[1][0]['rod']['userMedida'])
-                                                        * Medidas tomadas por
-                                                        {{ $ajustes[1][0]['rod']['userMedida']['name'] }}
-                                                    @endif
-
                                                 </div>
                                             </div>
                                             <div class="row">
@@ -757,6 +371,10 @@
                                                         tornero</label>
                                                     <textarea class="form-control" id="exampleFormControlTextarea1" style="text-transform: capitalize" rows="2"
                                                         wire:model="options.1.0.decision"></textarea>
+                                                </div>
+                                                <div>
+                                                    * Medidas tomadas por
+                                                {{ $ajustes[1][0]['rod']['userMedida']['name'] }}
                                                 </div>
                                             </div>
                                         </div>
@@ -902,190 +520,11 @@
                         </div>
                         <div class="card">
                             <div class="card-body">
-                                 @if ($ajustes[1][0]['ax'])
+                                @livewire('pruebas.ajustes-tabla',[$ajustes,0,1,$allowed_final])
+                                 @if ($ajustes[0][1]['ax'])
                                 <div class="text-center">
-                                    <div class="text-start text-primary" style="font-size: 1.2rem;">
-                                        @if ($allowed_final && $ajustes[1][1]['rod']['p'])
-                                            * Medidas comparadas contra las medidas del rodamiento a instalar
-                                        @else
-                                            * Medidas comparadas contra las teoricas del rodamiento
-                                        @endif
-                                        @php
-                                            $medida_max = $allowed_final && $ajustes[1][1]['rod']['p']
-                                                ? max(
-                                                    $ajustes[1][1]['rod']['p'],
-                                                    $ajustes[1][1]['rod']['q'],
-                                                    $ajustes[1][1]['rod']['r'],
-                                                )
-                                                : $ajustes[0][1]['rod']['rodamiento']['diametro_externo'];
-                                            $medida_min = $allowed_final && $ajustes[1][1]['rod']['p']
-                                                ? min(
-                                                    $ajustes[1][1]['rod']['p'],
-                                                    $ajustes[1][1]['rod']['q'],
-                                                    $ajustes[1][1]['rod']['r'],
-                                                )
-                                                : $ajustes[0][1]['rod']['rodamiento']['diametro_externo'];
-                                        @endphp
-                                    </div>
-
                                     <div class="table-responsive scrollbar">
-                                        <table class="table table-hover tolerancias" style="font-size: 12px">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col">Medida</th>
-                                                    <th scope="col">Valor [mm]</th>
-                                                    <th scope="col">Medida</th>
-                                                    <th scope="col">Valor [mm]</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr class="hover-actions-trigger">
-                                                    <td class="align-middle text-nowrap bg-soft-primary">Medida Mayor
-                                                    </td>
-                                                    <td class="align-middle text-nowrap">
-                                                        {{ App\Http\Livewire\Pruebas\Ajustes::findMax($ajustes[0][1]) }}
-                                                    </td>
-                                                    <td class="align-middle text-nowrap  bg-soft-primary">Medida menor
-                                                    </td>
-                                                    <td class="align-middle text-nowrap">
-                                                        {{ App\Http\Livewire\Pruebas\Ajustes::findMin($ajustes[0][1]) }}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="align-middle text-nowrap bg-soft-primary">x̅ media</td>
-                                                    <td>{{ App\Http\Livewire\Pruebas\Ajustes::findMean($ajustes[0][1]) }}
-                                                    </td>
-                                                    <td class="align-middle text-nowrap bg-soft-primary">
-                                                        <i>D<sub>m</sub> </i> desviacion
-                                                    </td>
-                                                    <td>{{ App\Http\Livewire\Pruebas\Ajustes::findDeviation($ajustes[0][1]) }}%
-                                                        @if (App\Http\Livewire\Pruebas\Ajustes::findDeviation($ajustes[0][1]) > 0.1)
-                                                            <img src="{{ asset('img/alert.png') }}" alt=""
-                                                                style="max-width: 15px" class="mt-1">
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="align-middle text-nowrap bg-soft-primary">Medida Max.
-                                                        Rodamiento</td>
-                                                    <td>{{ number_format($medida_max, 3) }}
-                                                    </td>
-                                                    <td class="align-middle text-nowrap bg-soft-primary">Medida Min.
-                                                        Rodamiento</td>
-                                                    <td>{{ number_format($medida_min, 3) }}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="align-middle text-nowrap bg-soft-primary">TOL. EASA
-                                                        AR-100</td>
-                                                    <td>+(0-{{ number_format($ajustes[0][1]['rod']['rodamiento']['H6'] * 1000, 0) }})
-                                                        μm</td>
-                                                    <td class="align-middle text-nowrap bg-soft-primary">TOL. ISO 286
-                                                    </td>
-                                                    <td>+({{ number_format($ajustes[0][1]['rod']['rodamiento']['probable_min'] * 1000, 0) }}-{{ number_format($ajustes[0][1]['rod']['rodamiento']['probable_max'] * 1000, 0) }})
-                                                        μm</td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="align-middle text-nowrap bg-soft-primary">Ajuste Minimo
-                                                        (ISO 286)
-                                                    </td>
-                                                    <td>
-                                                        @php
-                                                            $diff_min =
-                                                                App\Http\Livewire\Pruebas\Ajustes::findMin(
-                                                                    $ajustes[0][1],
-                                                                ) - $medida_max;
-                                                            $diff_min *= 1000;
-                                                        @endphp
-                                                        {{ ($diff_min > 0 ? '(+)' : ($diff_min < 0 ? '(-)' : '')) . number_format(abs($diff_min), 0) }}
-                                                        μm
-                                                    </td>
-                                                    <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                        M&aacute;ximo (ISO 286)
-                                                    </td>
-                                                    <td>
-                                                        @php
-                                                            $diff =
-                                                                App\Http\Livewire\Pruebas\Ajustes::findMax(
-                                                                    $ajustes[0][1],
-                                                                ) - $medida_min;
-                                                            $diff *= 1000;
-                                                        @endphp
-                                                        {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff), 0) }}
-                                                        μm
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="align-middle text-nowrap bg-soft-primary">Ajuste Minimo
-                                                        (EASA AR-100)</td>
-                                                    <td>
-                                                        @php
-                                                            $diff_min =
-                                                                App\Http\Livewire\Pruebas\Ajustes::findMin(
-                                                                    $ajustes[0][1],
-                                                                ) -
-                                                                $ajustes[0][1]['rod']['rodamiento']['diametro_externo'];
-                                                            $diff_min *= 1000;
-                                                        @endphp
-                                                        {{ ($diff_min > 0 ? '(+)' : ($diff_min < 0 ? '(-)' : '')) . number_format(abs($diff_min), 0) }}
-                                                        μm
-                                                    </td>
-                                                    <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                        M&aacute;ximo (EASA AR-100)
-                                                    </td>
-                                                    <td>
-                                                        @php
-                                                            $diff =
-                                                                App\Http\Livewire\Pruebas\Ajustes::findMax(
-                                                                    $ajustes[0][1],
-                                                                ) -
-                                                                $ajustes[0][1]['rod']['rodamiento']['diametro_externo'];
-                                                            $diff *= 1000;
-                                                        @endphp
-                                                        {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff), 0) }}
-                                                        μm
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
                                         <div class="row">
-                                            <div class="col-6">
-                                                @if (App\Http\Livewire\Pruebas\Ajustes::findDeviation($ajustes[0][1]) > 0.1)
-                                                    <p class="w-100 text-start my-0">
-                                                        <img src="{{ asset('img/alert.png') }}" alt=""
-                                                            style="max-width: 15px" class="mt-1">
-                                                        <span class="text-danger">Demasiada Ovalacion</span>
-                                                    </p>
-                                                @endif
-                                                @if ($diff_min < 0 || $diff_min < $ajustes[0][1]['rod']['rodamiento']['probable_min'] * 1000)
-                                                    <p class="w-100 text-start my-0">
-                                                        <img src="{{ asset('img/alert.png') }}" alt=""
-                                                            style="max-width: 15px" class="">
-                                                        <span class="text-danger">Ajuste demasiado apretado</span>
-                                                    </p>
-                                                @endif
-
-                                                @if (
-                                                    (App\Http\Livewire\Pruebas\Ajustes::findMax($ajustes[0][1]) -
-                                                        $ajustes[1][1]['rod']['rodamiento']['diametro_externo']) *
-                                                        1000 >
-                                                        $ajustes[1][1]['rod']['rodamiento']['H6'] * 1000)
-                                                    <p class="w-100 text-start my-0">
-                                                        <img src="{{ asset('img/warning.jpg') }}" alt=""
-                                                            style="max-width: 15px" class="">
-                                                        <span class="text-danger">Ajuste holgado, no cumple con norma
-                                                            EASA (AR-100)</span>
-                                                    </p>
-                                                @endif
-                                                @if ($diff > $ajustes[0][1]['rod']['rodamiento']['probable_max'] * 1000)
-                                                    <p class="w-100 text-start my-0">
-                                                        <img src="{{ asset('img/alert.png') }}" alt=""
-                                                            style="max-width: 15px" class="mt-1">
-                                                        <span class="text-danger">Ajuste demasiado holgado, no cumple
-                                                            con norma SKF (ISO 286)</span>
-                                                    </p>
-                                                @endif
-                                            </div>
                                             <div class="col-6 text-start">
                                                 <h4>Decisi&oacute;n del tornero</h4>
                                                 <select class="form-select" aria-label="Default select example"
@@ -1096,8 +535,6 @@
                                                         </option>
                                                     @endforeach
                                                 </select>
-
-                                                * Medidas tomadas por {{ $ajustes[0][1]['rod']['userMedida']['name'] }}
                                             </div>
                                         </div>
                                         <div class="row">
@@ -1106,6 +543,10 @@
                                                     for="exampleFormControlTextarea1">Comentarios del tornero</label>
                                                 <textarea class="form-control" id="exampleFormControlTextarea1" style="text-transform: capitalize" rows="2"
                                                     wire:model="options.0.1.decision"></textarea>
+                                            </div>
+                                            <div>
+                                                * Medidas tomadas por
+                                            {{ $ajustes[0][0]['rod']['userMedida']['name'] }}
                                             </div>
                                         </div>
                                     </div>
@@ -1271,198 +712,11 @@
                             </div>
                             <div class="card">
                                 <div class="card-body">
+                                    @livewire('pruebas.ajustes-tabla',[$ajustes,1,1,$allowed_final])
                                     @if ($ajustes[1][1]['ax'])
                                     <div class="text-center">
-                                        <div class="text-start text-primary" style="font-size: 1.2rem;">
-
-                                            * Medidas comparadas contra las medidas del rodamiento a instalar
-
-                                            @php
-                                                $medida_max = max(
-                                                    $ajustes[1][1]['rod']['p'],
-                                                    $ajustes[1][1]['rod']['q'],
-                                                    $ajustes[1][1]['rod']['r'],
-                                                );
-                                                $medida_min = min(
-                                                    $ajustes[1][1]['rod']['p'],
-                                                    $ajustes[1][1]['rod']['q'],
-                                                    $ajustes[1][1]['rod']['r'],
-                                                );
-                                            @endphp
-                                        </div>
-
                                         <div class="table-responsive scrollbar">
-                                            <table class="table table-hover tolerancias" style="font-size: 12px">
-                                                <thead>
-                                                    <tr>
-                                                        <th scope="col">Medida</th>
-                                                        <th scope="col">Valor [mm]</th>
-                                                        <th scope="col">Medida</th>
-                                                        <th scope="col">Valor [mm]</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr class="hover-actions-trigger">
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Medida
-                                                            Mayor
-                                                        </td>
-                                                        <td class="align-middle text-nowrap">
-                                                            {{ App\Http\Livewire\Pruebas\Ajustes::findMax($ajustes[1][1]) }}
-                                                        </td>
-                                                        <td class="align-middle text-nowrap  bg-soft-primary">Medida
-                                                            menor
-                                                        </td>
-                                                        <td class="align-middle text-nowrap">
-                                                            {{ App\Http\Livewire\Pruebas\Ajustes::findMin($ajustes[1][1]) }}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">x̅ media
-                                                        </td>
-                                                        <td>{{ App\Http\Livewire\Pruebas\Ajustes::findMean($ajustes[1][1]) }}
-                                                        </td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">
-                                                            <i>D<sub>m</sub> </i> desviacion
-                                                        </td>
-                                                        <td>{{ App\Http\Livewire\Pruebas\Ajustes::findDeviation($ajustes[1][1]) }}%
-                                                            @if (App\Http\Livewire\Pruebas\Ajustes::findDeviation($ajustes[1][1]) > 0.1)
-                                                                <img src="{{ asset('img/alert.png') }}"
-                                                                    alt="" style="max-width: 15px"
-                                                                    class="mt-1">
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Medida
-                                                            Max.
-                                                            Rodamiento</td>
-                                                        <td>{{ number_format($medida_max, 3) }}
-                                                        </td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Medida
-                                                            Min.
-                                                            Rodamiento</td>
-                                                        <td>{{ number_format($medida_min, 3) }}
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">TOL. EASA
-                                                            AR-100</td>
-                                                        <td>+(0-{{ number_format($ajustes[1][1]['rod']['rodamiento']['H6'] * 1000, 0) }})
-                                                            μm</td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">TOL. ISO
-                                                            286
-                                                        </td>
-                                                        <td>+({{ number_format($ajustes[1][1]['rod']['rodamiento']['probable_min'] * 1000, 0) }}-{{ number_format($ajustes[1][1]['rod']['rodamiento']['probable_max'] * 1000, 0) }})
-                                                            μm</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                            Minimo (ISO 286)
-                                                        </td>
-                                                        <td>
-                                                            @php
-                                                                $diff_min =
-                                                                    App\Http\Livewire\Pruebas\Ajustes::findMin(
-                                                                        $ajustes[1][1],
-                                                                    ) - $medida_max;
-                                                                $diff_min *= 1000;
-                                                            @endphp
-                                                            {{ ($diff_min > 0 ? '(+)' : ($diff_min < 0 ? '(-)' : '')) . number_format(abs($diff_min), 0) }}
-                                                            μm
-                                                        </td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                            M&aacute;ximo (ISO 286)
-                                                        </td>
-                                                        <td>
-                                                            @php
-                                                                $diff =
-                                                                    App\Http\Livewire\Pruebas\Ajustes::findMax(
-                                                                        $ajustes[1][1],
-                                                                    ) - $medida_min;
-                                                                $diff *= 1000;
-                                                            @endphp
-                                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff), 0) }}
-                                                            μm
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                            Minimo
-                                                            (EASA AR-100)</td>
-                                                        <td>
-                                                            @php
-                                                                $diff_min =
-                                                                    App\Http\Livewire\Pruebas\Ajustes::findMin(
-                                                                        $ajustes[1][1],
-                                                                    ) -
-                                                                    $ajustes[1][1]['rod']['rodamiento'][
-                                                                        'diametro_externo'
-                                                                    ];
-                                                                $diff_min *= 1000;
-                                                            @endphp
-                                                            {{ ($diff_min > 0 ? '(+)' : ($diff_min < 0 ? '(-)' : '')) . number_format(abs($diff_min), 0) }}
-                                                            μm
-                                                        </td>
-                                                        <td class="align-middle text-nowrap bg-soft-primary">Ajuste
-                                                            M&aacute;ximo (EASA AR-100)
-                                                        </td>
-                                                        <td>
-                                                            @php
-                                                                $diff =
-                                                                    App\Http\Livewire\Pruebas\Ajustes::findMax(
-                                                                        $ajustes[1][1],
-                                                                    ) -
-                                                                    $ajustes[1][1]['rod']['rodamiento'][
-                                                                        'diametro_externo'
-                                                                    ];
-                                                                $diff *= 1000;
-                                                            @endphp
-                                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff), 0) }}
-                                                            μm
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
                                             <div class="row">
-                                                <div class="col-6">
-                                                    @if (App\Http\Livewire\Pruebas\Ajustes::findDeviation($ajustes[1][1]) > 0.1)
-                                                        <p class="w-100 text-start my-0">
-                                                            <img src="{{ asset('img/alert.png') }}" alt=""
-                                                                style="max-width: 15px" class="mt-1">
-                                                            <span class="text-danger">Demasiada Ovalacion</span>
-                                                        </p>
-                                                    @endif
-                                                    @if ($diff_min < 0 || $diff_min < $ajustes[1][1]['rod']['rodamiento']['probable_min'] * 1000)
-                                                        <p class="w-100 text-start my-0">
-                                                            <img src="{{ asset('img/alert.png') }}" alt=""
-                                                                style="max-width: 15px" class="">
-                                                            <span class="text-danger">Ajuste demasiado apretado</span>
-                                                        </p>
-                                                    @endif
-
-                                                    @if (
-                                                        (App\Http\Livewire\Pruebas\Ajustes::findMax($ajustes[1][1]) -
-                                                            $ajustes[1][1]['rod']['rodamiento']['diametro_externo']) *
-                                                            1000 >
-                                                            $ajustes[1][1]['rod']['rodamiento']['H6'] * 1000)
-                                                        <p class="w-100 text-start my-0">
-                                                            <img src="{{ asset('img/warning.jpg') }}" alt=""
-                                                                style="max-width: 15px" class="">
-                                                            <span class="text-danger">Ajuste holgado, no cumple con
-                                                                norma
-                                                                EASA (AR-100)</span>
-                                                        </p>
-                                                    @endif
-                                                    @if ($diff > $ajustes[1][1]['rod']['rodamiento']['probable_max'] * 1000)
-                                                        <p class="w-100 text-start my-0">
-                                                            <img src="{{ asset('img/alert.png') }}" alt=""
-                                                                style="max-width: 15px" class="mt-1">
-                                                            <span class="text-danger">Ajuste demasiado holgado, no
-                                                                cumple
-                                                                con norma SKF (ISO 286)</span>
-                                                        </p>
-                                                    @endif
-                                                </div>
                                                 <div class="col-6 text-start">
                                                     <h4>Decisi&oacute;n del tornero</h4>
                                                     <select class="form-select" aria-label="Default select example"
@@ -1474,10 +728,8 @@
                                                         @endforeach
                                                     </select>
 
-                                                    @if ($ajustes[1][1]['rod']['userMedida'])
-                                                        * Medidas tomadas por
-                                                        {{ $ajustes[1][1]['rod']['userMedida']['name'] }}
-                                                    @endif
+                                                    
+                                                    
 
                                                 </div>
                                             </div>
@@ -1489,6 +741,12 @@
                                                     <textarea class="form-control" id="exampleFormControlTextarea1" style="text-transform: capitalize" rows="2"
                                                         wire:model="options.1.1.decision"></textarea>
                                                 </div>
+                                                @if ($ajustes[1][1]['rod']['userMedida'])
+                                                <div>
+                                                    * Medidas tomadas por
+                                                {{ $ajustes[1][1]['rod']['userMedida']['name'] }}
+                                                </div>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>

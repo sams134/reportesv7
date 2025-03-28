@@ -52,12 +52,16 @@
                     <div class="btn-group dropend ">
                         <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Ver {{$ver}}</button>
                         <div class="dropdown-menu">
-                        <a class="dropdown-item" href="#">Todos</a>
-                        <a class="dropdown-item" href="#">Sin autorizar</a>
-                        <a class="dropdown-item" href="#">Trabajando</a>
-                        <a class="dropdown-item" href="#">Finalizados</a>
+                        <a class="dropdown-item" href="#" wire:click="$set('ver', 'Todos')">
+                            @if ($ver == 'Todos')
+                                <span class="fas fa-check me-1"></span>
+                            @endif Todos
+                        </a>
+                        <a class="dropdown-item" href="#" wire:click="$set('ver', 'Sin autorizar')">Sin autorizar</a>
+                        <a class="dropdown-item" href="#" wire:click="$set('ver', 'Trabajando')">Trabajando</a>
+                        <a class="dropdown-item" href="#" wire:click="$set('ver', 'Finalizados en Taller')">Finalizados en Taller</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Separated link</a>
+                        <a class="dropdown-item" href="#" wire:click="$set('ver', 'Entregados')">Entregados</a>
                         </div>
                     </div>
             
@@ -162,7 +166,7 @@
                     <td class="align-middle ">
                         <button data-bs-toggle="modal" data-bs-target="#error-modal"
                         class="bg-transparent border-0"
-                        wire:click="loadStatusModal({{ $motor }})">
+                        wire:click="loadStatusModal({{ $motor->id_motor }})">
                         <x-status-badge status_id="{{ $motor->status_id }}" data-bs-toggle="modal"
                             data-bs-target="#error-modal" />
                         </button>
@@ -185,7 +189,7 @@
                         @foreach ($motor->tecnicos as $tecnico)
                         <div class="avatar avatar-l">
 
-                            <img src="{{ asset($tecnico->foto) }}" alt=""
+                            <img src="{{ asset('storage/'.$tecnico->foto) }}" alt=""
                             class="rounded-circle mt-2">
 
                         </div>

@@ -48,8 +48,8 @@ class Shaft extends Component
                
                 }
                 $this->ajustes[$i][$j]['designacion'] = $rod?$this->printDesignacion($rod):null;
-                $this->options[$i][$j]['id'] = $rod?$rod->options_tornero_id:null;
-                $this->options[$i][$j]['decision'] = $rod?$rod->recomendacion:null;
+                $this->options[$i][$j]['id'] = $rod?$rod->options_tornero_eje_id:null;
+                $this->options[$i][$j]['decision'] = $rod?$rod->recomendacion_eje:null;
             }
         }
 
@@ -88,6 +88,9 @@ class Shaft extends Component
         }else{
             $this->ajustes[$i][$j]['rod']->e3 = $this->ajustes[$i][$j]['e3'];
         }
+        $this->ajustes[$i][$j]['rod']->options_tornero_eje_id = $this->options[$i][$j]['id'];
+        $this->ajustes[$i][$j]['rod']->recomendacion_eje = $this->options[$i][$j]['decision'];
+        $this->ajustes[$i][$j]['rod']->user_medida_eje_id = auth()->user()->id;
         $this->ajustes[$i][$j]['rod']->save();
         $this->mount($this->motor);
         $inicial_final = $i == 0 ? 'iniciales' : 'finales';

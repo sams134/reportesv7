@@ -5,10 +5,15 @@
         </h2>
     </x-slot>
 
-    <div>
+    <x-page-title>
+        <x-slot:title>Ficha Tecnica del trabajo adicional</x-slot:title>
+        Este trabajo pertenece a la OS </a>
+    </x-page-title>
+    <x-pretty-card>
+       
         @if (Laravel\Fortify\Features::canUpdateProfileInformation())
             @livewire('profile.update-profile-information-form')
-
+        
             <x-jet-section-border />
         @endif
 
@@ -31,5 +36,5 @@
 
             @livewire('profile.delete-user-form')
         @endif
-    </div>
+    </x-pretty-card>
 </x-app-layout>

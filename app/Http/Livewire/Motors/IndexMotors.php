@@ -17,9 +17,9 @@ class IndexMotors extends Component
     public $sort = 'fullos', $direction = 'desc';
     public $boards;
     public $selectedMotors = [];
-    public $cards = false,$ver="Todos";
+    public $cards = false, $ver = "Todos";
 
-    protected $listeners = ['removeMotor', 'render','boardStored' => 'render'];
+    protected $listeners = ['removeMotor', 'render', 'boardStored' => 'render'];
     public function mount($search = '')
     {
         $this->search = $search;
@@ -41,6 +41,25 @@ class IndexMotors extends Component
 
         // Filtrar siempre por year que empiece con "2M"
         $motores = $motores->where('year', 'like', '2M%');
+        switch ($this->ver) {
+            case 'Todos':
+                break;
+            case 'Sin autorizar':
+                $motores = $motores->whereIn('status_id', [0, 1, 2]);
+                break;
+            case 'Trabajando':
+                $motores = $motores->whereIn('status_id', [3,4,5,6,7,8]);
+                break;
+            case 'Finalizados en Taller':
+                $motores = $motores->where('status_id', 9);
+                break;
+            case 'Entregados':
+                $motores = $motores->whereIn('status_id', [11,12,13,14,15]);
+                break;
+            case 'Cancelados':
+                $motores = $motores->where('status_id', 5);
+                break;
+        }
 
         // Si el usuario es técnico, filtrar por motores asignados al técnico
         if ($user->userType === User::TECNICO) {
@@ -51,7 +70,7 @@ class IndexMotors extends Component
 
         // Procesar la búsqueda si existe
         $search = $this->search;
-        if ($search) {
+        if ($search !== '') {
             // Si la búsqueda contiene un guion (ej. "2M23-056")
             if (strpos($search, '-') !== false) {
                 $parts = explode('-', $search, 2);
@@ -90,35 +109,35 @@ class IndexMotors extends Component
             $motores = $motores->orderBy('year', 'desc')
                 ->orderBy('os', 'desc')
                 ->paginate(30);
-           
-        }else{
-        // Ordenar y paginar según la propiedad $sort
-        if ($this->sort === "fullos") {
-            $motores = $motores->orderBy('year', $this->direction)
-                ->orderBy('os', $this->direction)
-                ->paginate(100);
-        } elseif ($this->sort === 'hp') {
-            $motores = $motores->orderByRaw("CAST(hp AS UNSIGNED) {$this->direction}")
-                ->paginate(100);
-        } elseif ($this->sort === 'rpm') {
-            $motores = $motores->orderByRaw("CAST(rpm AS UNSIGNED) {$this->direction}")
-                ->paginate(100);
         } else {
-            $motores = $motores->orderBy($this->sort, $this->direction)
-                ->paginate(100);
+            // Ordenar y paginar según la propiedad $sort
+            if ($this->sort === "fullos") {
+                $motores = $motores->orderBy('year', $this->direction)
+                    ->orderBy('os', $this->direction)
+                    ->paginate(100);
+            } elseif ($this->sort === 'hp') {
+                $motores = $motores->orderByRaw("CAST(hp AS UNSIGNED) {$this->direction}")
+                    ->paginate(100);
+            } elseif ($this->sort === 'rpm') {
+                $motores = $motores->orderByRaw("CAST(rpm AS UNSIGNED) {$this->direction}")
+                    ->paginate(100);
+            } else {
+                $motores = $motores->orderBy($this->sort, $this->direction)
+                    ->paginate(100);
+            }
         }
-    }
 
 
         return view('livewire.motors.index-motors', compact('motores'))
             ->with(["Carbon" => 'Carbon\Carbon']);
     }
 
-    public function loadStatusModal(Motor $motor)
+    public function loadStatusModal($id_motor)
     {
-        $this->equipo = $motor;
+        $this->equipo = Motor::find($id_motor);
         $this->newStatus = $this->equipo->status_id;
     }
+
     public function updateStatus()
     {
         $this->validate([
@@ -145,10 +164,12 @@ class IndexMotors extends Component
     }
     public function updatedSearch()
     {
-        // Reiniciar las propiedades de orden
+       
+       
         $this->sort = 'fullos';
         $this->direction = 'desc';
         $this->resetPage();
+        
     }
     public function addTecnico($id)
     {
@@ -161,10 +182,10 @@ class IndexMotors extends Component
         foreach ($this->selectedMotors as $motorId) {
             // Verificar si ya existe un pin para este board, motor y tipo
             $exists = \App\Models\Pin::where('board_id', $boardId)
-                        ->where('pinable_id', $motorId)
-                        ->where('pinable_type', 'App\\Models\\Motor')
-                        ->exists();
-    
+                ->where('pinable_id', $motorId)
+                ->where('pinable_type', 'App\\Models\\Motor')
+                ->exists();
+
             if (!$exists) {
                 \App\Models\Pin::create([
                     'user_id'      => auth()->id(),
@@ -177,7 +198,7 @@ class IndexMotors extends Component
         }
         $this->selectedMotors = [];
         $board = \App\Models\Board::find($boardId);
-        $this->emit('boardUpdated', $board->name,$cant);
+        $this->emit('boardUpdated', $board->name, $cant);
     }
     public function toggleView()
     {

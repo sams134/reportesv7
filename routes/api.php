@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClienteController;
+use App\Http\Livewire\Pruebas\Temperaturas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,3 +21,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/motors-by-year/{cliente}', [ClienteController::class, 'getMotorsByYear']);
+Route::get('/get-temperatures/{id_motor}', [Temperaturas::class, 'getTemperatures']);
