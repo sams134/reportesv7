@@ -13,7 +13,7 @@ class Produccion extends Component
     public $final_date;
     public $week_selected = 0;
     public $horas_extras, $produccion;
-    public $work,$otherWorks;
+    public $work,$otherWorks,$jobs;
     const LUNES = 1;
     const MARTES = 2;
     const MIERCOLES = 3;
@@ -30,7 +30,7 @@ class Produccion extends Component
     {
         $this->user = auth()->user();
         $this->week_selected = 0;
-        $this->initial_day = self::JUEVES;
+        $this->initial_day = self::VIERNES;
        
     }
     public function render()
@@ -44,7 +44,8 @@ class Produccion extends Component
         $horas_extra = $this->user->horasExtras($this->initial_date, $this->final_date);
         $this->horas_extras = $horas_extra;
         $this->produccion = $this->user->produccion($this->initial_date, $this->final_date);
-
+        $this->jobs = $this->user->jobsProduccion($this->initial_date, $this->final_date);
+        //dd($this->initial_date, $this->final_date,$this->user->jobsAssigned);
         $this->otherWorks = OtherWork::where('user_id', $this->user->id)
             ->whereBetween('fecha', [$this->initial_date, $this->final_date])
             ->get();

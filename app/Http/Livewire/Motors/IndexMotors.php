@@ -12,14 +12,22 @@ use Livewire\WithPagination;
 class IndexMotors extends Component
 {
     use withPagination;
+    protected $paginationTheme = 'bootstrap';
     public $search;
     public $equipo, $statuses, $newStatus;
     public $sort = 'fullos', $direction = 'desc';
     public $boards;
     public $selectedMotors = [];
     public $cards = false, $ver = "Todos";
+   
 
-    protected $listeners = ['removeMotor', 'render', 'boardStored' => 'render'];
+
+    protected $listeners = ['removeMotor', 'render', 'boardStored' => 'render', 'forceStatusChange', 'status-changed' => 'statusChanged'];
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'sort' => ['except' => 'fullos'],
+        'direction' => ['except' => 'desc'],
+    ];
     public function mount($search = '')
     {
         $this->search = $search;
@@ -48,13 +56,13 @@ class IndexMotors extends Component
                 $motores = $motores->whereIn('status_id', [0, 1, 2]);
                 break;
             case 'Trabajando':
-                $motores = $motores->whereIn('status_id', [3,4,5,6,7,8]);
+                $motores = $motores->whereIn('status_id', [3, 4, 5, 6, 7, 8]);
                 break;
             case 'Finalizados en Taller':
                 $motores = $motores->where('status_id', 9);
                 break;
             case 'Entregados':
-                $motores = $motores->whereIn('status_id', [11,12,13,14,15]);
+                $motores = $motores->whereIn('status_id', [11, 12, 13, 14, 15]);
                 break;
             case 'Cancelados':
                 $motores = $motores->where('status_id', 5);
@@ -69,36 +77,28 @@ class IndexMotors extends Component
         }
 
         // Procesar la búsqueda si existe
-        $search = $this->search;
-        if ($search !== '') {
-            // Si la búsqueda contiene un guion (ej. "2M23-056")
-            if (strpos($search, '-') !== false) {
-                $parts = explode('-', $search, 2);
+        if ($this->search !== '') {
+            if (strpos($this->search, '-') !== false) {
+                $parts = explode('-', $this->search, 2);
                 if (count($parts) == 2) {
-                    $yearSearch = trim($parts[0]); // Por ejemplo "2M23"
-                    $osSearch = trim($parts[1]);   // Por ejemplo "56"
-                    // Asegurarse de que OS tenga 4 dígitos
-                    $osSearch = str_pad($osSearch, 4, '0', STR_PAD_LEFT);
+                    $yearSearch = trim($parts[0]);
+                    $osSearch = str_pad(trim($parts[1]), 4, '0', STR_PAD_LEFT);
                     $motores = $motores->where('year', 'like', "%$yearSearch")
                         ->where('os', 'like', "$osSearch%");
                 }
-            }
-            // Si empieza con un número (buscar por OS)
-            elseif (is_numeric($search[0])) {
-                $os = str_pad($search, 4, '0', STR_PAD_LEFT);
+            } elseif (is_numeric($this->search[0])) {
+                $os = str_pad($this->search, 4, '0', STR_PAD_LEFT);
                 $motores = $motores->where('os', 'like', "$os%");
-            }
-            // Si empieza con una letra (buscar en cliente, contacto o técnico)
-            elseif (ctype_alpha($search[0])) {
-                $motores = $motores->where(function ($query) use ($search) {
-                    $query->whereHas('cliente', function ($query) use ($search) {
-                        $query->where('cliente', 'like', "%$search%");
+            } elseif (ctype_alpha($this->search[0])) {
+                $motores = $motores->where(function ($query) {
+                    $query->whereHas('cliente', function ($q) {
+                        $q->where('cliente', 'like', "%{$this->search}%");
                     })
-                        ->orWhereHas('cliente.contactos', function ($query) use ($search) {
-                            $query->where('contacto', 'like', "%$search%");
+                        ->orWhereHas('cliente.contactos', function ($q) {
+                            $q->where('contacto', 'like', "%{$this->search}%");
                         })
-                        ->orWhereHas('tecnicos', function ($query) use ($search) {
-                            $query->where('name', 'like', "%$search%");
+                        ->orWhereHas('tecnicos', function ($q) {
+                            $q->where('name', 'like', "%{$this->search}%");
                         });
                 });
             }
@@ -128,8 +128,9 @@ class IndexMotors extends Component
         }
 
 
-        return view('livewire.motors.index-motors', compact('motores'))
-            ->with(["Carbon" => 'Carbon\Carbon']);
+        return view('livewire.motors.index-motors', [
+            'motores' => $motores->withQueryString()
+        ]);
     }
 
     public function loadStatusModal($id_motor)
@@ -164,12 +165,10 @@ class IndexMotors extends Component
     }
     public function updatedSearch()
     {
-       
-       
+
         $this->sort = 'fullos';
         $this->direction = 'desc';
         $this->resetPage();
-        
     }
     public function addTecnico($id)
     {
@@ -204,4 +203,21 @@ class IndexMotors extends Component
     {
         $this->cards = !$this->cards;
     }
+    public function forceStatusChange()
+    {
+
+        if (count($this->selectedMotors) === 0) {
+            $this->emit('errorNoMotorsSelected');
+            $this->skipRender();
+        } else {
+
+            $this->emitTo('motors.change-status-batch', 'openStatusModal', $this->selectedMotors);
+            $this->skipRender();
+        }
+    }
+    public function statusChanged()
+    {
+        $this->selectedMotors = [];
+    }
+     
 }

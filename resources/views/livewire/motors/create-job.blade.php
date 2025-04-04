@@ -49,7 +49,6 @@
                         </div>
                     </div>
                     @if ($jobTypeSelected)
-
                         <div class="row">
                             <div class="col-5">
                                 <div class="input-group mb-3"><span class="input-group-text"
@@ -103,7 +102,7 @@
                             @if ($usersToAsign->count() > 0)
                                 @foreach ($usersToAsign as $user)
                                     <div class="col-12 col-sm-6 col-lg-4 col-xl-3 card my-3">
-                                        <img src="{{ asset($user->foto) }}" style="max-width:90%;">
+                                        <img src="{{ asset('storage/'.$user->foto) }}" style="max-width:90%;">
                                         <span style="width: 100%;font-size:18px;font-weight:bold;" class="text-center text-primary">{{ $user->name }}</span>
                                         <div class="form-check form-switch text-center d-flex justify-content-center align-items-center">
                                             <input class="form-check-input" id="flexSwitchCheckDefault-{{ $user->id }}" type="checkbox" style="transform: scale(1.5);" wire:model="tecnicoSelected" value="{{ $user->id }}" />

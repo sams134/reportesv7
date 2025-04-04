@@ -125,6 +125,13 @@ class CreateFin extends Component
             'user_id' => auth()->id(),
             'type' => Foto::FIN,
         ]);
+        foreach($this->motor->jobs as $job){
+            if ($job->finished == null){
+                $job->finished = now();
+                $job->save();
+            }
+           
+        }
         $this->emit('motorFinalizado');
     }
 

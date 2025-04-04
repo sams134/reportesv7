@@ -187,7 +187,7 @@
                    
                     @if (count($motor->jobs)>0)
                     @foreach ($motor->jobs as $job)
-                    <div class="card document-card d-flex flex-column justify-content-between"
+                    <div class="card document-card d-flex flex-column justify-content-between me-1"
                         style="width: 180px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
                         <a href="{{route('motors.showJob',$job)}}" >
                            <img src="{{ asset('storage' . $job->images->first()->image) }}" alt="" style="max-width: 100%" class="mt-1 rounded">

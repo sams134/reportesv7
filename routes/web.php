@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Calculos;
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Graficas;
 use App\Http\Controllers\MotorController;
 use App\Http\Controllers\ReportesController;
@@ -20,11 +21,14 @@ use App\Http\Livewire\Metalizados\MetalizadosCreate;
 use App\Http\Livewire\Metalizados\MetalizadosIndex;
 use App\Http\Livewire\Motors\CreateJob;
 use App\Http\Livewire\Motors\CreateMotor;
+use App\Http\Livewire\Motors\EditJob;
 use App\Http\Livewire\Motors\EditMotor;
+use App\Http\Livewire\Motors\IndexJobs;
 use App\Http\Livewire\Motors\ShowJob;
 use App\Http\Livewire\Motors\ShowMotor;
 use App\Http\Livewire\Pruebas\PruebasIndex;
 use App\Models\BalanceoArt;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,13 +54,9 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified'
 ])->group(function () {
-    Route::get('/', function () {
-        return view('dashboard');
-    });
+    Route::get('/', DashboardController::class)->name('dashboard');
     
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/clientes', IndexCustomers::class)->name('clientes.index');
     
     Route::get('/clientes/create', CreateCustomers::class)->name('clientes.create');
@@ -82,6 +82,8 @@ Route::middleware([
     //jobs
     Route::get('/motores/create-job/{motor}', CreateJob::class)->name('motors.createJob');
     Route::get('/motores/showJob/{job}', ShowJob::class)->name('motors.showJob');
+    Route::get('/motores/indexJobs/{type}',IndexJobs::class)->name('motors.indexJobs');
+    Route::get('/motores/editJob/{job}',EditJob::class)->name('motors.editJob');
 
     Route::get('/metalizados', MetalizadosIndex::class)->name('metalizados.index');
     Route::get('/metalizados/create', MetalizadosCreate::class)->name('metalizados.create');

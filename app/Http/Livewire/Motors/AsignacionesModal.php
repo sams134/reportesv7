@@ -13,6 +13,7 @@ class AsignacionesModal extends Component
     public $tecnicos,$statuses,$ayudantes;
     protected $listeners = ['openAsignacionesModal'];
     public $tecnicoSelected = [], $ayudanteSelected = [];
+    public $newStatus;
 
     // Este método se ejecuta cuando se emite el evento con el ID del motor
     public function openAsignacionesModal($motorId)
@@ -35,6 +36,7 @@ class AsignacionesModal extends Component
                 $this->ayudanteSelected[$ayu->id] = true;
             }
         }
+        $this->newStatus = $this->motor->status_id;
         
         $this->dispatchBrowserEvent('show-modal');
     }
@@ -64,6 +66,7 @@ class AsignacionesModal extends Component
             $this->motor->save();
             }
         }
+        $this->dispatchBrowserEvent('AsignacionCreated');
         $this->dispatchBrowserEvent('hide-modal');
         $this->emitTo('motors.index-motors', 'render');
         $this->emitTo('motors.show-motor', 'render');

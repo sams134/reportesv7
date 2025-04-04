@@ -139,6 +139,12 @@ class User extends Authenticatable
             ->whereBetween('fecha', [$initial_date, $final_date])
             ->get();
     }
+    public function jobsProduccion($initial_date, $final_date)
+    {
+        return $this->jobsAssigned()
+            ->whereBetween('finished', [$initial_date, $final_date])
+            ->get();
+    }
     public function boards()
     {
         return $this->hasMany(\App\Models\Board::class, 'owner_id', 'id');

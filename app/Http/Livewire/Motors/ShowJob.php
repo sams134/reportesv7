@@ -15,6 +15,7 @@ class ShowJob extends Component
     public $motor,$job;
     public $full_gallery=true;
     public $photo;
+    protected $listeners = ['render'];
     public function mount(Job $job){
 
         $this->job = $job;
@@ -74,8 +75,19 @@ class ShowJob extends Component
         $this->render();
         
     }
+    
     public function render()
     {
         return view('livewire.motors.show-job');
+    }
+
+    public function finalizarJob()
+    {
+        $this->job->finished = now();
+        $this->job->save();
+       /*  $this->dispatchBrowserEvent('alert', [
+            'type' => 'success',
+            'message' => 'Trabajo Finalizado'
+        ]); */
     }
 }

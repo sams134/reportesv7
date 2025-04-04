@@ -20,6 +20,7 @@ class MotorController extends Controller
      */
 
      const JUEVES = 4;
+     const VIERNES = 5;
     
     const DOMINGO = 7;
     public function index()
@@ -259,7 +260,7 @@ class MotorController extends Controller
     {
         $userio = auth()->user();
         $user = User::find($userio->id);
-        $initial_day = self::JUEVES;
+        $initial_day = self::VIERNES;
         $targetDay = ($initial_day == self::DOMINGO) ? 0 : $initial_day;
         $baseDate = Carbon::now()->previous($targetDay);
         $initialDate = $baseDate->copy()->addWeeks($week_selected);
@@ -269,6 +270,7 @@ class MotorController extends Controller
         $produccion = $user->produccion($initial_date, $final_date);
         $horas_extra = $user->horasExtras($initial_date, $final_date);
         $other_works = $user->otherWorksProduccion($initial_date, $final_date);
+        $jobs = $user->jobsProduccion($initial_date, $final_date);
 
 
         // Pasar la imagen base64 a la vista
@@ -279,6 +281,7 @@ class MotorController extends Controller
             'produccion' => $produccion,
             'horas_extras' => $horas_extra,
             'other_works' => $other_works,
+            'jobs' => $jobs,
 
         ])->render();
 

@@ -147,6 +147,7 @@
                             @endforeach
             </tbody>
         </table>
+        @if($horas_extras->count() > 0)
         <table style="top:40px" class="table">
             <tr>
                 <td colspan="7" style="background: #28a745;color:#fff;padding: 5px;border:2px solid #28a745;text-align:center;font-size:18px;font-weight:bold">Horas Extra</td>
@@ -187,6 +188,8 @@
              </tr>
             </tbody>
         </table>
+        @endif
+        @if ($other_works->count() > 0)
         <table style="top:60px" class="table">
             <tr>
             <td colspan="7" style="background: #ffc107;color:#fff;padding: 5px;border:2px solid #ffc107;text-align:center;font-size:18px;font-weight:bold">Trabajos sin OS</td>
@@ -211,6 +214,23 @@
             
             </tbody>
         </table>
+        @endif
+        @if ($jobs->count() > 0)
+        <table style="top:60px" class="table">
+            <tr>
+            <td colspan="7" style="background: #dc3545;color:#fff;padding: 5px;border:2px solid #dc3545;text-align:center;font-size:18px;font-weight:bold">Jobs (Trabajos Adicionales)</td>
+            </tr>
+        </table>
+        <table  style="top:60px" class="table">
+            
+            <thead style="background: #dc3545;color:#fff;padding: 5px;border:2px solid #dc3545;border-bottom:3px solid #333">
+            
+                <th style="width:170px;text-align: left">Fecha</th>
+                <th style="text-align: left">Tipo de Trabajo</th>
+                <th style="text-align: left">OS</th>
+                <th style="width:60px">Bonificaci&oacute;n</th>                
+            </thead>
+        @endif
     </div>
   
 </body>

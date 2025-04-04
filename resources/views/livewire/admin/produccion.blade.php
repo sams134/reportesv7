@@ -166,6 +166,38 @@
             </div>
         </div>
     </x-form-card>
+    <x-form-card title="Jobs">
+        <div class="row">
+            <div class="col-12">
+                <table class="table table-bordered table-hover ">
+                    <thead class="table-dark">
+                      <tr>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Tipo Trabajo</th>
+                        <th scope="col">OS</th>
+                        <th scope="col">Cliente</th>
+                        
+                        <th scope="col">Data</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($jobs as $index => $job)
+                            <tr @if($index % 2 == 0) style="background-color: #f2f2f2;" @endif>
+                                <td>{{ucfirst(\Carbon\Carbon::parse($job->created_at)->locale('es')->isoFormat('dddd D [de] MMMM')) }}</td>
+                                <td>{{$job->jobType->name}}</td>
+                                <td><a href="{{route('motores.show',$job->motor)}}"> <span class="fw-bold">{{$job->motor->fullOS}}</span>
+                                    <br> {{$job->motor->potencia}}</a>
+                                </td>
+                                <td>{{$job->motor->cliente->cliente}}</td>
+                               
+                                <td><a href="{{route('motors.showJob', $job)}}"><i class="fas fa-eye"></i></a></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </x-form-card>
     
     {{-- Botones de imprimir pdf --}}
     

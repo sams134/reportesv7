@@ -14,17 +14,72 @@ class IndexBoard extends Component
     use WithFileUploads;
     public $board, $photo;
     public $camera_id_motor;
-    protected $listeners = ['cameraLoaded'];
+    public $comment;
+    public $ver = "OS (Numero de Orden)", $pins;
+    protected $listeners = ['cameraLoaded', 'deletePin'];
     protected $rules = [
         'photo' => 'required|image|max:51200', // 50MB en kilobytes
     ];
     public function mount(Board $board)
     {
         $this->board = $board;
+        foreach ($this->board->pins as $pin) {
+            $this->comment[$pin->id] = $pin->comment;
+        }
     }
     public function render()
     {
+        $this->pins = $this->board->pins()->with('pinable')->get();
+
+        if ($this->ver == "OS (Numero de Orden)") {
+            $this->pins = $this->pins->sortByDesc(function ($pin) {
+            if ($pin->pinable_type === "App\\Models\\Motor") {
+                return $pin->pinable->os;
+            } elseif ($pin->pinable_type === "App\\Models\\Job") {
+                return $pin->pinable->os;
+            }
+            // En caso de otro tipo, se puede retornar un valor predeterminado
+            return 0;
+            })->values(); // values() reindexa la colección
+        }elseif ($this->ver == "Fecha de Creación") {
+            $this->pins = $this->pins->sortByDesc(function ($pin) {
+            return $pin->id;
+            })->values(); // values() reindexa la colección
+        }elseif ($this->ver == "Cliente") {
+            $this->pins = $this->pins->sortByDesc(function ($pin) {
+                if ($pin->pinable_type === "App\\Models\\Motor") {
+                    return $pin->pinable->cliente->cliente;
+                } elseif ($pin->pinable_type === "App\\Models\\Job") {
+                    return $pin->pinable->motor->cliente->cliente;
+                }
+                // En caso de otro tipo, se puede retornar un valor predeterminado
+                return 0;
+            })->values(); // values() reindexa la colección
+        }
+
         return view('livewire.boards.index-board');
+    }
+    public function updatedComment($value, $propertyName)
+    {
+        // $propertyName debería tener un formato tipo "comment.{pinId}"
+        $parts = explode('.', $propertyName);
+        $pinId = end($parts); // Esto extrae el último segmento, que es el pin_id
+
+        // Ahora, $value es el nuevo valor del comentario y $pinId es el índice que buscas.
+        $pin = $this->board->pins()->find($pinId);
+        if ($pin) {
+            $pin->update([
+                'comment' => $value,
+            ]);
+        }
+    }
+    public function deletePin($pinId)
+    {
+        $pin = $this->board->pins()->find($pinId);
+        if ($pin) {
+            $pin->delete();
+        }
+        $this->board = Board::find($this->board->id);
     }
     public function cameraLoaded($id_motor)
     {
@@ -33,8 +88,8 @@ class IndexBoard extends Component
     public function updatedPhoto()
     {
         ini_set('memory_limit', '256M');
-   
-       $this->validate();
+
+        $this->validate();
         $motor = Motor::find($this->camera_id_motor);
         if ($this->photo != "") {
             $image = Image::make($this->photo);

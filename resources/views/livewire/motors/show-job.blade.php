@@ -18,18 +18,17 @@
                         @else
                             <img class="img-thumbnail" src="{{ asset('img/default-avatar.png') }}" alt="No hay foto" />
                         @endif
-                        <h2>{{ $job->fullOs }}</h2>
+                        <h3>{{ $job->fullOs }}</h3>
                         <a href="{{ route('motores.show', $motor) }}">
-                            <h4>{{ $motor->fullos }}</h4>
+                            <h5>{{ $motor->fullos }}</h5>
                         </a>
                         <span>{{ $motor->cliente->cliente }}</span>
-                        <p>
-                            <button data-bs-toggle="modal" data-bs-target="#error-modal" class="bg-transparent border-0"
-                                wire:click="loadStatusModal({{ $motor->id_motor }})">
-                                <x-status-badge status_id="{{ $motor->status_id }}" data-bs-toggle="modal"
-                                    data-bs-target="#error-modal" />
-                            </button>
-                        </p>
+                        @if ($job->finished)
+                            <span class="badge badge-soft-success">Trabajo Finalizado</span>
+                        @else
+                        <span class="badge badge-soft-danger">Trabajo en Proceso</span>
+                        @endif
+                        
                         @foreach ($job->usersAssigned as $tecnico)
                             <p class="my-1">
                                 <a href="{{ route('motores.index.search', $tecnico->name) }}"> <span><i
@@ -65,7 +64,7 @@
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <button class="btn btn-falcon-primary me-1 mb-1 little-button" type="button"
-                                    wire:click="$emit('openAsignacionesModal', {{ $motor->id_motor }})"
+                                    wire:click="$emit('openAsignacionesJobModal', {{$job->id }})"
                                     @if ($motor->fin) disabled @endif>
                                     <span><i class="fas fa-user-plus mx-1"></i> Asignar a Tecnico </span></a>
                                 </button>
@@ -166,6 +165,47 @@
                     </tr>
                 </table>
             </x-pretty-card>
+            <x-pretty-card>
+                <h3>Fechas Importantes</h3>
+                <table class="table table-striped table-datos">
+                    <colgroup>
+                        <col class="bg-soft-primary" />
+                        <col />
+
+                    </colgroup>
+                    <tr>
+                        <td>Fecha de Creaci&oacute;n de Trabajo</td>
+                        <td>
+                            <div style="d-block">
+                                {{ Carbon\Carbon::parse($job->created_at)->format('d/m/Y') }}
+                            </div>
+
+                            <small>
+                                {{ Carbon\Carbon::parse($job->created_at)->diffForHumans() }}
+                            </small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Fecha de Finalizaci&oacute;n</td>
+                        <td>
+                            @if ($job->finished)
+                                <div style="d-block">
+                                    {{ Carbon\Carbon::parse($job->finished)->format('d/m/Y') }}
+                                </div>
+                                <small>
+                                    {{ Carbon\Carbon::parse($job->finished)->diffForHumans() }}
+                                </small>
+                            @else
+                                <div style="d-block">
+                                    <button class="btn btn-falcon-primary me-1 mb-1" type="button" style="font-size:12px" onclick="finalizarJob()">
+                                        Finalizar
+                                    </button>
+                                </div>
+                            @endif
+                        </td>
+                    </tr>
+                </table>
+            </x-pretty-card>
             <style>
                 .slider-img {
                     height: 300px;
@@ -252,7 +292,7 @@
                     <div class="card py-3 px-1 mt-3">
                         <div class="row">
                             @foreach ($job->images->sortByDesc('id') as $foto)
-                                <div class="col-12 col-sm-6 col-lg-4 col-xl-3 my-2">
+                                <div class="col-12 col-sm-6 col-lg-4 col-xl-4  col-xxl-3 my-2">
                                     <div class="card card-gallery">
                                         <img class="card-img-top" src="{{ asset('storage' . $foto->image) }}"
                                             alt="Foto"
@@ -296,6 +336,7 @@
             </x-pretty-card>
         </div>
     </div>
+    @livewire('motors.asignaciones-job-modal',['job' => $job])
     <script>
         window.addEventListener('init-swiper', event => {
             console.log('Evento "init-swiper" recibido. Reinicializando Swiper...');
@@ -311,6 +352,26 @@
         });
         loadCamera = function() {
             document.querySelector("#photoUpload").click();
+        }
+        finalizarJob = function() {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¿Quieres finalizar el trabajo?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, finalizar!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.call('finalizarJob');
+                    Swal.fire(
+                        'Finalizado!',
+                        'El trabajo ha sido finalizado.',
+                        'success'
+                    )
+                }
+            })
         }
     </script>
 </div>

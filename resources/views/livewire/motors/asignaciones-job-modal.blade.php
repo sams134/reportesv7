@@ -13,29 +13,12 @@
                         <h4 class="mb-1" id="modalExampleDemoLabel">Asignar la OS {{ $motor->fullOs }}</h4>
                     </div>
                     <div class="p-4 pb-0">
+                       
                         <div class="row">
-                            <x-pretty-card title="Datos del cliente">
-                                <div class="">
-                                    <div class="row">
-                                        <h5 class="mb-0">Estatus Actual</h5>
-                                        <p class="mb-0">El estatus actual de la OS es: <x-status-badge
-                                                status_id="{{ $motor->status_id }}" /></p>
-                                    </div>
-                                    <div class="row">
-                                        <select class="form-select my-3" aria-label="Default select example" wire:model="newStatus" >
-                                            @foreach ($statuses as $item)
-                                                <option value="{{$item->id}}">{{$item->status}} </option>
-                                            @endforeach
-                                        </select>  
-                                    </div>
-                                </div>
-                            </x-pretty-card>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 col-sm-6">
+                            <div class="col-12">
                                 <x-pretty-card>
                                     <div class="table-responsive scrollbar" style="max-height: 60vh; overflow-y: auto;">
-                                        <h3>Listado de Técnicos</h3>
+                                        <h3>Listado de Técnicos capacitados para hacer {{$job->jobType->name}}</h3>
                                         <table class="table table-hover">
                                             @foreach ($tecnicos as $tecnico)
                                                 <tr>
@@ -58,32 +41,6 @@
                                     </div>
                                 </x-pretty-card>
                             </div>
-                            <div class="col-12 col-sm-6">
-                                <x-pretty-card>
-                                    <div class="table-responsive scrollbar" style="max-height: 60vh; overflow-y: auto;">
-                                        <h3>Listado de Ayudantes</h3>
-                                        <table class="table table-hover">
-                                            @foreach ($ayudantes as $tecnico)
-                                                <tr>
-                                                    <td style="width:70px">
-                                                        <img src="{{ asset('storage/'.$tecnico->foto) }}" alt="" class="avatar" style="max-height: 80px; max-width: 50px;">
-                                                    </td>
-                                                    <td>
-                                                        <div class="form-check form-switch">
-                                                            <!-- Se usa una clave única para cada técnico en el array tecnicoSelected -->
-                                                            <input class="form-check-input" id="flexSwitchCheckDefault_{{ $tecnico->id }}" type="checkbox"
-                                                                wire:model="ayudanteSelected.{{ $tecnico->id }}" />
-                                                            <label class="form-check-label" for="flexSwitchCheckDefault_{{ $tecnico->id }}">
-                                                                {{ $tecnico->name }}
-                                                            </label>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </table>
-                                    </div>
-                                </x-pretty-card>
-                            </div>
                         </div>
                     </div>
                 @endif
@@ -94,13 +51,12 @@
             </div>
         </div>
     </div>
-
+</div>
 
 <script>
-      
     if (!window.modalListenerAttached) {
         window.modalListenerAttached = true;
-        console.log('Listener asignaciones modal attached');
+
         window.addEventListener('show-modal', event => {
             console.log('Evento "show-modal" recibido');
             var modalElement = document.getElementById('asignacionesModal');
@@ -125,14 +81,13 @@
             modal.hide();
             }
         });
-        window.addEventListener('AsignacionCreated', event => {
+        window.addEventListener('show-error', event => {
+            console.error('Evento "show-error" recibido:', event.detail.message);
             Swal.fire({
-            icon: 'success',
-            title: 'Asignación realizada',
-            text: 'La asignación ha sido realizada con éxito.',
-            confirmButtonText: 'Aceptar'
+            icon: 'error',
+            title: 'Error',
+            text: event.detail.message,
             });
         });
     }
 </script>
-</div>
