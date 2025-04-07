@@ -6,23 +6,28 @@ use App\Models\Motor;
 use App\Models\Status;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Intervention\Image\Facades\Image as IMG;
+use Livewire\WithFileUploads;
 
 class IndexMotors extends Component
 {
     use withPagination;
+    use WithFileUploads;
     protected $paginationTheme = 'bootstrap';
     public $search;
     public $equipo, $statuses, $newStatus;
     public $sort = 'fullos', $direction = 'desc';
-    public $boards;
+    public $boards,$photo;
     public $selectedMotors = [];
-    public $cards = false, $ver = "Todos";
+    public $cards = true, $ver = "Todos";
+    public $camera_id_motor;
    
 
 
-    protected $listeners = ['removeMotor', 'render', 'boardStored' => 'render', 'forceStatusChange', 'status-changed' => 'statusChanged'];
+    protected $listeners = ['removeMotor', 'render', 'boardStored' => 'render', 'forceStatusChange', 'status-changed' => 'statusChanged','cameraLoaded'];
     protected $queryString = [
         'search' => ['except' => ''],
         'sort' => ['except' => 'fullos'],
@@ -219,5 +224,70 @@ class IndexMotors extends Component
     {
         $this->selectedMotors = [];
     }
+    public function cameraLoaded($id_motor)
+    {
+        
+        $this->camera_id_motor = $id_motor;
+    }
+    public function updatedPhoto()
+    {
+      
+
+        
+        try {
+            $this->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+            ]);
+            
+            $motor = Motor::find($this->camera_id_motor);
+            if ($this->photo != "") {
+            $image = IMG::make($this->photo);
+
+            // Corregir la orientación basada en los metadatos EXIF
+            if ($image->exif('Orientation')) {
+                $orientation = $image->exif('Orientation');
+                switch ($orientation) {
+                case 3:
+                    $image->rotate(180); // Rotar 180 grados
+                    break;
+                case 6:
+                    $image->rotate(-90); // Rotar 90 grados en sentido horario
+                    break;
+                case 8:
+                    $image->rotate(90); // Rotar 90 grados en sentido antihorario
+                    break;
+                }
+            }
+
+            // Redimensionar la imagen
+            $image->resize(1024, null, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+
+            // Generar un nombre único para la imagen
+            $uniqueName = uniqid('img_', true) . '.' . $this->photo->getClientOriginalExtension();
+
+            $folderPath = '/uploads/' . "2M" . $motor->year . '-' . $motor->os . '/Fotos/Proceso';
+            // Definir la ruta de la imagen
+            $imagePath = $folderPath . '/' . $uniqueName;
+          
+            Storage::disk('public')->put($imagePath, (string) $image->encode());
+
+            $foto = $motor->fotos()->create([
+                'titulo' => $uniqueName,
+                'foto' => $folderPath . '/' . $uniqueName,
+                'thumb' => $folderPath . '/' . $uniqueName,
+                'type' => 2,
+                'user_id' => auth()->id(),
+            ]);
+            $this->emit('photoAdded', $motor->fullos);
+            }
+            $this->photo = null;
+        } catch (\Exception $e) {
+            $this->emit('error', $e->getMessage());
+        }
+    }
+
      
 }

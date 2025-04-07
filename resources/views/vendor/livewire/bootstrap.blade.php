@@ -5,10 +5,10 @@
         @php(isset($this->numberOfPaginatorsRendered[$paginator->getPageName()]) ? $this->numberOfPaginatorsRendered[$paginator->getPageName()]++ : $this->numberOfPaginatorsRendered[$paginator->getPageName()] = 1)
         
         <nav >
-            <ul class="pagination justify-content-center pagination-lg">
+            <ul class="pagination justify-content-center pagination">
                 {{-- Previous Page Link --}}
                 @if ($paginator->onFirstPage())
-                    <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.previous')">
+                    <li class="page-item " aria-disabled="true" aria-label="@lang('pagination.previous')">
                         <span class="page-link" aria-hidden="true">Anterior</span>
                     </li>
                 @else
@@ -21,7 +21,7 @@
                 @foreach ($elements as $element)
                     {{-- "Three Dots" Separator --}}
                     @if (is_string($element))
-                        <li class="page-item disabled" aria-disabled="true"><span class="page-link">{{ $element }}</span></li>
+                        <li class="page-item " aria-disabled="true"><span class="page-link">{{ $element }}</span></li>
                     @endif
 
                     {{-- Array Of Links --}}

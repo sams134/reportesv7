@@ -27,12 +27,12 @@
                     </div>
                 </div>
             @endif
-           
-            @if(in_array(auth()->user()->userType, [1, 2, 3]))
-            <button class="btn btn-falcon-warning ms-2 mb-1" type="button" wire:click="$emit('forceStatusChange')">
-                <span class="fas fa-exchange-alt me-1" data-fa-transform="shrink-3"></span>Forzar cambio de estado
-            </button>
-           @endif
+
+            @if (in_array(auth()->user()->userType, [1, 2, 3]))
+                <button class="btn btn-falcon-warning ms-2 mb-1" type="button" wire:click="$emit('forceStatusChange')">
+                    <span class="fas fa-exchange-alt me-1" data-fa-transform="shrink-3"></span>Forzar cambio de estado
+                </button>
+            @endif
         </div>
 
 
@@ -45,7 +45,8 @@
             <div class="mb-0">
                 <label class="form-label" for="basic-form-name">Busqueda de equipos</label>
                 <input class="form-control" id="basic-form-name" type="text"
-                    placeholder="Ingrese OS, nombre de equipo, cliente o t&eacute;cnico" wire:model.live.debounce.500ms="search" />
+                    placeholder="Ingrese OS, nombre de equipo, cliente o t&eacute;cnico"
+                    wire:model.live.debounce.500ms="search" />
             </div>
 
         </div>
@@ -86,7 +87,7 @@
                 <span wire:loading> Loading</span>
                 <div class="px-2"> {{ $motores->withQueryString()->links() }}</div>
                 <div class="table-responsive scrollbar">
-               
+
                     <table class="table table-hover table-striped overflow-hidden fs--1" style="font-size: 0.5rem"
                         wire:loading.remove>
                         <thead class="bg-300 text-dark">
@@ -144,8 +145,7 @@
                                                 <div class="avatar avatar-2xl ">
                                                     <img class="rounded-circle"
                                                         src="{{ asset('storage' . $motor->fotos->first()->thumb) }}"
-                                                        alt=""
-                                                        style="transition: transform 0.3s;"
+                                                        alt="" style="transition: transform 0.3s;"
                                                         onmouseover="this.style.transform='scale(1.9)';"
                                                         onmouseout="this.style.transform='scale(1)';" />
                                                 </div>
@@ -255,16 +255,16 @@
         @else
             <div class="card-body p-0 row">
                 <div class="px-1 card mx-4 mb-2 col-11">
-                    {{ $motores->links('pagination::bootstrap-5') }}
+                    {{ $motores->withQueryString()->links() }}
                 </div>
                 @foreach ($motores as $motor)
                     <div class="col-12 col-sm-6 col-xl-3" wire:loading.remove>
                         <div class="card overflow-hidden" style="margin-bottom: 1rem;">
-                            <div class="card-img-top d-flex justify-content-center align-items-center"
+                            <div class="card-img-top d-flex justify-content-center align-items-center mt-2"
                                 style="height: 10rem; overflow: hidden;">
                                 <a href="{{ route('motores.show', $motor) }}">
                                     @if ($motor->fotos && $motor->fotos->count() > 0 && Storage::exists('public' . $motor->fotos->first()->thumb))
-                                        <img class="img-fluid"
+                                        <img class="img-fluid rounded"
                                             src="{{ asset('storage' . $motor->fotos->first()->thumb) }}"
                                             alt="Foto del pin" style="max-height: 10rem; object-fit: cover;" />
                                     @else
@@ -291,15 +291,48 @@
                                             <td>RPM</td>
                                             <td>{{ $motor->rpm }}</td>
                                         </tr>
-                                    </tbody>
+                                        <tr>
+                                            <td>Fecha Ingreso</td>
+                                            <td>
+                                                <div style="d-block">
+                                                    {{ Carbon\Carbon::parse($motor->fecha_ingreso)->format('d/m/Y') }}
+                                                </div>
 
+                                                <small>
+                                                    {{ Carbon\Carbon::parse($motor->fecha_ingreso)->diffForHumans() }}
+                                                </small>
+                                            </td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                                 </p>
+                                <p class="mt--1">
+                                    @foreach ($motor->tecnicos as $tecnico)
+                                        <div class="avatar avatar-2xl">
+
+                                            <img src="{{ asset('storage/' . $tecnico->foto) }}" alt=""
+                                                class="rounded-circle mt-2">
+
+                                        </div>
+                                    @endforeach
+
+                                </p>
+                                <hr>
+                                <button class="btn btn-primary btn"  data-bs-toggle="tooltip"
+                                    data-bs-placement="top" title="Tomar foto" onclick="loadCamera({{ $motor->id_motor }})">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                                <button class="btn btn-primary btn ms-2"  data-bs-toggle="tooltip"
+                                    data-bs-placement="top" title="Asignar Tecnico"
+                                    wire:click="$emit('openAsignacionesModal', {{ $motor->id_motor }})">
+                                    <i class="fas fa-user-plus"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
                 @endforeach
-
+                <input type="file" id="photoUpload" wire:model="photo" accept="image/*"
+                style="display: none;">
             </div>
         @endif
 
@@ -316,6 +349,11 @@
 
 </div>
 <script>
+     loadCamera = function(id) {
+      
+                document.querySelector("#photoUpload").click();
+                Livewire.emit('cameraLoaded', id);
+            }
     document.addEventListener('livewire:load', function() {
         Livewire.on('boardUpdated', (board, cant) => {
             Swal.fire({
@@ -334,6 +372,20 @@
         Livewire.on('status-changed', (cantidadMotores) => {
             document.querySelectorAll('.form-check-input').forEach(input => {
                 input.checked = false;
+            });
+        });
+        Livewire.on('error', (message) => {
+            Swal.fire({
+            title: "Error",
+            text: message,
+            icon: "error"
+            });
+        });
+        Livewire.on('photoAdded', (message) => {
+            Swal.fire({
+            title: "Excelente",
+            text: "Se ha agregado una imagen al la OS: "+message,
+            icon: "success"
             });
         });
     });
