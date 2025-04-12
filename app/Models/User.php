@@ -52,13 +52,17 @@ class User extends Authenticatable
     ];
 
     public const DEVELOPER = '1';
-    public const ADMIN = '2';
-    public const OFICINA = '3';
-    public const ALMACEN = '4';
-    public const PRUEBAS = '5';
+    public const GERENCIA = '2';
+    public const ADMINISTRACION = '3';
+    public const BODEGA = '4';
+    public const TORNOS = '5';
     public const TECNICO = '6';
-    public const TORNOS = '7';
-    public const AYUDANTES = '8';
+    public const AYUDANTES = '7';
+    public const PRUEBAS = '8';
+    public const PILOTOS = '9';
+    public const VENDEDORES = '10';
+    public const JEFE = '11';
+    public const PINTURA = '12';
 
     /**
      * The accessors to append to the model's array form.
@@ -173,5 +177,9 @@ class User extends Authenticatable
         return $this->belongsToMany(\App\Models\Job::class, 'jobs_assigned', 'user_id', 'job_id')
             ->withPivot('assigned_by')
             ->withTimestamps();
+    }
+    public function config()
+    {
+        return $this->hasOne(\App\Models\Config::class, 'user_id', 'id');
     }
 }

@@ -43,7 +43,7 @@
                     $user = Auth::user();
                 @endphp
 
-                @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::OFICINA, \App\Models\User::ADMIN]))
+                @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::GERENCIA, \App\Models\User::ADMINISTRACION, \App\Models\User::VENDEDORES]))
                     <li class="nav-item">
                         <!-- label-->
                         <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
@@ -83,7 +83,7 @@
                                 Motores</span>
                         </div>
                     </a>
-                    @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::OFICINA, \App\Models\User::ADMIN, \App\Models\User::PRUEBAS]))
+                    @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::GERENCIA, \App\Models\User::ADMINISTRACION, \App\Models\User::PRUEBAS]))
                     <!-- parent pages--><a class="nav-link" href="{{ route('motores.create') }}" role="button"
                         aria-expanded="false">
                         <div class="d-flex align-items-center"><span class="nav-link-icon"><span
@@ -94,17 +94,17 @@
                     @endif
                 </li>
                 @livewire('boards.boards-navigation')
-                @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::OFICINA, \App\Models\User::ADMIN, \App\Models\User::PRUEBAS,\App\Models\User::TORNOS]))
+                @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::GERENCIA, \App\Models\User::ADMINISTRACION, \App\Models\User::PRUEBAS,\App\Models\User::TORNOS]))
                 <li class="nav-item">
                   <!-- label-->
                   <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
-                      <div class="col-auto navbar-vertical-label">Trabajos de Torno
+                      <div class="col-auto navbar-vertical-label">Trabajos Mec&aacute;nicos
                       </div>
                       <div class="col ps-0">
                           <hr class="mb-0 navbar-vertical-divider" />
                       </div>
                   </div>
-                  <!-- parent pages--><a class="nav-link" href="{{ route('metalizados.index') }}" role="button"
+                  <!-- parent pages--><a class="nav-link" href="{{route('motors.indexJobs','metalizados')}}" role="button"
                       aria-expanded="false">
                       <div class="d-flex align-items-center"><span class="nav-link-icon"><span
                                   class="fas fa-wind"></span></span><span class="nav-link-text ps-1">Ver Metalizados</span>
@@ -115,13 +115,36 @@
                                   class="fas fa-record-vinyl"></span></span><span class="nav-link-text ps-1">Ver Trabajos de Torno</span>
                       </div>
                   </a>
-                   <!-- parent pages--><a class="nav-link" href="#" role="button" aria-expanded="false">
+                   <!-- parent pages--><a class="nav-link" href="{{route('motors.indexJobs','balanceos')}}" role="button" aria-expanded="false">
                     <div class="d-flex align-items-center"><span class="nav-link-icon"><span
                         class="fas fa-balance-scale-left"></span></span><span class="nav-link-text ps-1">Ver Balanceos Dinámicos</span>
                         </div>
                     </a>
+                     <!-- parent pages--><a class="nav-link" href="{{route('motors.indexJobs','soldaduras')}}" role="button" aria-expanded="false">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
+                            class="fas fa-wrench"></span></span><span class="nav-link-text ps-1">Ver Soldaduras y reconstrucciones</span>
+                            </div>
+                        </a>
               </li>
               @endif
+              @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::GERENCIA, \App\Models\User::ADMINISTRACION, \App\Models\User::PRUEBAS,\App\Models\User::TORNOS,\App\Models\User::JEFE]))
+              <li class="nav-item">
+                <!-- label-->
+                <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
+                    <div class="col-auto navbar-vertical-label">Trabajos Electricos
+                    </div>
+                    <div class="col ps-0">
+                        <hr class="mb-0 navbar-vertical-divider" />
+                    </div>
+                </div>
+                <!-- parent pages--><a class="nav-link" href="{{route('motors.indexJobs','metalizados')}}" role="button"
+                    aria-expanded="false">
+                    <div class="d-flex align-items-center"><span class="nav-link-icon"><span
+                                class="fas fa-wind"></span></span><span class="nav-link-text ps-1">Ver Metalizados</span>
+                    </div>
+                </a>
+                </li>
+                @endif
                 <li class="nav-item">
                     <!-- label-->
                     <div class="row navbar-vertical-label-wrapper mt-3 mb-2">

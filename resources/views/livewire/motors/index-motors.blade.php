@@ -10,10 +10,12 @@
             <a class="btn btn-outline-primary me-1 mb-1" type="button" href="{{ route('motores.create') }}">
                 <span class="fas fa-plus me-1" data-fa-transform="shrink-3"></span>Nuevo Equipo
             </a>
-            @livewire('motors.create-board')
+            <div class="d-none d-sm-block">
+                @livewire('motors.create-board')
+            </div>
 
             @if ($boards->count() > 0)
-                <div class="btn-group">
+                <div class="btn-group d-none d-sm-block">
                     <button class="btn dropdown-toggle mb-2 btn-success" type="button" data-bs-toggle="dropdown"
                         aria-haspopup="true" aria-expanded="false">Agregar a tablero</button>
                     <div class="dropdown-menu">
@@ -29,7 +31,7 @@
             @endif
 
             @if (in_array(auth()->user()->userType, [1, 2, 3]))
-                <button class="btn btn-falcon-warning ms-2 mb-1" type="button" wire:click="$emit('forceStatusChange')">
+                <button class="btn btn-falcon-warning ms-2 mb-1 d-none d-sm-block" type="button" wire:click="$emit('forceStatusChange')">
                     <span class="fas fa-exchange-alt me-1" data-fa-transform="shrink-3"></span>Forzar cambio de estado
                 </button>
             @endif

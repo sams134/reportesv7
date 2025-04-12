@@ -5,7 +5,7 @@
         @php(isset($this->numberOfPaginatorsRendered[$paginator->getPageName()]) ? $this->numberOfPaginatorsRendered[$paginator->getPageName()]++ : $this->numberOfPaginatorsRendered[$paginator->getPageName()] = 1)
         
         <nav >
-            <ul class="pagination justify-content-center pagination">
+            <ul class="pagination justify-content-center custom-pagination">
                 {{-- Previous Page Link --}}
                 @if ($paginator->onFirstPage())
                     <li class="page-item " aria-disabled="true" aria-label="@lang('pagination.previous')">

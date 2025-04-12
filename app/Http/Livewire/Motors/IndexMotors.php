@@ -38,6 +38,10 @@ class IndexMotors extends Component
         $this->search = $search;
         $this->equipo = new Motor();
         $this->statuses = Status::all();
+        if (User::find(Auth::id())->config)
+            $this->cards = User::find(Auth::id())->config->view_cards==1 ? true: false;
+        else
+            $this->cards = false;
     }
     public function render()
     {
@@ -207,6 +211,13 @@ class IndexMotors extends Component
     public function toggleView()
     {
         $this->cards = !$this->cards;
+        $user = User::find(Auth::id());
+        if ($user->config) {
+            $user->config->view_cards = $this->cards ? 1 : 0;
+            $user->config->save();
+        } else {
+            $user->config()->create(['view_cards' => $this->cards ? 1 : 0]);
+        }
     }
     public function forceStatusChange()
     {

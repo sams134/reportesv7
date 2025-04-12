@@ -204,7 +204,7 @@
                 <th style="width:60px">Bonificaci&oacute;n</th>                
             </thead>
             <tbody>
-            @foreach ($other_works as $work)
+            @foreach ($other_works as $index=>$work)
             <tr @if($index % 2 == 0) style="background-color: #f2f2f2;" @endif>
                     <td>{{ucfirst(\Carbon\Carbon::parse($work->fecha)->locale('es')->isoFormat('dddd D [de] MMMM')) }}</td>
                     <td style="text-transform: capitalize">{{$work->descripcion}}</td>
@@ -224,12 +224,28 @@
         <table  style="top:60px" class="table">
             
             <thead style="background: #dc3545;color:#fff;padding: 5px;border:2px solid #dc3545;border-bottom:3px solid #333">
-            
-                <th style="width:170px;text-align: left">Fecha</th>
+                <th style="width:100px;text-align: left">JobOS</th>
+                <th style="width:160px;text-align: left">Fecha</th>                
                 <th style="text-align: left">Tipo de Trabajo</th>
-                <th style="text-align: left">OS</th>
+                <th style="text-align:left;width:100px;">OS</th>
+                <th style="text-align:left;">Cliente</th>
                 <th style="width:60px">Bonificaci&oacute;n</th>                
             </thead>
+            @foreach ($jobs as $index=>$job)
+            <tr @if($index % 2 == 0) style="background-color: #f2f2f2;" @endif>
+                    <td style="text-align: left">{{$job->fullos}}</td>
+                    <td>{{ucfirst(\Carbon\Carbon::parse($job->fecha)->locale('es')->isoFormat('dddd D [de] MMMM')) }}</td>
+                    <td style="text-transform: capitalize">{{$job->jobType->name}} <br>
+                        {{$job->jobType->campo1}}: {{$job->value_campo1}}
+                        @if ($job->jobType->campo2)
+                        <br>{{$job->jobType->campo2}}: {{$job->value_campo2}}   
+                        @endif
+                    </td>
+                    <td style="text-align: left">{{$job->motor->fullOS}}</td>
+                    <td style="text-align: left">{{$job->motor->cliente->cliente}}</td>
+                    <td>Q. </td>
+                </tr>
+            @endforeach
         @endif
     </div>
   
