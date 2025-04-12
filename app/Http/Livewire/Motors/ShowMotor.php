@@ -4,8 +4,10 @@ namespace App\Http\Livewire\Motors;
 
 use App\Models\Motor;
 use App\Models\Status;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Intervention\Image\Facades\Image as IMG;
 
 class ShowMotor extends Component
 {
@@ -81,22 +83,64 @@ class ShowMotor extends Component
     }
     public function updatedPhoto()
     {
-        $folderPath = '/uploads/' . $this->motor->year . '-' . $this->motor->os . '/Fotos/Proceso';
+
         
-        $this->validate([
+        try {
+            $this->validate([
             'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
-        ]);
+            ]);
+            
+            
+            if ($this->photo != "") {
+            $image = IMG::make($this->photo);
+                
+            // Corregir la orientación basada en los metadatos EXIF
+            if ($image->exif('Orientation')) {
+                $orientation = $image->exif('Orientation');
+                switch ($orientation) {
+                case 3:
+                    $image->rotate(180); // Rotar 180 grados
+                    break;
+                case 6:
+                    $image->rotate(-90); // Rotar 90 grados en sentido horario
+                    break;
+                case 8:
+                    $image->rotate(90); // Rotar 90 grados en sentido antihorario
+                    break;
+                }
+            }
+            
+            // Redimensionar la imagen
+            $image->resize(1024, null, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
 
-        $uniqueFileName = $this->photo->getClientOriginalName();
-        $this->photo->storeAs($folderPath, $uniqueFileName, 'public');
+            // Generar un nombre único para la imagen
+            $uniqueName = uniqid('img_', true) . '.' . $this->photo->getClientOriginalExtension();
 
-        $foto = $this->motor->fotos()->create([
-            'titulo' => $uniqueFileName,
-            'foto' => $folderPath . '/' . $uniqueFileName,
-            'thumb' => $folderPath . '/' . $uniqueFileName,
-            'type' => 2,
-            'user_id' => auth()->id(),
-        ]);
+            $folderPath = '/uploads/' . $this->motor->fullos . '/Fotos/Proceso';
+            // Definir la ruta de la imagen
+            $imagePath = $folderPath . '/' . $uniqueName;
+
+            
+            
+            Storage::disk('public')->put($imagePath, (string) $image->encode());
+
+            $foto = $this->motor->fotos()->create([
+                'titulo' => $uniqueName,
+                'foto' => $folderPath . '/' . $uniqueName,
+                'thumb' => $folderPath . '/' . $uniqueName,
+                'type' => 2,
+                'user_id' => auth()->id(),
+            ]);
+            $this->emit('photoAdded', $this->motor->fullos);
+            }
+            $this->photo = null;
+        } catch (\Exception $e) {
+            $this->emit('error', $e->getMessage());
+        }
+       
         
         $this->photo = null;
         $this->motor = Motor::find($this->motor->id_motor);

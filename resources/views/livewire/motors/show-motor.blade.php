@@ -619,6 +619,13 @@
                 }
             })
         }
+        window.addEventListener('photoAdded', event => {
+            Swal.fire({
+            title: event.detail.message || 'Imagen agregada con éxito',
+            icon: 'success',
+            confirmButtonText: 'Aceptar'
+            });
+        });
         window.addEventListener('init-swiper', event => {
             console.log('Evento "init-swiper" recibido. Reinicializando Swiper...');
             document.querySelectorAll('.swiper-container.theme-slider').forEach(container => {
@@ -651,5 +658,6 @@
                 }
             })
         }
+       
     </script>
 </div>
