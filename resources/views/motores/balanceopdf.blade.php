@@ -89,7 +89,8 @@ $left = 50; // Margen izquierdo
     <div style="width: 900px">
         <p style="font-size: 16px;position:absolute;top:{{ $top2 + 380 }}px;left:15px;font-weight:bold ">Left Radius:</p>
         <p style="font-size: 16px;position:absolute;top:{{ $top2 + 380 }}px;left:670px;font-weight:bold ">Right Radius:</p>
-        <img src="{{ public_path('storage/balanceos_arts/679d53b56a5d2.JPG') }}" alt="Imagen Predeterminada" style="width: 440px; height: 230px;position:absolute;top:{{ $top2 + 390 }}px;left:220px;">
+        <img src="{{ public_path($motor->balanceo->balanceoArt->image) }}" alt="Imagen Predeterminada" style="width: 440px; height: 230px;position:absolute;top:{{ $top2 + 390 }}px;left:220px;">
+        
         <p style="font-size: 17px;position:absolute;top:{{ $top2 + 540 }}px;left:15px;font-weight:bold ">Dimension A:</p>
         <p style="font-size: 17px;position:absolute;top:{{ $top2 + 570 }}px;left:15px;font-weight:bold ">Dimension B:</p>
 

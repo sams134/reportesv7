@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class BalanceoArt extends Model
 {
     use HasFactory;
-    use HasFactory;
+
 
     // Nombre de la tabla en la base de datos
     protected $table = 'balanceos_arts';
@@ -17,7 +17,7 @@ class BalanceoArt extends Model
     protected $primaryKey = 'id';
 
     // Indica si la clave primaria no es auto-incremental (si se necesita cambiar, define `$incrementing = true;`)
-    public $incrementing = false;
+  
 
     // Tipo de clave primaria
     protected $keyType = 'int';

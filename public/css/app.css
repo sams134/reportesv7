@@ -11387,10 +11387,3 @@ textarea.form-control-lg {
 .small {
   font-size: 0.875rem !important;
 }
-@media (max-width: 576px) {
-  .custom-pagination {
-    width: 90%;
-    margin: 0 auto; /* centra el contenedor */
-    flex-wrap: wrap;
-  }
-}

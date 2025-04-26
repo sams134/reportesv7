@@ -45,6 +45,20 @@
 </div>
 @push('livescripts')
      <script>
-        
+        document.addEventListener('livewire:load', function () {
+            Livewire.on('closeNewContact', () => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Nuevo contacto guardado',
+                showConfirmButton: false,
+                timer: 1500
+            });
+            var modal = document.getElementById('newContact-modal');
+            var bootstrapModal = bootstrap.Modal.getInstance(modal);
+            if (bootstrapModal) {
+                bootstrapModal.hide();
+            }
+            });
+        });
         </script>
 @endpush

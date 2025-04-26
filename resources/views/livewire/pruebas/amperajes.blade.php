@@ -1,0 +1,485 @@
+<div>
+    {{-- Because she competes with no one, no one can compete with her. --}}
+    <x-form-card title="Datos de Placa">
+        <div class="row">
+            <div class="col-12 col-lg-6">
+                <label for="lado_carga">Escoja Origen de Datos</label>
+                <select class="form-select mb-3" aria-label="Default select example" wire:model="data_origin">
+                    <option selected="">Escoja Origen</option>
+                    <option value="1">Placa</option>
+                    <option value="2">Densidades</option>
+                </select>
+                @error('data_origin')
+                    <span class="text-danger">Debe seleccionar el origen de los datos de placa</span>
+                @enderror
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">Voltaje</label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="{{ $motor->volts }}" wire:model.defer="voltaje_placa" />
+                    @error('voltaje_placa')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">Amperaje</label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="{{ $motor->amps }}" wire:model.defer="amperaje_placa" />
+                    @error('amperaje_placa')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                <label for="sellos">Escoja Conexion segun voltaje escogido</label>
+                <div class="d-flex">
+                    <div class="form-check mx-2">
+                        <input class="form-check-input" id="flexRadioDefault1" type="radio" name="flexRadioDefault"
+                            wire:model="conexion_placa" value="1" />
+                        <label class="form-check-label" for="flexRadioDefault1">Delta</label>
+                    </div>
+                    <div class="form-check mx-2">
+                        <input class="form-check-input" id="flexRadioDefault2" type="radio" name="flexRadioDefault"
+                            wire:model="conexion_placa" value="2" />
+                        <label class="form-check-label" for="flexRadioDefault2">Estrella</label>
+                    </div>
+                </div>
+                @error('conexion_placa')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
+            </div>
+            <div class="col-12 col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">Cantidad de Circuitos en paralelo
+                        (externos)</label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="Serie=1, Paralelo=2," wire:model="circuitos_placa" />
+                    @error('circuitos_placa')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">Rpm Placa</label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="{{ $motor->rpm }}" wire:model="rpm_placa" />
+                    @error('rpm_placa')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">Hz Placa</label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="{{ $motor->hz }}" wire:model="hz_placa" />
+                    @error('hz_placa')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+
+            </div>
+        </div>
+        <div class="card-footer bg-light d-flex justify-content-end">
+            <button type="button" class="btn btn-danger me-2" onclick="deleteTestNameplate()">
+                Borrar placa y datos de prueba
+            </button>
+            <button type="button" class="btn btn-primary" wire:click="saveNameplate">
+                @if ($tested)
+                    Actualizar datos de placa
+                @else
+                    Registrar datos de placa
+                @endif
+            </button>
+
+        </div>
+    </x-form-card>
+    <x-form-card title="Datos de Prueba">
+        <div class="row">
+            <div class="col-12 col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">Volts &phi; 1</label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="Voltaje Fase 1 Prueba" wire:model.defer="voltaje_1" />
+                    @error('voltaje_1')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">Volts &phi; 2</label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="Voltaje Fase 2 Prueba" wire:model.defer="voltaje_2" />
+                    @error('voltaje_2')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">Volts &phi; 3</label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="Voltaje Fase 3 Prueba" wire:model.defer="voltaje_3" />
+                    @error('voltaje_3')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">Amps &phi; 1</label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="Amperaje Fase 1 Prueba" wire:model.defer="amperaje_1" />
+                    @error('amperaje_1')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">Amps &phi; 2</label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="Amperaje Fase 3 Prueba" wire:model.defer="amperaje_2" />
+                    @error('amperaje_2')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">Amps &phi; 3</label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="Amperaje Fase 3 Prueba" wire:model.defer="amperaje_3" />
+                    @error('amperaje_3')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-lg-6">
+                <label for="sellos">Escoja Conexion Realizada para la prueba</label>
+                <div class="d-flex">
+                    <div class="form-check mx-2">
+                        <input class="form-check-input" id="flexRadioDefault3" type="radio"
+                            name="flexRadioDefault2" wire:model="conexion_realizada" value="1" />
+                        <label class="form-check-label" for="flexRadioDefault3">Delta</label>
+                    </div>
+                    <div class="form-check mx-2">
+                        <input class="form-check-input" id="flexRadioDefault4" type="radio"
+                            name="flexRadioDefault2" wire:model="conexion_realizada" value="2" />
+                        <label class="form-check-label" for="flexRadioDefault4">Estrella</label>
+                    </div>
+                </div>
+                @error('conexion_realizada')
+                    <span class="text-danger">{{ $message }}</span>
+                @enderror
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">Cantidad de Circuitos en paralelo
+                        (realizados en la prueba)</label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="Serie=1, Paralelo=2," wire:model="circuitos_prueba" />
+                    @error('circuitos_prueba')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label" for="exampleFormControlInput1">RPM </label>
+                    <input class="form-control" id="exampleFormControlInput1" type="number" step="1"
+                        placeholder="Rpm leidas con tacometro" wire:model="rpm_prueba" />
+                    @error('rpm_prueba')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-light d-flex justify-content-end">
+            <button type="button" class="btn btn-danger me-2" onclick="deleteTest()">
+                Borrar prueba
+            </button>
+            <button type="button" class="btn btn-primary" wire:click="saveTest">
+                @if ($tested)
+                    Actualizar prueba en vacio
+                @else
+                    Registrar prueba en vacio
+                @endif
+            </button>
+
+        </div>
+    </x-form-card>
+
+    @if ($tested)
+        <x-form-card title="Resultados de Prueba">
+            <h3>Resumen</h3>
+            <div class="alert alert-success border-2 d-flex align-items-center" role="alert">
+                <div class="bg-success me-3 icon-item"><span class="fas fa-check-circle text-white fs-3"></span></div>
+                <p class="mb-0 flex-1">Todo se ve bien...</p>
+                <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-6 col-xxl-4">
+                    <div class="div"
+                        style="border: 1px solid #ccc; padding: 0px; border-radius: 5px; text-align: center; background-color: #555; ">
+                        <h4 style="color: aliceblue" class="mb-0">Datos de
+                            {{ $data_origin == 1 ? 'Placa' : 'Densidades' }}</h4>
+                    </div>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <td>Voltaje Placa</td>
+                                <td>{{ $voltaje_placa }} VAC</td>
+                            </tr>
+                            <tr>
+                                <td>Amperaje Placa</td>
+                                <td>{{ $amperaje_placa }} A</td>
+                            </tr>
+                            <tr>
+                                <td>Hz</td>
+                                <td>{{ $hz_placa }}Hz</td>
+                            </tr>
+                            <tr>
+                                <td>Conexion</td>
+                                <td>{{ $circuitos_placa }} {{ $conexion_placa == 1 ? 'Δ' : 'Y' }}</td>
+                            </tr>
+                            <tr>
+                                <td>RPM</td>
+                                <td>{{ $rpm_placa }}</td>
+                            </tr>
+                            <tr>
+                                <td>Polos</td>
+                                <td>{{ $polos }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-12 col-md-6 col-xxl-4">
+                    <div class="div"
+                        style="border: 1px solid #ccc; padding: 0px; border-radius: 5px; text-align: center; background-color: #555; ">
+                        <h4 style="color: aliceblue" class="mb-0">Datos de Prueba</h4>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead>
+                            <th>Fase</th>
+                            <th>Voltaje</th>
+                            <th>Amperaje</th>
+                            <th>% Carga</th>
+                        </thead>
+                        <tbody>
+                            
+                            <tr>
+                                <td>A</td>
+                                <td>{{$v1*$pt }} VAC</td>
+                                <td>{{$a1*$pt }} A</td>
+                                <td>{{$c1*$pt }} %</td>
+                                
+                            </tr>
+                            <tr>
+                                <td>B</td>
+                                <td>{{$v2*$pt}} VAC</td>
+                                <td>{{$a2*$pt }} A</td>
+                                <td>{{$c2*$pt }} %</td>
+                            </tr>
+                            <tr>
+                                <td>C</td>
+                                <td>{{$v3*$pt }} VAC</td>
+                                <td>{{$a3*$pt }} A</td>
+                                <td>{{$c3*$pt }} %</td>
+                            </tr>
+                            <tr style="font-weight: bold">
+                                <td>Promedio</td>
+                                <td>{{ number_format($promV*$pt, 1) }} VAC</td>
+                                <td>{{ number_format($promA*$pt, 1) }}</td>
+                                <td>{{ number_format(($promA / $amperaje_placa) * 100*$pt, 2) }}%</td>
+                            </tr>
+                            <tr>
+                                <td>Desbalance</td>
+                                <td>{{ $isVoltageBalanced?number_format($inbalance,2):number_format($desbalanceV, 2) }} %</td>
+                                <td>{{ $isVoltageBalanced?number_format($inbalance*2.1,2):number_format($desbalanceA, 2) }} %</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-12 col-md-6 col-xxl-4">
+                    <div class="div"
+                        style="border: 1px solid #ccc; padding: 0px; border-radius: 5px; text-align: center; background-color: #555; ">
+                        <h4 style="color: aliceblue" class="mb-0">% Carga</h4>
+                    </div>
+                    <div id="chartDiv2" style="max-width: 100%; height:300px;"></div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+                <div class="input-group me-2" style="max-width:240px"><span class="input-group-text" id="basic-addon1">PT</span>
+                    <input class="form-control" type="number" placeholder="%desbalance" step="0.1" wire:model="pt" aria-label="Username" min="0" aria-describedby="basic-addon1" oninput="if(this.value===''){this.value='0';}" />
+                  </div>
+                <div class="input-group me-2" style="max-width:240px"><span class="input-group-text" id="basic-addon1">% Desbalance</span>
+                    <input class="form-control" type="number" placeholder="%desbalance" step="0.1" wire:model="inbalance" aria-label="Username" min="0" aria-describedby="basic-addon1" oninput="if(this.value===''){this.value='0';}" />
+                  </div>
+                <button type="button" class="btn btn-secondary me-2" wire:click="usePTFunc">
+                    Ajustar a voltaje de placa
+                </button>
+                <button type="button" class="btn {{$isVoltageBalanced?"btn-success":"btn-secondary"}} me-2" wire:click="balanceData">
+                    Usar data {{$isVoltageBalanced?" NO ":""}} balanceada
+                </button>
+                <button type="button" class="btn btn-primary" wire:click="exportResults">
+                    Exportar Resultados
+                </button>
+            </div>
+        </x-form-card>
+       
+    @endif
+    @push('scripts')
+        <script src="https://code.jscharting.com/latest/jscharting.js"></script>
+        <script>
+          
+          function initCargaGauge() {
+            var chart = JSC.chart('chartDiv2', {
+                chartArea: {
+                    fill: '#f9fafd',
+                    gradient: 'none'
+                },
+                debug: false,
+                legend_visible: false,
+                defaultTooltip_enabled: false,
+                xAxis_spacingPercentage: 0.4,
+                yAxis: [{
+                        id: 'ax1',
+                        defaultTick: {
+                            padding: 10,
+                            enabled: false
+                        },
+                        customTicks: [0,10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120],
+                        line: {
+                            width: 10,
+
+                            /*Defining the option will enable it.*/
+                           
+                            breaks:{},
+                            /*Palette is defined at series level with an ID referenced here.*/
+                            color: 'smartPalette:pal1'
+                        },
+                        scale_range: [0, 120]
+                    },
+                    
+                ],
+                defaultSeries: {
+                    type: 'gauge column roundcaps',
+                    shape: {
+                        label: [{
+                            text: '%max'+'%',
+                            align: 'center',
+                            verticalAlign: 'middle',
+                            style_fontSize: 28
+                        },
+                        { 
+                            text: '%name', 
+                            style_fontSize: 15, 
+                            verticalAlign: 'bottom'
+                        }, 
+                        ]
+                        
+
+                    }
+                },
+                series: [{
+                        
+                        name: '%FLA',
+                        yAxis: 'ax1',
+                        palette: {
+                            id: 'pal1',
+                            pointValue: '{%yValue}',
+                            
+                            ranges: [{
+                                    value: [0,20],
+                                    color: '#FF5353'
+                                },
+                                {
+                                    value: [18, 22],
+                                     color: '#FFD221'
+                                },
+                                {
+                                    value: [24,40], 
+                                    color: '#21D683'
+                                },
+                                {
+                                    value: [40, 50],
+                                     color: '#FFD221'
+                                },
+                                {
+                                    value: [55, 100],
+                                    color: '#FF5353'
+                                }
+                            ]
+                        },
+                        points: [
+                            ['x',  {{ number_format($promA/$amperaje_placa*100*$pt, 1) }}]
+                           //['x',  23]
+                        ]
+                    },
+                    
+                ]
+            });
+        }
+        document.addEventListener('DOMContentLoaded', initCargaGauge);
+  // Cada vez que Livewire termine de re-renderizar cualquier cosa
+  Livewire.hook('message.processed', initCargaGauge);
+            Livewire.on('noLoadTestSaved', function(type) {
+                let messages = {
+                    1: "Datos de prueba, guardados correctamente",
+                    2: "Datos de prueba, editados correctamente",
+                    3: "Datos de placa del motor guardados correctamente",
+                    4: "Datos de prueba, editados correctamente",
+                    5: "Se eliminaron los datos de la prueba"
+                };
+
+                let message = messages[type] || "Operación realizada correctamente";
+                initCargaGauge();
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: message,
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            });
+
+            function deleteTestNameplate() {
+                Swal.fire({
+                    title: '¿Está seguro?',
+                    text: "Esta acción eliminará los datos de la prueba y datos de placa.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Livewire.emit('deleteTestNameplate');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Eliminado',
+                            text: 'Los datos de la prueba y de placa han sido eliminados.',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    }
+                });
+            }
+
+            function deleteTest() {
+                Swal.fire({
+                    title: '¿Está seguro?',
+                    text: "Esta acción eliminará los datos de la prueba, pero mantendra los datos de placa.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Livewire.emit('deleteTest');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Eliminado',
+                            text: 'Los datos de la prueba han sido eliminados.',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    }
+                });
+            };
+        </script>
+    @endpush
+</div>

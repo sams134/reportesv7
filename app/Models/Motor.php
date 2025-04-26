@@ -186,4 +186,8 @@ class Motor extends Model
     {
         return $this->hasMany(\App\Models\Job::class, 'id_motor', 'id_motor');
     }
+    public function noLoadTest()
+    {
+        return $this->hasOne(\App\Models\NoLoadTest::class, 'id_motor', 'id_motor');
+    }
 }

@@ -328,6 +328,18 @@ class MotorController extends Controller
 
     }
 
+    public function downloadPdfCotizacion($cotID,$data)
+    {
+    
+        $html = view('pdfs.cotizacionPDF')->with([
+            'data' => $data,
+        ])->render();
+        $pdf = PDF::loadHTML($html)->setOption('load-error-handling', 'ignore') // Ignora los errores de carga
+            ->setOption('enable-local-file-access', true)
+            ->setOption('no-stop-slow-scripts', true)
+            ->setOption('javascript-delay', 5000);
+        return $pdf->inline('cotizacion.pdf');
+    }
 
     public function dibujarDiagrama(Motor $motor, $side = "left")
     {

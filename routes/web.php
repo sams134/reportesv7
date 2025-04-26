@@ -10,6 +10,7 @@ use App\Http\Livewire\Admin\CreateEnvio;
 use App\Http\Livewire\Admin\Produccion;
 use App\Http\Livewire\Balanceo\CreateBalanceo;
 use App\Http\Livewire\Boards\IndexBoard;
+use App\Http\Livewire\Cotizaciones\IndexCotizaciones;
 use App\Http\Livewire\Customers\IndexCustomers;
 use App\Http\Livewire\Motors\IndexMotors;
 use Illuminate\Support\Facades\Route;
@@ -99,6 +100,11 @@ Route::middleware([
     Route::get('/admin/produccion',Produccion::class)->name('admin.produccion');
     Route::get('/admin/produccionPDF', [MotorController::class,'downloadPdfProduccion'])->name('admin.produccionPDF');
     Route::get('/admin/produccionPDF/{fecha}', [MotorController::class,'downloadPdfProduccion'])->name('admin.produccionPDF.fecha');
+
+    //Cotizaciones
+    Route::get('/admin/cotizaciones', IndexCotizaciones::class)->name('admin.cotizaciones.index');
+    Route::get('/admin/VerCotizacion/{cotID}/{data}', [MotorController::class,'downloadPdfCotizacion'])->name('admin.cotizaciones.downloadPdf');
+
 
     //boards
     Route::get('/boards/{board}', IndexBoard::class)->name('boards.index');

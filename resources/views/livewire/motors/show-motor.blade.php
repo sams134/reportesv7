@@ -344,6 +344,48 @@
                     </tr>
                 </table>
             </x-pretty-card>
+            <x-pretty-card>
+                <h3>Bit&aacute;cora</h3>
+                    <div class="card">
+                        <div class="mb-3 p-3">
+                            <label class="form-label" for="exampleFormControlInput1">Ingrese Comentario</label>
+                            <div class="d-flex">
+                                <input class="form-control me-2" id="exampleFormControlInput1" type="text" placeholder="Comentario" wire:model.defer="comment" 
+                                    wire:keydown.enter="saveComment"/>
+                                <button class="btn btn-primary" type="button" wire:click="saveComment">Guardar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-header">
+                      <h6 class="mb-0">Bit&aacute;cora de mensajes</h6>
+                    </div>
+                    <div class="card-body scrollbar ps-2" style="max-height: 600px; overflow-y: auto;">
+                        @foreach ($motor->bitacoras->sortByDesc('created_at') as $bitacoraItem)
+                        <div class="row g-3 timeline timeline-primary timeline-past pb-card">
+                            <div class="col-auto ps-4 ms-2">
+                              <div class="ps-2">
+                                <div class="icon-item icon-item-sm rounded-circle bg-200 shadow-none"><span class="text-primary fas fa-envelope"></span></div>
+                              </div>
+                            </div>
+                            <div class="col">
+                              <div class="row gx-0 border-bottom pb-card">
+                                <div class="col">
+                                  <h6 class="text-800 mb-1">{{$bitacoraItem->titulo}}</h5>
+                                  <h6 class="text-700 mb-1" style="font-size: 12px; font-style: italic;">{{$bitacoraItem->user->name}} </h6>
+                                  <p class="fs--1 text-600 mb-0">{{$bitacoraItem->descripcion}}</p>
+                                </div>
+                                <div class="col-auto">
+                                    <p class="fs--2 text-600 mb-0"> {{ Carbon\Carbon::parse($bitacoraItem->created_at)->format('d/m/Y') }} </p>
+                                  <p class="fs--2 text-600 mb-0">{{ Carbon\Carbon::parse($bitacoraItem->created_at)->diffForHumans() }}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        @endforeach
+                      
+                    </div>
+                 
+            </x-pretty-card>
         </div>
     </div>
     <style>

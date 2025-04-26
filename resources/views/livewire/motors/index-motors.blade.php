@@ -145,11 +145,13 @@
                                         <div class="col-auto">
                                             @if ($motor->fotos && $motor->fotos->count() > 0 && Storage::exists('public' . $motor->fotos->first()->thumb))
                                                 <div class="avatar avatar-2xl ">
+                                                    <a href="{{route('motores.show',$motor)}}">
                                                     <img class="rounded-circle"
                                                         src="{{ asset('storage' . $motor->fotos->first()->thumb) }}"
                                                         alt="" style="transition: transform 0.3s;"
                                                         onmouseover="this.style.transform='scale(1.9)';"
                                                         onmouseout="this.style.transform='scale(1)';" />
+                                                    </a>
                                                 </div>
                                             @else
                                                 <div class="avatar avatar-2xl ">

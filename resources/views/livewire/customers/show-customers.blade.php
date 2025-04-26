@@ -151,27 +151,89 @@
             <div class="card mb-3">
                 <div class="card-body">
                     <h3>Equipos Ingresados</h3>
+                    <span wire:loading> Loading</span>
+                    <div class="px-2"> {{ $motores->withQueryString()->links() }}</div>
                     <div class="table-responsive scrollbar">
-                        <table class="table table-hover">
+                        <table class="table table-hover table-striped overflow-hidden fs--1" style="font-size: 0.5rem"
+                        wire:loading.remove>
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
-                                    <th scope="col">Os</th>
-                                    <th scope="col">Potencia</th>
-                                    <th scope="col">Rpm</th>
+                                    <th style="width:1rem"></th>
+                                    <th class="sort" style="width:13%;cursor: pointer;" wire:click="sortBy('fullos')">
+                                        Orden de Servicio
+                                        <i
+                                            class="fa {{ $sort === 'fullos' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'fullos' ? 'text-success' : '' }}"></i>
+                                    </th>
+                                    <th class="sort" style="width:11%;cursor: pointer;" wire:click="sortBy('hp')">
+                                        Potencia
+                                        <i
+                                            class="fa {{ $sort === 'hp' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'hp' ? 'text-success' : '' }}"></i>
+                                    </th>
+                                    <th class="sort d-none d-xl-table-cell" wire:click="sortBy('rpm')">
+                                        Rpm
+                                        <i
+                                            class="fa {{ $sort === 'rpm' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'rpm' ? 'text-success' : '' }}"></i>
+                                    </th>
+                                    <th class="sort" wire:click="sortBy('status_id')">
+                                        Status
+                                        <i
+                                            class="fa {{ $sort === 'status_id' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'status_id' ? 'text-success' : '' }}"></i>
+                                    </th>
+                                    <th>Tecnicos</th>
                                     <th scope="col">Fecha Ingreso</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($cliente->motors as $cont => $motor)
+                                @foreach ($motores as $cont => $motor)
                                     <tr class="hover-actions-trigger">
                                         <td class="align-middle text-nowrap" style="width: 80px">
                                             {{ $cont + 1 }}
+                                        </td>
+                                        <td>
+                                            <div class="col-auto">
+                                                @if ($motor->fotos && $motor->fotos->count() > 0 && Storage::exists('public' . $motor->fotos->first()->thumb))
+                                                    <div class="avatar avatar-2xl ">
+                                                        <img class="rounded-circle"
+                                                            src="{{ asset('storage' . $motor->fotos->first()->thumb) }}"
+                                                            alt="" style="transition: transform 0.3s;"
+                                                            onmouseover="this.style.transform='scale(1.9)';"
+                                                            onmouseout="this.style.transform='scale(1)';" />
+                                                    </div>
+                                                @else
+                                                    <div class="avatar avatar-2xl ">
+                                                        <img class="rounded-circle"
+                                                            src="{{ asset('img/default-avatar.png') }}"
+                                                            alt="No hay foto" />
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="align-middle text-nowrap">{{ $motor->year }}-{{ $motor->os }}
                                         </td>
                                         <td class="w-auto">{{ $motor->potencia }}</td>
                                         <td class="align-middle text-nowrap">{{ $motor->rpm }}</td>
+                                        <td class="align-middle ">
+                                            <button data-bs-toggle="modal" data-bs-target="#error-modal"
+                                                class="bg-transparent border-0"
+                                                wire:click="loadStatusModal({{ $motor->id_motor }})">
+                                                <x-status-badge status_id="{{ $motor->status_id }}"
+                                                    data-bs-toggle="modal" data-bs-target="#error-modal" />
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <!-- Al hacer clic, se emite el evento 'openAsignacionesModal' con el id del motor -->
+    
+                                            @foreach ($motor->tecnicos as $tecnico)
+                                                <div class="avatar avatar-l">
+    
+                                                    <img src="{{ asset('storage/' . $tecnico->foto) }}" alt=""
+                                                        class="rounded-circle mt-2">
+    
+                                                </div>
+                                            @endforeach
+    
+                                        </td>
                                         <td class="align-middle text-nowrap">
                                             {{ Carbon\Carbon::parse($motor->fecha_ingreso)->format('d/m/Y') }}
                                         </td>
@@ -186,6 +248,7 @@
                 </div>
             </div>
         </div>
+        <x-status-modal :statuses="$statuses" :equipo="$equipo" />
     </div>
 
 

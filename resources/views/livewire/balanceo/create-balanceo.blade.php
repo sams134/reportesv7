@@ -32,9 +32,9 @@
     <x-page-title>
         <x-slot:title>
          @if ($editing)
-            Editar Balanceo para OS {{$this->motor->fullos}}
+            Editar Balanceo para OS <a href="{{route('motores.show',$this->motor)}}">{{$this->motor->fullos}}</a>
          @else
-         Creacion de Nuevo Balanceo para OS {{$this->motor->fullos}}
+         Creacion de Nuevo Balanceo para OS <a href="{{route('motores.show',$this->motor)}}">{{$this->motor->fullos}}</a>
          @endif
       </x-slot:title>
         Ingrese los datos para crear el informe de balanceo

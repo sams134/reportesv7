@@ -42,6 +42,29 @@
                 @php
                     $user = Auth::user();
                 @endphp
+                @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::GERENCIA, \App\Models\User::ADMINISTRACION, \App\Models\User::VENDEDORES]))
+                <li class="nav-item">
+                    <!-- label-->
+                    <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
+                        <div class="col-auto navbar-vertical-label">Administracion
+                        </div>
+                        <div class="col ps-0">
+                            <hr class="mb-0 navbar-vertical-divider" />
+                        </div>
+                    </div>
+                    <!-- parent pages--><a class="nav-link" href="{{ route('admin.cotizaciones.index') }}" role="button"
+                        aria-expanded="false">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
+                                    class="fas fa-file-invoice-dollar"></span></span><span class="nav-link-text ps-1">Cotizaciones</span>
+                        </div>
+                    </a>
+                    <!-- parent pages--><a class="nav-link" href="#" role="button" aria-expanded="false">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
+                                    class="fas fa-file-invoice"></span></span><span class="nav-link-text ps-1">Facturacion</span>
+                        </div>
+                    </a>
+                </li>
+            @endif
 
                 @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::GERENCIA, \App\Models\User::ADMINISTRACION, \App\Models\User::VENDEDORES]))
                     <li class="nav-item">

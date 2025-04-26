@@ -26,6 +26,7 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user.css') }}">
+  
    
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
@@ -42,6 +43,8 @@
     
    
     <script src="{{ asset('vendors/overlayscrollbars/OverlayScrollbars.min.js') }}"></script>
+    
+
 
 </head>
 
@@ -174,12 +177,14 @@
     
     <script src="{{ asset('js/flatpickr.js') }}"></script>
     <script src="{{ asset('js/theme.js') }}"></script>
-    <script src="{{ asset('js/app.js') }}"></script>
+    {{-- <script src="{{ asset('js/app.js') }}"></script> --}}
+    <script src="https://cdn.jsdelivr.net/npm/ag-charts-community/dist/ag-charts-community.min.js"></script>
+    <script src="{{ mix('js/app.js') }}"></script>
 
     @stack('scripts')
     @yield('js')
 
-    
+  
 
 </body>
 

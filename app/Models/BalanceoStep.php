@@ -30,6 +30,6 @@ class BalanceoStep extends Model
     // Relación con el modelo Balanceo
     public function balanceo()
     {
-        return $this->belongsTo(BalanceoStep::class, 'balanceo_id', 'id');
+        return $this->belongsTo(Balanceo::class, 'balanceo_id', 'id');
     }
 }

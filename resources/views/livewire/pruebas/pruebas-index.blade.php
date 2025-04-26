@@ -21,10 +21,8 @@
                                 href="#tab-shaft" role="tab" aria-controls="tab-shaft"
                                 aria-selected="false">Ajustes Ejes</a>
                         </li>
-                        <li class="nav-item"><a class="nav-link" id="inrush-tab" data-bs-toggle="tab" href="#tab-inrush"
-                                role="tab" aria-controls="tab-inrush" aria-selected="false">Curva de Arranque</a>
-                        </li>
-                        <li class="nav-item"><a class="nav-link" id="current-tab" data-bs-toggle="tab"
+                       
+                        <li class="nav-item"><a class="nav-link active" id="current-tab" data-bs-toggle="tab"
                                 href="#tab-current" role="tab" aria-controls="tab-current"
                                 aria-selected="false">Amperajes</a></li>
                         <li class="nav-item"><a class="nav-link" id="temperature-tab" data-bs-toggle="tab"
@@ -33,8 +31,12 @@
                         <li class="nav-item"><a class="nav-link" id="vibration-tab" data-bs-toggle="tab"
                                 href="#tab-vibration" role="tab" aria-controls="tab-vibration"
                                 aria-selected="false">Vibraciones</a></li>
-                        <li class="nav-item"><a class="nav-link active" id="surge-tab" data-bs-toggle="tab" href="#tab-surge"
+                        <li class="nav-item"><a class="nav-link" id="surge-tab" data-bs-toggle="tab" href="#tab-surge"
                                 role="tab" aria-controls="tab-surge" aria-selected="false">Surge</a></li>
+                        <li class="nav-item"><a class="nav-link " id="photos-tab" data-bs-toggle="tab" href="#tab-photos"
+                            role="tab" aria-controls="tab-photos" aria-selected="false">Seleccion de fotos</a></li>
+                        <li class="nav-item"><a class="nav-link " id="report-tab" data-bs-toggle="tab" href="#tab-report"
+                            role="tab" aria-controls="tab-report" aria-selected="false">Informe</a></li>
 
 
                     </ul>
@@ -49,13 +51,9 @@
                         <div class="tab-pane fade" id="tab-shaft" role="tabpanel" aria-labelledby="shaft-tab">
                             @livewire('pruebas.shaft', ['motor' => $motor])
                         </div>
-                        <div class="tab-pane fade" id="tab-inrush" role="tabpanel" aria-labelledby="inrush-tab">
-                            inrush
-                        </div>
-                        <div class="tab-pane fade" id="tab-current" role="tabpanel" aria-labelledby="current-tab">
-                            <a href="{{ route('pruebas.reporte', $motor) }}" class="btn btn-falcon-primary me-1 mb-1"
-                                type="button">Crear Informe
-                            </a>
+                       
+                        <div class="tab-pane fade show active" id="tab-current" role="tabpanel" aria-labelledby="current-tab">
+                            @livewire('pruebas.amperajes', ['motor' => $motor])
                         </div>
                         <div class="tab-pane fade" id="tab-temperature" role="tabpanel"
                             aria-labelledby="temperature-tab">
@@ -64,8 +62,17 @@
                         <div class="tab-pane fade" id="tab-vibration" role="tabpanel" aria-labelledby="vibration-tab">
                             Vibraciones
                         </div>
-                        <div class="tab-pane fade  show active" id="tab-surge" role="tabpanel" aria-labelledby="surge-tab">
+                        <div class="tab-pane fade" id="tab-surge" role="tabpanel" aria-labelledby="surge-tab">
                             @livewire('pruebas.itig', ['motor' => $motor])
+                        </div>
+                        <div class="tab-pane fade " id="tab-photos" role="tabpanel" aria-labelledby="photos-tab">
+                          fotos
+                        </div>
+                        <div class="tab-pane fade" id="tab-report" role="tabpanel" aria-labelledby="report-tab">
+                           hacer informe
+                           <a href="{{ route('pruebas.reporte', $motor) }}" class="btn btn-falcon-primary me-1 mb-1"
+                                type="button">Crear Informe
+                            </a>
                         </div>
 
                     </div>

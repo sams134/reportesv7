@@ -166,7 +166,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(Pin::class);
     }
-    
+
 
     public function jobsAssignedByMe()
     {
@@ -181,5 +181,9 @@ class User extends Authenticatable
     public function config()
     {
         return $this->hasOne(\App\Models\Config::class, 'user_id', 'id');
+    }
+    public function noLoadTests()
+    {
+        return $this->hasMany(\App\Models\NoLoadTest::class, 'id_user_test', 'id');
     }
 }
