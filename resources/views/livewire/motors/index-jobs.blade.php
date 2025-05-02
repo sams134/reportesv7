@@ -23,7 +23,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($jobs as $job)
+                    @foreach ($jobs->sortByDesc('id') as $job)
                         <tr>
                             <td style="width:30px"> <input type="checkbox" class="form-check-input"
                                 wire:model.defer="selectedMotors" value="{{ $job->id }}"></td>

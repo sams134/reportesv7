@@ -119,5 +119,7 @@ Route::middleware([
         return response()->json(BalanceoArt::orderBy('id', 'desc')->get());
     });
     Route::POST('/api/save-temperature-chart', [Graficas::class, 'saveTemperatureChart']);
+    Route::POST('/api/save-no-load-chart', [Graficas::class, 'saveNoLoadChart']);
+    
    
 });

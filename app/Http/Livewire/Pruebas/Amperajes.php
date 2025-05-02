@@ -3,19 +3,20 @@
 namespace App\Http\Livewire\Pruebas;
 
 use App\Models\Motor;
+use App\Models\NoLoadAmp;
 use Livewire\Component;
 
 class Amperajes extends Component
 {
     public $tested = false;
-    public $data_origin, $voltaje_placa, $amperaje_placa, $voltaje_1, $amperaje_1, $voltaje_2, $amperaje_2, $voltaje_3, $amperaje_3;
+    public $data_origin, $voltaje_placa, $amperaje_placa=1, $voltaje_1, $amperaje_1, $voltaje_2, $amperaje_2, $voltaje_3, $amperaje_3;
     public $conexion_placa, $conexion_realizada;
     public $circuitos_placa, $circuitos_prueba, $rpm_placa, $rpm_prueba, $hz_placa, $hz_prueba,$polos;
     public $noLoadTest;
     public $motor;
-    public $isVoltageBalanced = false,$pt=1,$usePT=false;
+    public $isVoltageBalanced = false,$pt=1,$usePT=false,$ct=1,$force_ct=true,$force_pt=true,$fct=1,$fpt=1,$limit_min,$limit_max;
     public $promA,$promV,$inbalance=2,$desbalanceV,$desbalanceA;
-    public $v1,$v2,$v3,$a1,$a2,$a3,$c1,$c2,$c3;
+    public $v1,$v2,$v3,$a1,$a2,$a3,$c1,$c2,$c3,$con,$circ,$noLoadAmps;
 
     protected $listeners = [
         'deleteTestNameplate' => 'deleteTestNameplate',
@@ -25,6 +26,7 @@ class Amperajes extends Component
     public function mount(Motor $motor)
     {
         $this->motor = Motor::find($motor->id_motor);
+        $this->noLoadAmps = NoLoadAmp::all();
         $this->noLoadTest = $this->motor->noLoadTest;
         if ($this->noLoadTest) {
             $this->data_origin = $this->noLoadTest->origen;
@@ -45,17 +47,26 @@ class Amperajes extends Component
             $this->circuitos_prueba = $this->noLoadTest->circuitos_prueba;
             $this->rpm_prueba = $this->noLoadTest->rpm_prueba;
             $this->hz_prueba = $this->noLoadTest->hz_prueba;
+            $this->isVoltageBalanced = ($this->noLoadTest->useBalanced==0)?false:true;
+            $this->fct=$this->ct = $this->noLoadTest->ct;
+            $this->fpt=$this->pt = $this->noLoadTest->pt;
+            if ($this->fct != 1 || $this->fpt != 1)
+              $this->usePT = true;
+            else
+              $this->usePT = false;
             if ($this->voltaje_1 != null) {
                 $this->tested = true;
                
             }
+            $this->pt = $this->ct = 1;
         }
        
     }
     public function render()
     {
         if ($this->tested){
-            
+            $this->circ = $this->circuitos_prueba;
+            $this->con = $this->conexion_realizada;
             $this->promA = ($this->amperaje_1 + $this->amperaje_2 + $this->amperaje_3) / 3;
             $this->promV = ($this->voltaje_1 + $this->voltaje_2 + $this->voltaje_3) / 3;
             $this->desbalanceV = max($this->voltaje_1, $this->voltaje_2, $this->voltaje_3) - min($this->voltaje_1, $this->voltaje_2, $this->voltaje_3);
@@ -78,13 +89,13 @@ class Amperajes extends Component
                     break;
                 }
             }
-            if ((abs($this->voltaje_placa - $this->promV) > 0.2 * $this->voltaje_placa) && ($this->usePT)) {
-                $this->pt = round($this->voltaje_placa / $this->promV, 1);
-                
-            } else {
-                $this->pt = 1;
-            }
+            $this->limit_max = NoLoadAmp::where('poles', $this->polos)->value('maxA');
+            $this->limit_min = NoLoadAmp::where('poles', $this->polos)->value('minA');
+            
+            $this->emit('testUpdated',number_format($this->promA/$this->amperaje_placa*100*$this->fct*$this->fpt, 1),$this->limit_min,$this->limit_max);
         }
+        
+       
         return view('livewire.pruebas.amperajes');
     }
 
@@ -204,10 +215,64 @@ class Amperajes extends Component
     public function balanceData()
     {
         $this->isVoltageBalanced = !$this->isVoltageBalanced;
+        $this->noLoadTest->update([
+            'useBalanced' => $this->isVoltageBalanced?1:0
+        ]);
     }
     public function usePTFunc()
     {
         $this->usePT = !$this->usePT;
+        if ((abs($this->voltaje_placa - $this->promV) > 0.2 * $this->voltaje_placa) && ($this->usePT)) {
+            $this->pt = round($this->voltaje_placa / $this->promV, 1);
+            $this->ct = $this->pt;
+            
+        } 
+        if (($this->conexion_realizada != $this->conexion_placa) && ($this->usePT)) {
+            if ($this->conexion_realizada == 1) {
+                $this->ct /= 1.732;
+            } else {
+                $this->ct *= 1.732;
+            }
+            $this->con = $this->conexion_placa;
+        }
+        if (($this->circuitos_placa != $this->circuitos_prueba) && ($this->usePT)) {
+            $this->ct *= $this->circuitos_placa / $this->circuitos_prueba;
+            $this->circ = $this->circuitos_placa;
+        }
+        $this->ct = round($this->ct,2);
+        $this->pt = round($this->pt,2);
+
+        $this->fct = $this->ct;
+        $this->fpt = $this->pt;
+
+        if (!$this->usePT){
+            $this->fct = $this->fpt = 1;
+            $this->noLoadTest->update([
+                'ct' => 1,
+                'pt' => 1
+            ]);
+        }else{
+            $this->noLoadTest->update([
+                'ct' => $this->fct,
+                'pt' => $this->fpt
+            ]);
+        }
+
     }
+    public function change_forcePT()
+    {
+        $this->force_pt = !$this->force_pt;
+        if (!$this->force_pt)
+           $this->fpt = $this->pt;
+        
+    }
+    public function change_forceCT()
+    {
+        $this->force_ct = !$this->force_ct;
+        if (!$this->force_ct)
+           $this->fct = $this->ct;
+        
+    }
+    
 
 }

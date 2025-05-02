@@ -201,11 +201,50 @@
     @if ($tested)
         <x-form-card title="Resultados de Prueba">
             <h3>Resumen</h3>
+            @php
+                $alerts = false;
+            @endphp
+            @if (abs($rpm_prueba-$rpm_placa)/$rpm_placa*100 > 5)
+                <div class="alert alert-danger border-2 d-flex align-items-center" role="alert">
+                    <div class="bg-danger me-3 icon-item"><span class="fas fa-times-circle text-white fs-3"></span></div>
+                    <p class="mb-0 flex-1">La velocidad del equipo no es correcta... Revisar conexi&oacute;n y carga.</p>
+                    <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                @php $alerts=true; @endphp
+            @endif
+            @if (($promA / $amperaje_placa) * 100*$fct*$fpt > $limit_max)
+                <div class="alert alert-warning border-2 d-flex align-items-center" role="alert">
+                    <div class="bg-warning me-3 icon-item"><span class="fas fa-times-circle text-white fs-3"></span></div>
+                    <p class="mb-0 flex-1">El amperaje es muy alto, revisar y validar.</p>
+                    <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                @php $alerts=true; @endphp
+            @endif
+            @if (($promA / $amperaje_placa) * 100*$fct*$fpt < $limit_min)
+                <div class="alert alert-warning border-2 d-flex align-items-center" role="alert">
+                    <div class="bg-warning me-3 icon-item"><span class="fas fa-times-circle text-white fs-3"></span></div>
+                    <p class="mb-0 flex-1">El amperaje es muy bajo, revisar conexion o cambie relacion de CTs y Pts</p>
+                    <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                @php $alerts=true; @endphp
+             @endif
+            
+             @if (($isVoltageBalanced && $inbalance > 5 ) || (!$isVoltageBalanced && $desbalanceA > 8))
+             <div class="alert alert-danger border-2 d-flex align-items-center" role="alert">
+                 <div class="bg-danger me-3 icon-item"><span class="fas fa-times-circle text-white fs-3"></span></div>
+                 <p class="mb-0 flex-1">Hay un exceso de desbalance en corriente, alterne lineas y considere colocar funcion de balancear con desbalance correcto</p>
+                 <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
+             </div>
+             @php $alerts=true; @endphp
+         @endif
+            @if (!$alerts)
             <div class="alert alert-success border-2 d-flex align-items-center" role="alert">
                 <div class="bg-success me-3 icon-item"><span class="fas fa-check-circle text-white fs-3"></span></div>
                 <p class="mb-0 flex-1">Todo se ve bien...</p>
                 <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+            @endif
+            
             <div class="row">
                 <div class="col-12 col-md-6 col-xxl-4">
                     <div class="div"
@@ -258,34 +297,43 @@
                             
                             <tr>
                                 <td>A</td>
-                                <td>{{$v1*$pt }} VAC</td>
-                                <td>{{$a1*$pt }} A</td>
-                                <td>{{$c1*$pt }} %</td>
+                                <td>{{$v1*$fpt }} VAC</td>
+                                <td>{{$a1*$fct*$fpt }} A</td>
+                                <td>{{$c1*$fct*$fpt }} %</td>
                                 
                             </tr>
                             <tr>
                                 <td>B</td>
-                                <td>{{$v2*$pt}} VAC</td>
-                                <td>{{$a2*$pt }} A</td>
-                                <td>{{$c2*$pt }} %</td>
+                                <td>{{$v2*$fpt}} VAC</td>
+                                <td>{{$a2*$fct*$fpt }} A</td>
+                                <td>{{$c2*$fct*$fpt }} %</td>
                             </tr>
                             <tr>
                                 <td>C</td>
-                                <td>{{$v3*$pt }} VAC</td>
-                                <td>{{$a3*$pt }} A</td>
-                                <td>{{$c3*$pt }} %</td>
+                                <td>{{$v3*$fpt }} VAC</td>
+                                <td>{{$a3*$fct*$fpt }} A</td>
+                                <td>{{$c3*$fct*$fpt }} %</td>
                             </tr>
                             <tr style="font-weight: bold">
                                 <td>Promedio</td>
-                                <td>{{ number_format($promV*$pt, 1) }} VAC</td>
-                                <td>{{ number_format($promA*$pt, 1) }}</td>
-                                <td>{{ number_format(($promA / $amperaje_placa) * 100*$pt, 2) }}%</td>
+                                <td>{{ number_format($promV*$fpt, 1) }} VAC</td>
+                                <td>{{ number_format($promA*$fct*$fpt, 1) }}</td>
+                                <td>{{ number_format(($promA / $amperaje_placa) * 100*$fct*$fpt, 2) }}%</td>
                             </tr>
                             <tr>
                                 <td>Desbalance</td>
                                 <td>{{ $isVoltageBalanced?number_format($inbalance,2):number_format($desbalanceV, 2) }} %</td>
                                 <td>{{ $isVoltageBalanced?number_format($inbalance*2.1,2):number_format($desbalanceA, 2) }} %</td>
                                 <td></td>
+                            </tr>
+                            <tr>
+                                <td>Velocidad</td>
+                                <td colspan="2">{{$rpm_prueba}}</td>
+                                <td>{{ number_format($rpm_prueba / $rpm_placa * 100, 1) }}%</td>
+                            </tr>
+                            <tr>
+                                <td>Conexion</td>
+                                <td colspan="3">{{$circ}} {{ $con == 1 ? 'Δ' : 'Y' }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -298,32 +346,79 @@
                     <div id="chartDiv2" style="max-width: 100%; height:300px;"></div>
                 </div>
             </div>
-            <div class="d-flex justify-content-end mt-3">
-                <div class="input-group me-2" style="max-width:240px"><span class="input-group-text" id="basic-addon1">PT</span>
-                    <input class="form-control" type="number" placeholder="%desbalance" step="0.1" wire:model="pt" aria-label="Username" min="0" aria-describedby="basic-addon1" oninput="if(this.value===''){this.value='0';}" />
-                  </div>
+            <div class="d-flex justify-content-end my-3">
+                
+                    <div class="@if (!$usePT) d-none @else d-flex justify-content-end @endif ">
+                    <div class="input-group me-2" style="max-width:160px">
+                        <button class="input-group-text" id="basic-addon1" style="cursor: pointer;" wire:click="change_forcePT()">
+                            @if ($force_pt)
+                                <i class="fas fa-lock me-2 text-danger"></i>
+                            @else   
+                                <i class="fas fa-lock-open me-2 text-secondary"></i>
+                            @endif
+                            PT
+                        </button>
+                        <input class="form-control" type="number" placeholder="%desbalance" step="0.1" wire:model="fpt" aria-label="Username" min="0" aria-describedby="basic-addon1" />
+                    </div>
+                    <div class="input-group me-2" style="max-width:160px">
+                        <button class="input-group-text" id="basic-addon1" style="cursor: pointer;" wire:click="change_forceCT()">
+                        @if ($force_ct)
+                            <i class="fas fa-lock me-2 text-danger"></i>
+                        @else   
+                            <i class="fas fa-lock-open me-2 text-secondary"></i>
+                        @endif
+                        CT</button>
+                        <input class="form-control" type="number" placeholder="%desbalance" step="0.1" wire:model="fct" aria-label="Username" min="0" aria-describedby="basic-addon1" />
+                    </div>
+                   </div>
+     
                 <div class="input-group me-2" style="max-width:240px"><span class="input-group-text" id="basic-addon1">% Desbalance</span>
                     <input class="form-control" type="number" placeholder="%desbalance" step="0.1" wire:model="inbalance" aria-label="Username" min="0" aria-describedby="basic-addon1" oninput="if(this.value===''){this.value='0';}" />
                   </div>
-                <button type="button" class="btn btn-secondary me-2" wire:click="usePTFunc">
-                    Ajustar a voltaje de placa
+                <button type="button" class="btn {{$usePT?"btn-success":"btn-secondary"}}  me-2" wire:click="usePTFunc">
+                    {{$usePT?"Usando relaciones PT y CT":"Usar Relaciones PT y CT"}}
                 </button>
                 <button type="button" class="btn {{$isVoltageBalanced?"btn-success":"btn-secondary"}} me-2" wire:click="balanceData">
-                    Usar data {{$isVoltageBalanced?" NO ":""}} balanceada
+                     {{$isVoltageBalanced?" Usando data ":"Usar data"}} balanceada
                 </button>
                 <button type="button" class="btn btn-primary" wire:click="exportResults">
                     Exportar Resultados
                 </button>
             </div>
+            <h3>Tabla Referencia Consumo Amperajes en vacio</h3>
+            <div class="card col-12 d-flex justify-content-center">
+                    <table class="table text-center" style="width:60%">
+                        
+                        <thead >
+                            <th class="text-center">#Polos</th>
+                            <th class="text-center">% Corriente M&iacute;nima</th>
+                            <th class="text-center">% Corriente M&aacute;xima</th>
+                        </thead>
+                        @foreach ($noLoadAmps as $amps)
+                            <tr @if ($amps->poles == $polos) class="bg-soft-primary" @endif>
+                                <td>{{$amps->poles}}</td>
+                                <td>{{$amps->minA}} %</td>
+                                <td>{{$amps->maxA}} %</td>
+                            </tr>
+                        @endforeach
+                    </table>
+                
+            </div>
+            
+            
         </x-form-card>
        
     @endif
     @push('scripts')
         <script src="https://code.jscharting.com/latest/jscharting.js"></script>
         <script>
-          
-          function initCargaGauge() {
-            var chart = JSC.chart('chartDiv2', {
+          var chart = null;
+          function initCargaGauge(valor,limitI,limitS) {
+            // Check if the chartDiv2 element exists
+            console.log("valor: "+valor)
+            console.log("limitI: "+limitI)
+            console.log("limitS: "+limitS)
+            chart = JSC.chart('chartDiv2', {
                 chartArea: {
                     fill: '#f9fafd',
                     gradient: 'none'
@@ -348,7 +443,7 @@
                             /*Palette is defined at series level with an ID referenced here.*/
                             color: 'smartPalette:pal1'
                         },
-                        scale_range: [0, 120]
+                        scale_range: [0, 100]
                     },
                     
                 ],
@@ -380,39 +475,46 @@
                             pointValue: '{%yValue}',
                             
                             ranges: [{
-                                    value: [0,20],
-                                    color: '#FF5353'
+                                    value: [0,limitI*.8],
+                                    color: '#FF5353' //rojo
                                 },
                                 {
-                                    value: [18, 22],
-                                     color: '#FFD221'
+                                    value: [limitI*.81, limitI],
+                                     color: '#FFD221' //amarillo
                                 },
                                 {
-                                    value: [24,40], 
-                                    color: '#21D683'
+                                    value: [limitI,limitS], 
+                                    color: '#21D683' // verde
                                 },
                                 {
-                                    value: [40, 50],
-                                     color: '#FFD221'
+                                    value: [limitS, limitS*1.2],
+                                     color: '#FFD221' // amarillo
                                 },
                                 {
-                                    value: [55, 100],
-                                    color: '#FF5353'
+                                    value: [limitS*1.2, 100],
+                                    color: '#FF5353' //rojo
                                 }
                             ]
                         },
                         points: [
-                            ['x',  {{ number_format($promA/$amperaje_placa*100*$pt, 1) }}]
-                           //['x',  23]
+                           // ['x',  {{ number_format($promA/$amperaje_placa*100*$pt, 1) }}]
+                           ['x',  valor]
                         ]
                     },
                     
                 ]
             });
         }
-        document.addEventListener('DOMContentLoaded', initCargaGauge);
+       // document.addEventListener('DOMContentLoaded', initCargaGauge({{ number_format($promA/$amperaje_placa*100*$ct, 1) }},{{$limit_min}},{{$limit_max}}));
   // Cada vez que Livewire termine de re-renderizar cualquier cosa
-  Livewire.hook('message.processed', initCargaGauge);
+  
+  Livewire.on('testUpdated', function(valor,limitI,limitS) {
+        console.log('testUpdated' + limitI);
+            if (chart) {
+            chart.destroy();
+            }
+            initCargaGauge(valor*1,limitI,limitS);
+        });
             Livewire.on('noLoadTestSaved', function(type) {
                 let messages = {
                     1: "Datos de prueba, guardados correctamente",
@@ -423,7 +525,7 @@
                 };
 
                 let message = messages[type] || "Operación realizada correctamente";
-                initCargaGauge();
+               
                 Swal.fire({
                     icon: 'success',
                     title: '¡Éxito!',
@@ -480,6 +582,29 @@
                     }
                 });
             };
+            function saveGraph() {
+            var chartCanvas = document.getElementById('chartDiv2');
+            var imageData = chartCanvas.toDataURL(
+                'image/png'); // Convierte el gráfico en imagen PNG en formato base64
+            fetch('/api/save-no-load-chart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    },
+                    body: JSON.stringify({
+                        image: imageData,
+                        motor_id: {{ $motor->id_motor }} // Incluye el ID del motor si es necesario
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Imagen guardada:', data);
+                    // Realiza alguna acción, como mostrar un mensaje de éxito
+                })
+                .catch(error => console.error('Error:', error));
+        }
         </script>
     @endpush
 </div>

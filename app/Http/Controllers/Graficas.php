@@ -51,4 +51,24 @@ class Graficas extends Controller
         
         return response()->json(['message' => 'Imagen guardada con éxito.']);
     }
+    public function saveNoLoadChart(Request $request)
+    {
+       
+        $request->validate([
+            'image' => 'required',
+            'motor_id' => 'required',
+        ]);
+        $motor = Motor::find($request->motor_id);
+
+        // Decodificar la imagen base64
+        $imageData = $request->image;
+        $imageData = str_replace('data:image/png;base64,', '', $imageData);
+        $imageData = base64_decode($imageData);
+
+        // Guardar la imagen como BLOB en la base de datos
+        $motor->temperaturas = $imageData;
+        $motor->save();
+        
+        return response()->json(['message' => 'Imagen guardada con éxito.']);
+    }
 }
