@@ -102,6 +102,19 @@ class Bearings extends Component
                 ]);
             }
         }
+        $p = $this->bearings[$id]['p'];
+        $q = $this->bearings[$id]['q'];
+        $r = $this->bearings[$id]['r'];
+
+        if ($this->bearings[$id]['bearing']['diametro_externo'] <= 200 && $this->bearings[$id]['bearing']['diametro_externo'] > 100) 
+            $r = ($q + $p) / 2;
+        elseif ($this->bearings[$id]['bearing']['diametro_externo'] <= 100) {
+            $r = $p;
+            $q = $p;
+        } 
+          
+        $s = $this->bearings[$id]['s'] ? $this->bearings[$id]['s'] : 0;
+        $t = $this->bearings[$id]['t'] ? $this->bearings[$id]['t'] : $s;
         if ($this->bearings[$id]['ajuste']) {
             
             $ajuste = MotorAjuste::find($this->bearings[$id]['ajuste']['id']);
@@ -114,11 +127,11 @@ class Bearings extends Component
                 'aislado' => $this->bearings[$id]['aislado'],
                 'rodamiento_marca_id' => $this->bearings[$id]['rodamiento_marca_id'],
                 'rpm' => (int)$this->rpm,
-                'p' => $this->bearings[$id]['p'],
-                'q' => $this->bearings[$id]['q']?$this->bearings[$id]['q']:$this->bearings[$id]['p'],
-                'r' => $this->bearings[$id]['r']?$this->bearings[$id]['r']:($this->bearings[$id]['p']+$this->bearings[$id]['q'])/2,
-                's' => $this->bearings[$id]['s'],
-                't' => $this->bearings[$id]['t'],
+                'p' => $p,
+                'q' => $q,
+                'r' => $r,
+                's' => $s,
+                't' => $t,
                 
             ]);
         } else
@@ -134,11 +147,11 @@ class Bearings extends Component
                 'carga_opuesto' => intdiv($id, 2),
                 'initial_final' => $id % 2,
                 'rpm' => (int)$this->rpm,
-                'p' => $this->bearings[$id]['p'],
-                'q' => $this->bearings[$id]['q']?$this->bearings[$id]['q']:$this->bearings[$id]['p'],
-                'r' => $this->bearings[$id]['r']?$this->bearings[$id]['r']:($this->bearings[$id]['p']+$this->bearings[$id]['q'])/2,
-                's' => $this->bearings[$id]['s'],
-                't' => $this->bearings[$id]['t'],
+                'p' => $p,
+                'q' => $q,
+                'r' => $r,
+                's' => $s,
+                't' => $t,
                 
             ]);
         switch ($id) {
@@ -157,6 +170,7 @@ class Bearings extends Component
         }
 
         $this->mount($this->motor);
+        $this->emitTo(Ajustes::class,'montar',$this->motor);
     }
 
     public function updatedBearings()
@@ -202,10 +216,10 @@ class Bearings extends Component
                     break;
             }
             switch ($bearing['sellos']) {
-                case 2: //2RS
+                case 3: //2RS
                     $designacion = $designacion . " 2RS";
                     break;
-                case 3: //ZZ
+                case 2: //ZZ
                     $designacion = $designacion . " ZZ";
                     break;
             }

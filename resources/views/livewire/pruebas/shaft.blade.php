@@ -272,8 +272,7 @@
                                                         @endforeach
                                                     </select>
 
-                                                    * Medidas tomadas por
-                                                    {{ $ajustes[0][0]['rod']['userMedidaEje']['name'] }}
+                                                   
                                                 </div>
                                             </div>
                                             <div class="row">
@@ -342,6 +341,10 @@
                     <div class="col-12 col-md-9">
                         <x-form-card title="Medidas Finales Carga">
                             <div class="table-responsive scrollbar mt-0">
+                                <div class="text-right" style="width: 100%;text-align: right">
+                                    <button class="btn btn-sm btn-secondary"
+                                        wire:click="copyMedidas(0)">Copiar medidas Iniciales</button>
+                                </div>
                                 <table class="table ajustes">
                                     <thead>
                                         <tr>
@@ -590,8 +593,7 @@
                                                             @endforeach
                                                         </select>
 
-                                                        * Medidas tomadas por
-                                                        {{ $ajustes[1][0]['rod']['userMedidaEje']['name'] }}
+                                                      
                                                     </div>
                                                 </div>
                                                 <div class="row">
@@ -885,8 +887,7 @@
                                                         @endforeach
                                                     </select>
 
-                                                    * Medidas tomadas por
-                                                    {{ $ajustes[0][1]['rod']['userMedidaEje']['name'] }}
+                                                   
                                                 </div>
                                             </div>
                                             <div class="row">
@@ -955,6 +956,10 @@
                     <div class="col-12 col-md-9">
                         <x-form-card title="Medidas Finales Lado Opuesto a Carga">
                             <div class="table-responsive scrollbar mt-0">
+                                <div class="text-right" style="width: 100%;text-align: right">
+                                    <button class="btn btn-sm btn-secondary"
+                                        wire:click="copyMedidas(1)">Copiar medidas Iniciales</button>
+                                </div>
                                 <table class="table ajustes">
                                     <thead>
                                         <tr>
@@ -1203,8 +1208,7 @@
                                                             @endforeach
                                                         </select>
 
-                                                        * Medidas tomadas por
-                                                        {{ $ajustes[1][1]['rod']['userMedidaEje']['name'] }}
+                                                       
                                                     </div>
                                                 </div>
                                                 <div class="row">

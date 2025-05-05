@@ -58,11 +58,12 @@
                             Min.
                             Rodamiento</td>
                         <td>{{ number_format($medida_min, 3) }}
+                         
                         </td>
                     </tr>
                     <tr>
                         <td class="align-middle text-nowrap bg-soft-primary">TOL. EASA
-                            AR-100</td>
+                            AR-100  <br> </td>
                         <td>+(0-{{ number_format($ajustes[$initial_final][$carga_opuesto]['rod']['rodamiento']['H6'] * 1000, 0) }})
                             μm</td>
                         <td class="align-middle text-nowrap bg-soft-primary">TOL. ISO
@@ -93,8 +94,9 @@
                                     ) - $medida_min;
                             @endphp
                         <td class="{{$diff < $ajustes[$initial_final][$carga_opuesto]['rod']['rodamiento']['probable_max']?'bg-soft-success':'bg-soft-danger'}}">
-                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff*1000), 0) }}
-                            μm
+                           {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff*1000), 0) }} 
+                          
+                            μm 
                         </td>
                     </tr>
                     <tr>

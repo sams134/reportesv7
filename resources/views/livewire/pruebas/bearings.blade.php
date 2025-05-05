@@ -606,7 +606,7 @@
                     @error('bearings.3.r')
                         <span class="error" style="color: red">{{ $message }}</span>
                     @enderror
-                    <h5 class="mt-2">Medidas Externas Rodamiento</h5>
+                    <h5 class="mt-2">Medidas Internas Rodamiento</h5>
                     <div class="input-group mb-3"><span class="input-group-text" id="">@ 0°</span>
                         <input class="form-control" type="number" step="0.001"
                             placeholder="{{ number_format($bearings[3]['bearing']['diametro_interno'], 3) }}"

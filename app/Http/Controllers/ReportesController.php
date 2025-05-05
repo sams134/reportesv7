@@ -28,10 +28,14 @@ class ReportesController extends Controller
         ])
             ->render();
         $pdf = PDF::loadHTML($html)->setOption('load-error-handling', 'ignore') // Ignora los errores de carga
-            ->setOption('enable-local-file-access', true)
-            ->setOption('no-stop-slow-scripts', true)
-            ->setOption('javascript-delay', 5000);
-        return $pdf->inline('densidades.pdf');
+        ->setOption('load-error-handling', 'ignore')
+        ->setOption('enable-local-file-access', true)
+        ->setOption('no-stop-slow-scripts', true)
+        ->setOption('javascript-delay', 5000);
+    
+      // 120 segundos en lugar de 10
+      
+        return $pdf->inline('reporte2.pdf');
         
     }
     public function generarComentario($datos)

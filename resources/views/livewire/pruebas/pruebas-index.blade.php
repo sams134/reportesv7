@@ -17,12 +17,12 @@
                                 href="#tab-fit" role="tab" aria-controls="tab-fit"
                                 aria-selected="false">Ajustes Tapaderas</a>
                         </li>
-                        <li class="nav-item"><a class="nav-link" id="shaft-tab" data-bs-toggle="tab"
+                        <li class="nav-item"><a class="nav-link  active" id="shaft-tab" data-bs-toggle="tab"
                                 href="#tab-shaft" role="tab" aria-controls="tab-shaft"
                                 aria-selected="false">Ajustes Ejes</a>
                         </li>
                        
-                        <li class="nav-item"><a class="nav-link active" id="current-tab" data-bs-toggle="tab"
+                        <li class="nav-item"><a class="nav-link" id="current-tab" data-bs-toggle="tab"
                                 href="#tab-current" role="tab" aria-controls="tab-current"
                                 aria-selected="false">Amperajes</a></li>
                         <li class="nav-item"><a class="nav-link" id="temperature-tab" data-bs-toggle="tab"
@@ -48,11 +48,11 @@
                         <div class="tab-pane fade" id="tab-fit" role="tabpanel" aria-labelledby="fit-tab">
                             @livewire('pruebas.ajustes', ['motor' => $motor])
                         </div>
-                        <div class="tab-pane fade" id="tab-shaft" role="tabpanel" aria-labelledby="shaft-tab">
+                        <div class="tab-pane fade   show active" id="tab-shaft" role="tabpanel" aria-labelledby="shaft-tab">
                             @livewire('pruebas.shaft', ['motor' => $motor])
                         </div>
                        
-                        <div class="tab-pane fade show active" id="tab-current" role="tabpanel" aria-labelledby="current-tab">
+                        <div class="tab-pane fade" id="tab-current" role="tabpanel" aria-labelledby="current-tab">
                             @livewire('pruebas.amperajes', ['motor' => $motor])
                         </div>
                         <div class="tab-pane fade" id="tab-temperature" role="tabpanel"

@@ -183,8 +183,7 @@
                                                         wire:model="options.0.0.decision"></textarea>
                                                 </div>
                                                 <div>
-                                                    * Medidas tomadas por
-                                                {{ $ajustes[0][0]['rod']['userMedida']['name'] }}
+                                                    
                                                 </div>
                                                 
                                             </div>
@@ -245,7 +244,10 @@
                     <div class="col-12 col-md-9">
                         <x-form-card title="Medidas Finales Carga">
                             <div class="table-responsive scrollbar mt-0">
-
+                                <div class="text-right" style="width: 100%;text-align: right">
+                                    <button class="btn btn-sm btn-secondary"
+                                        wire:click="copyMedidas(0)">Copiar medidas</button>
+                                </div>
                                 <table class="table ajustes">
                                     <thead>
                                         <tr>
@@ -347,6 +349,7 @@
                             </div>
                             <div class="card">
                                 <div class="card-body">
+                                    
                                     @livewire('pruebas.ajustes-tabla',[$ajustes,1,0,$allowed_final])
                                   @if($ajustes[1][0]['ax'])
                                     <div class="text-center">
@@ -373,8 +376,7 @@
                                                         wire:model="options.1.0.decision"></textarea>
                                                 </div>
                                                 <div>
-                                                    * Medidas tomadas por
-                                                {{ $ajustes[1][0]['rod']['userMedida']['name'] }}
+                                                    
                                                 </div>
                                             </div>
                                         </div>
@@ -545,8 +547,7 @@
                                                     wire:model="options.0.1.decision"></textarea>
                                             </div>
                                             <div>
-                                                * Medidas tomadas por
-                                            {{ $ajustes[0][0]['rod']['userMedida']['name'] }}
+                                                
                                             </div>
                                         </div>
                                     </div>
@@ -606,7 +607,10 @@
                     <div class="col-12 col-md-9">
                         <x-form-card title="Medidas Finales Opuesto">
                             <div class="table-responsive scrollbar mt-0">
-
+                                <div class="text-right" style="width: 100%;text-align: right">
+                                    <button class="btn btn-sm btn-secondary"
+                                        wire:click="copyMedidas(1)">Copiar medidas</button>
+                                </div>
                                 <table class="table ajustes">
                                     <thead>
                                         <tr>
@@ -741,12 +745,7 @@
                                                     <textarea class="form-control" id="exampleFormControlTextarea1" style="text-transform: capitalize" rows="2"
                                                         wire:model="options.1.1.decision"></textarea>
                                                 </div>
-                                                @if ($ajustes[1][1]['rod']['userMedida'])
-                                                <div>
-                                                    * Medidas tomadas por
-                                                {{ $ajustes[1][1]['rod']['userMedida']['name'] }}
-                                                </div>
-                                                @endif
+                                               
                                             </div>
                                         </div>
                                     </div>

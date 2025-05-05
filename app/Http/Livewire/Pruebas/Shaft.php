@@ -40,11 +40,11 @@ class Shaft extends Component
                 $this->ajustes[$i][$j]['e2'] = $rod?$rod->e2:null;
               
                 if ($rod && $this->ajustes[$i][$j]['rod']->rodamiento->diametro_interno < 76) {
-                   
+                  // dd($i,$j,$this->ajustes[$i][$j]['rod']->rodamiento->diametro_interno);
                     $this->ajustes[$i][$j]['e3'] = $rod?($rod->e1+$rod->e2)/2:null;
                     
                 }else{
-                    $this->ajustes[$i][$j]['e3'] = $rod?$rod->e2:null;
+                    $this->ajustes[$i][$j]['e3'] = $rod?$rod->e3:null;
                
                 }
                 $this->ajustes[$i][$j]['designacion'] = $rod?$this->printDesignacion($rod):null;
@@ -52,6 +52,7 @@ class Shaft extends Component
                 $this->options[$i][$j]['decision'] = $rod?$rod->recomendacion_eje:null;
             }
         }
+        
 
     }
     public function render()
@@ -79,18 +80,23 @@ class Shaft extends Component
             $this->mount($this->motor);
             throw $e;
         }
+        $e1 = $this->ajustes[$i][$j]['e1'];
+        $e2 = $this->ajustes[$i][$j]['e2'];
+        $e3 = $this->ajustes[$i][$j]['e3'];
         $rod = $this->motor->ajustes->where('carga_opuesto', $j)->where('initial_final', $i)->first();
         $this->ajustes[$i][$j]['rod'] = $rod;
-        $this->ajustes[$i][$j]['rod']->e1 = $this->ajustes[$i][$j]['e1'];
-        $this->ajustes[$i][$j]['rod']->e2 = $this->ajustes[$i][$j]['e2'];
+        $this->ajustes[$i][$j]['rod']->e1 = $e1;
+        $this->ajustes[$i][$j]['rod']->e2 = $e2;
+        
         if ($this->ajustes[$i][$j]['rod']['rodamiento']['diametro_interno'] < 76) {
-            $this->ajustes[$i][$j]['rod']->e3 = ($this->ajustes[$i][$j]['e1'] + $this->ajustes[$i][$j]['e2']) / 2;
+            $this->ajustes[$i][$j]['rod']->e3 = ($e1+$e2) / 2;
         }else{
-            $this->ajustes[$i][$j]['rod']->e3 = $this->ajustes[$i][$j]['e3'];
+            $this->ajustes[$i][$j]['rod']->e3 = round((float)$e3, 4);
         }
         $this->ajustes[$i][$j]['rod']->options_tornero_eje_id = $this->options[$i][$j]['id'];
         $this->ajustes[$i][$j]['rod']->recomendacion_eje = $this->options[$i][$j]['decision'];
         $this->ajustes[$i][$j]['rod']->user_medida_eje_id = auth()->user()->id;
+        
         $this->ajustes[$i][$j]['rod']->save();
         $this->mount($this->motor);
         $inicial_final = $i == 0 ? 'iniciales' : 'finales';
@@ -144,6 +150,16 @@ class Shaft extends Component
                 break;
         }
         return $designacion;
+    }
+    public function copyMedidas($j)
+    {
+        $this->ajustes[1][$j]['e1'] = $this->ajustes[0][$j]['e1'];
+        $this->ajustes[1][$j]['e2'] = $this->ajustes[0][$j]['e2'];
+        if ($this->ajustes[0][$j]['rod']['rodamiento']['diametro_interno'] < 76) {
+            $this->ajustes[1][$j]['e3'] = ($this->ajustes[0][$j]['e1'] + $this->ajustes[0][$j]['e2']) / 2;
+        }else{
+            $this->ajustes[1][$j]['e3'] = $this->ajustes[0][$j]['e3'];
+        }
     }
 }
 

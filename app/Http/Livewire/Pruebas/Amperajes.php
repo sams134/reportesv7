@@ -16,7 +16,7 @@ class Amperajes extends Component
     public $motor;
     public $isVoltageBalanced = false,$pt=1,$usePT=false,$ct=1,$force_ct=true,$force_pt=true,$fct=1,$fpt=1,$limit_min,$limit_max;
     public $promA,$promV,$inbalance=2,$desbalanceV,$desbalanceA;
-    public $v1,$v2,$v3,$a1,$a2,$a3,$c1,$c2,$c3,$con,$circ,$noLoadAmps;
+    public $v1,$v2,$v3,$a1,$a2,$a3,$c1,$c2,$c3,$con,$circ,$noLoadAmps,$recorded=false;
 
     protected $listeners = [
         'deleteTestNameplate' => 'deleteTestNameplate',
@@ -50,6 +50,7 @@ class Amperajes extends Component
             $this->isVoltageBalanced = ($this->noLoadTest->useBalanced==0)?false:true;
             $this->fct=$this->ct = $this->noLoadTest->ct;
             $this->fpt=$this->pt = $this->noLoadTest->pt;
+            $this->recorded = $this->noLoadTest->recorded==1?true:false;
             if ($this->fct != 1 || $this->fpt != 1)
               $this->usePT = true;
             else
@@ -64,7 +65,9 @@ class Amperajes extends Component
     }
     public function render()
     {
+        
         if ($this->tested){
+            
             $this->circ = $this->circuitos_prueba;
             $this->con = $this->conexion_realizada;
             $this->promA = ($this->amperaje_1 + $this->amperaje_2 + $this->amperaje_3) / 3;
@@ -271,6 +274,40 @@ class Amperajes extends Component
         $this->force_ct = !$this->force_ct;
         if (!$this->force_ct)
            $this->fct = $this->ct;
+        
+    }
+    public function updatedFct($value)
+    {
+       $this->noLoadTest->update([
+            'ct' => $this->fct
+        ]);
+    }
+    public function updatedFpt($value)
+    {
+       $this->noLoadTest->update([
+            'pt' => $this->fpt
+        ]);
+    }
+    public function exportResults()
+    {
+   
+        if ($this->motor->fin == null || Auth()->user()->userType == 1) {
+            
+            $this->noLoadTest->update([
+                'recorded' => 1,
+                'finished' => now(),
+                'id_user' => auth()->user()->id,
+            ]);
+            $this->recorded = true;
+            $this->emit ('testExported');
+        }
+        elseif($this->motor->fin != null && $this->recorded == true && Auth()->user()->userType == 1){
+            $this->noLoadTest->update([
+                'recorded' => 1,
+            ]);
+            $this->recorded = true;
+            $this->emit ('testExported');
+        }
         
     }
     

@@ -11,6 +11,7 @@ class Ajustes extends Component
 {
     public $ajustes, $motor, $allowed_initial = true, $allowed_final = true;
     public $decisiones,$options;
+    protected $listeners = ['montar'];
     public function mount(Motor $motor)
     {
         $this->decisiones = OptionTornero::all();
@@ -103,7 +104,22 @@ class Ajustes extends Component
         $carga_opuesto = $j == 0 ? 'de carga ' : 'opuesto a la carga ';
         $this->mount($this->motor);
         $this->emit('savedMedidas', "Se actualizaron las medidas $inicial_final del lado $carga_opuesto");
-        $this->emit('updateMedidas',$this->ajustes);
+        
+        
+        $this->emit('updateMedidas',$this->ajustes,$i,$j,$this->allowed_final);
+    }
+
+    public function copyMedidas($j)
+    {
+        $this->ajustes[1][$j]['ax'] = $this->ajustes[0][$j]['ax'];
+        $this->ajustes[1][$j]['ay'] = $this->ajustes[0][$j]['ay'];
+        $this->ajustes[1][$j]['bx'] = $this->ajustes[0][$j]['bx'];
+        $this->ajustes[1][$j]['by'] = $this->ajustes[0][$j]['by'];
+        if ($this->ajustes[0][$j]['rod']['rodamiento']['diametro_externo'] > 141) {
+            $this->ajustes[1][$j]['cx'] = $this->ajustes[0][$j]['cx'];
+            $this->ajustes[1][$j]['cy'] = $this->ajustes[0][$j]['cy'];
+        }
+        
     }
 
     public function finalizar()
@@ -220,5 +236,11 @@ class Ajustes extends Component
                 break;
         }
         return $designacion;
+    }
+    public function montar(Motor $motor)
+    {
+        
+        $this->motor = Motor::find($motor->id_motor);
+        $this->mount($this->motor);
     }
 }
