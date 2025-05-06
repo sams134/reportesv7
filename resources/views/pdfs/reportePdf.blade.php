@@ -108,7 +108,7 @@
         <div style="position: relative;width:100%;text-align:center;">
             <h1 style="position: relative">REPORTE TECNICO DE REPARACION</h1>
             <H2 style="position: relative;top:-15px;color:#550000">
-                {{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}
+                {{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : ($motor->tipoequipo?$motor->tipoequipo->name:$motor->id_tipoequipo) }}
             </H2>
             <img src="{{ public_path('storage' . $foto_final->foto) }}" alt="Imagen de Entrada"
                 style="position: relative;max-width: 80%; border-radius: 4px;max-height: 450px;">
@@ -142,7 +142,7 @@
                 <tr>
                     <td style="font-weight: bold;width:100px">OS:</td>
                     <td colspan="2">{{ $motor->fullos }}</td>
-                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}</td>
+                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : ($motor->tipoequipo?$motor->tipoequipo->name:$motor->id_tipoequipo) }}</td>
                 </tr>
                 <tr>
                     <td style="font-weight: bold;width:100px">Potencia:</td>
@@ -340,7 +340,7 @@
                         <tr>
                             <td style="font-weight: bold;width:100px">OS:</td>
                             <td colspan="2">{{ $motor->fullos }}</td>
-                            <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}
+                            <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : ($motor->tipoequipo?$motor->tipoequipo->name:$motor->id_tipoequipo) }}
                             </td>
                         </tr>
                         <tr>
@@ -698,7 +698,7 @@
                         <tr>
                             <td style="font-weight: bold;width:100px">OS:</td>
                             <td colspan="2">{{ $motor->fullos }}</td>
-                            <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}
+                            <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : ($motor->tipoequipo?$motor->tipoequipo->name:$motor->id_tipoequipo) }}
                             </td>
                         </tr>
                         <tr>
@@ -1040,7 +1040,7 @@
                 <tr>
                     <td style="font-weight: bold;width:100px">OS:</td>
                     <td colspan="2">{{ $motor->fullos }}</td>
-                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}
+                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : ($motor->tipoequipo?$motor->tipoequipo->name:$motor->id_tipoequipo) }}
                     </td>
                 </tr>
                 <tr>
@@ -1104,7 +1104,7 @@
                 <tr>
                     <td style="font-weight: bold;width:100px">OS:</td>
                     <td colspan="2">{{ $motor->fullos }}</td>
-                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}
+                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : ($motor->tipoequipo?$motor->tipoequipo->name:$motor->id_tipoequipo) }}
                     </td>
                 </tr>
                 <tr>
@@ -1141,7 +1141,7 @@
                 <tr>
                     <td style="font-weight: bold;width:100px">OS:</td>
                     <td colspan="2">{{ $motor->fullos }}</td>
-                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}
+                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : ($motor->tipoequipo?$motor->tipoequipo->name:$motor->id_tipoequipo) }}
                     </td>
                 </tr>
                 <tr>
@@ -1177,7 +1177,7 @@
                 <tr>
                     <td style="font-weight: bold;width:100px">OS:</td>
                     <td colspan="2">{{ $motor->fullos }}</td>
-                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : $motor->tipoequipo->name }}
+                    <td style="font-weight: bold;color:#550000" colspan="2">{{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : ($motor->tipoequipo?$motor->tipoequipo->name:$motor->id_tipoequipo) }}
                     </td>
                 </tr>
                 <tr>
