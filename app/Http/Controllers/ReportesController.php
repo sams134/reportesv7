@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 use setasign\Fpdi\Fpdi;
 use Carbon\Carbon;
-use OpenAI;
+
 
 class ReportesController extends Controller
 {
@@ -16,7 +16,7 @@ class ReportesController extends Controller
     protected $client;
     public function __construct()
     {
-        $this->client = OpenAI::client(env('OPENAI_API_KEY'));
+     
     }
     public function generateReport(Motor $motor){
        
