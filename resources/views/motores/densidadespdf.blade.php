@@ -19,6 +19,10 @@
         font-family: Arial, sans-serif;
     }
 
+    body {
+        margin-left: 20px;
+       
+    }
     #logoHeader {
         max-width: 300px;
         height: auto;
@@ -33,7 +37,7 @@
     }
 
     .tabla {
-        width: 100%;
+        width: 97%;
         /* Ocupa el 100% del ancho */
         height: auto;
 
@@ -73,7 +77,7 @@
 
 
     .data-table {
-        width: 98%;
+        width: 97%;
         position: absolute;
         border-collapse: collapse;
         font-family: Arial, sans-serif;
@@ -305,10 +309,10 @@
     @endphp
 
     @for ($i = 0; $i < $phases; $i++)
-        <span class="titulos" style="top:810px;font-size:20px;left:{{ $i * 480 }}px">CALIBRES:</span>
-        <span class="titulos" style="top:840px;font-size:20px;left:{{ $i * 480 }}px">HILOS:</span>
+        <span class="titulos" style="top:810px;font-size:20px;left:{{ $i * 480 + 20 }}px">CALIBRES:</span>
+        <span class="titulos" style="top:840px;font-size:20px;left:{{ $i * 480 + 20 }}px">HILOS:</span>
 
-        <table class="no-data-table" style="top: 800px;width: 35%;left:{{ $i * 480 + 120 }}px">
+        <table class="no-data-table" style="top: 800px;width: 35%;left:{{ $i * 480 + 140 }}px">
             <tr>
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>
@@ -322,9 +326,9 @@
                 <td>&nbsp;</td>
             </tr>
         </table>
-        <span class="titulos" style="top:890px;font-size:20px;left:{{ $i * 480 }}px">PASO 1-:</span>
-        <span class="titulos" style="top:920px;font-size:20px;left:{{ $i * 480 }}px">VUELTAS:</span>
-        <table class="no-data-table" style="top: 880px;width: 35%;left:{{ $i * 480 + 120 }}px">
+        <span class="titulos" style="top:890px;font-size:20px;left:{{ $i * 480 + 20 }}px">PASO 1-:</span>
+        <span class="titulos" style="top:920px;font-size:20px;left:{{ $i * 480 + 20 }}px">VUELTAS:</span>
+        <table class="no-data-table" style="top: 880px;width: 35%;left:{{ $i * 480 + 140 }}px">
             <tr>
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>
@@ -344,7 +348,7 @@
         </table>
     @endfor
 
-    <table class="data-table" style="top: 980px;">
+    <table class="data-table" style="top: 970px;">
         <tr>
             <td width="12%">
                 <span style="font-weight:100;padding:10px"># puntas: </span>
@@ -368,32 +372,32 @@
     </table>
 
 
-    <div class="cuadro" style="top: 1070px;left: 10px;">
+    <div class="cuadro" style="top: 1050px;left: 20px;">
     </div>
-    <span class="no-title" style="top: 1070px;left: 50px;">alambre clase f</span>
+    <span class="no-title" style="top: 1050px;left: 60px;">alambre clase f</span>
 
-    <div class="cuadro" style="top: 1100px;left: 10px;">
+    <div class="cuadro" style="top: 1080px;left: 20px;">
     </div>
-    <span class="no-title" style="top: 1100px;left: 50px;">alambre ultrashield</span>
+    <span class="no-title" style="top: 1080px;left: 60px;">alambre ultrashield</span>
 
-    <div class="cuadro" style="top: 1070px;left: 320px;">
+    <div class="cuadro" style="top: 1050px;left: 330px;">
     </div>
-    <span class="no-title" style="top: 1070px;left: 356px;">bobinado original</span>
+    <span class="no-title" style="top: 1050px;left: 366px;">bobinado original</span>
 
-    <div class="cuadro" style="top: 1100px;left: 320px;">
+    <div class="cuadro" style="top: 1080px;left: 330px;">
     </div>
-    <span class="no-title" style="top: 1100px;left: 360px;">ya rebobinado</span>
+    <span class="no-title" style="top: 1080px;left: 370px;">ya rebobinado</span>
     
-    <div class="cuadro" style="top: 1070px;left: 620px;">
+    <div class="cuadro" style="top: 1050px;left: 630px;">
     </div>
-    <span class="no-title" style="top: 1070px;left: 660px;">secuencia abc</span>
+    <span class="no-title" style="top: 1050px;left: 670px;">secuencia abc</span>
 
-    <div class="cuadro" style="top: 1100px;left: 620px;">
+    <div class="cuadro" style="top: 1080px;left: 630px;">
     </div>
-    <span class="no-title" style="top: 1100px;left: 660px;">secuencia acb</span>
+    <span class="no-title" style="top: 1080px;left: 670px;">secuencia acb</span>
 
-    <span class="titulos" style="top:1150px;font-size:20px;">MONTAJE*:</span>
-    <table class="no-data-table" style="top: 1140px;width: 50%;LEFT:130px">
+    <span class="titulos" style="top:1130px;font-size:20px;">MONTAJE*:</span>
+    <table class="no-data-table" style="top: 1120px;width: 50%;LEFT:140px">
         <tr>
             <td>&nbsp;</td>
             <td>&nbsp;</td>
@@ -405,16 +409,16 @@
             <td>&nbsp;</td>
         </tr>
     </table>
-    <span style="position: absolute;top: 1180px;font-size:12px;left:130px">*Si hay diferentes vueltas por bobina</span>
-    <table class="data-table" style="top:1140px;left:630px;width:31%">
+    <span style="position: absolute;top: 1160px;font-size:12px;left:140px">*Si hay diferentes vueltas por bobina</span>
+    <table class="data-table" style="top:1120px;left:660px;width:31%">
         <tr>
             <td width="40%">OS Vieja*</td>
             <td>&nbsp;</td>
         </tr>
     </table>
-    <span style="position: absolute;top: 1180px;font-size:12px;left:630px">*Si el equipo se rebobin&oacute; antes o hay otro igual</span>
-    <span class="titulos" style="top:1200px;font-size:20px;">DIAGRAMA:</span>
-    <div class="cuadro" style="top: 1230px;width: 910px;height: 160px;border: 1px solid #777;">
+    <span style="position: absolute;top: 1160px;font-size:12px;left:650px">*Si el equipo se rebobin&oacute; antes o hay otro igual</span>
+    <span class="titulos" style="top:1175px;font-size:20px;">DIAGRAMA:</span>
+    <div class="cuadro" style="top: 1205px;width: 990px;height: 105px;border: 1px solid #777;">
 
     </div>
 

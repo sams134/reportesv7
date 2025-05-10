@@ -227,7 +227,7 @@
 
                     chartJsInit(newCanvas, getOptions);
                     setTimeout(() => {
-                        document.querySelector('#save').click();
+                        //document.querySelector('#save').click();
                     }, 300);
                 })
                 .catch(error => console.error('Error:', error));
@@ -253,9 +253,11 @@
             fetch('/api/save-temperature-chart', {
                     method: 'POST',
                     headers: {
+                        'Accept': 'application/json',
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content')
+                        'X-CSRF-TOKEN': document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content')
                     },
                     body: JSON.stringify({
                         image: imageData,
@@ -265,7 +267,12 @@
                 .then(response => response.json())
                 .then(data => {
                     console.log('Imagen guardada:', data);
-                    // Realiza alguna acción, como mostrar un mensaje de éxito
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: 'Gráfica guardada con éxito.',
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar'
+                    });
                 })
                 .catch(error => console.error('Error:', error));
         }

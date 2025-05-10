@@ -12,12 +12,14 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            left:30px;
             background-color: #fff;
         }
 
         /* Estilo para la imagen en la parte superior */
         .header-image {
             width: 100%;
+            
             height: auto;
             display: block;
         }
@@ -40,7 +42,7 @@
             color: #b1c9e4;
             font-size: 24px;
             font-weight: lighter;
-            top: 60px;
+            top: 80px;
             /* Coloca el subtítulo debajo del título */
             left: 10px;
         }
@@ -49,7 +51,7 @@
             color: #fff;
             font-size: 26px;
             text-decoration: underline;
-            top: 130px;
+            top: 150px;
             font-weight: lighter;
             left: 10px;
         }
@@ -57,34 +59,34 @@
         .os {
             color: #fff;
             font-size: 36px;
-            top: 110px;
+            top: 130px;
             font-weight: bold;
-            left: 450px;
+            left: 520px;
         }
 
         .cliente {
             color: #fff;
             font-size: 16px;
-            top: 170px;
+            top: 195px;
 
-            left: 450px;
+            left: 520px;
         }
 
         .titulo {
             color: #105cb5;
-            font-size: 28px;
-
+            font-size: 26px;
+            width:100%;
             font-weight: bold;
             left: 10px;
         }
 
         .table-striped {
-            width: 100%;
+            width: 97%;
             border-collapse: collapse;
             margin-top: 20px;
             border: 1px solid #ddd;
             position: absolute;
-
+            font-size:12px;
             left: 10px;
         }
 
@@ -211,7 +213,7 @@
             /* Muestra "..." si el texto no cabe */
             box-sizing: border-box;
             position: absolute;
-            top: 1330px;
+            top: 1300px;
         }
 
         .footer-span span {
@@ -233,9 +235,9 @@
     <h4 class="os tipo_letra">{{ $motor->year }}-{{ $motor->os }}</h4>
     <h5 class="cliente tipo_letra">{{ $motor->cliente->cliente }}</h5>
 
-    <h6 class="titulo tipo_letra" style="top: 160px;">DATOS DEL EQUIPO</h6>
+    <h6 class="titulo tipo_letra" style="top: 190px;">DATOS DEL EQUIPO</h6>
 
-    <table class="table-striped" style="top: 250px;">
+    <table class="table-striped" style="top: 270px;">
         <tr>
             <td>Nombre del Equipo</td>
             <td colspan="5">{{ $motor->infoMotor->nombre_equipo?$motor->infoMotor->nombre_equipo:"" }}</td>
@@ -277,8 +279,8 @@
             <td colspan="4">{{ $motor->comentarios }}</td>
         </tr>
     </table>
-    <h6 class="titulo tipo_letra" style="top: 430px;">INVENTARIO DE PARTES</h6>
-    <table class="table-striped" style="top: 520px;">
+    <h6 class="titulo tipo_letra" style="top: 420px;">INVENTARIO DE PARTES</h6>
+    <table class="table-striped" style="top: 500px;">
         <tr>
             <td>Acople</td>
             <td>{{ $motor->inventario->getItemStatus($motor->inventario->acople) }}</td>
@@ -316,8 +318,8 @@
             <td colspan="5">{{ $motor->inventario->comentarios }}</td>
         </tr>
     </table>
-    <h6 class="titulo tipo_letra" style="top: 660px;">IMAGENES DE ENTRADA</h6>
-    <div class="imagenes" style="top: 750px;">
+    <h6 class="titulo tipo_letra" style="top: 620px;">IMAGENES DE ENTRADA</h6>
+    <div class="imagenes" style="top: 700px;">
         @php
             $fotos = $motor->fotos->take(4); // Limita a las primeras 4 imágenes
             $missingImages = 4 - $fotos->count(); // Calcula cuántas imágenes faltan
@@ -331,8 +333,8 @@
             <img src="{{ public_path('img/default-avatar.png') }}" alt="Imagen Predeterminada">
         @endfor
     </div>
-    <h6 class="titulo tipo_letra" style="top: 920px;">INFORMACI&Oacute;N DE RECEPCI&Oacute;N</h6>
-    <table class="table-striped" style="font-size: 12px;top: 1000px;">
+    <h6 class="titulo tipo_letra" style="top: 890px;">INFORMACI&Oacute;N DE RECEPCI&Oacute;N</h6>
+    <table class="table-striped" style="font-size: 12px;top: 970px;">
         <tr>
             <td>Cliente:</td>
             <td colspan="2" >{{ $motor->cliente->cliente }}</td>
@@ -351,7 +353,7 @@
             <td width="20%">{{ $motor->infoMotor->email }}</td>
         </tr>
     </table>
-    <table class="table-striped" style="font-size: 12px;top: 1100px;">
+    <table class="table-striped" style="font-size: 12px;top: 1070px;">
         <tr>
             <td>Recibido por:</td>
             <td>{{ $motor->recibido }}</td>
@@ -372,8 +374,8 @@
         </tr>
     </table>
 
-    <h6 class="titulo tipo_letra" style="top: 1160px;">Contacto</h6>
-    <table class="table-striped" style="top: 1240px;">
+    <h6 class="titulo tipo_letra" style="top: 1130px;">Contacto</h6>
+    <table class="table-striped" style="top: 1210px;">
         <tr style="height: 50px">
             <td width="25%">Equipo Entregado por:</td>
             <td></td>

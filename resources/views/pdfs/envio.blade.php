@@ -11,21 +11,21 @@
     .header-img {
         position: absolute;
         top: 10px;
-        left: 350px;
+        left: 450px;
         width: 200px;
     }
 
     .motor-img {
         position: absolute;
         top: 10px;
-        left: 0px;
+        left: 20px;
         width: 150px;
     }
 
     .envio-title {
         position: absolute;
         top: 180px;
-        left: 0px;
+        left: 20px;
         width: 100%;
         font-size: 30px;
         font-weight: bold;
@@ -36,20 +36,21 @@
     .easa-img {
         position: absolute;
         top: 10px;
-        right: 0px;
+        right: 20px;
         width: 150px;
     }
 
     .weg-img {
         position: absolute;
         top: 80px;
-        right: 0px;
+        right: 20px;
         width: 120px;
     }
 
     body {
         font-family: Arial, sans-serif;
-        margin: 0;
+        margin-left: 20px;
+        margin-right: 20px;
         padding: 0;
         background-color: #fff;
         color: #333;
@@ -193,7 +194,7 @@
         <td style="border-bottom:1px solid #000033;">&nbsp;</td>
     </tr>
 </table>
-<table style="width: 55%;text-transform: uppercase;position: absolute;top: 220px;right:0px;">
+<table style="width: 55%;text-transform: uppercase;position: absolute;top: 220px;right:20px;">
     <tr>
         <td style="width:200px;font-size:13px;font-weight:bold;text-align:right;">Clinica de Motores Electricos</td>
         <td style="border:1px solid #000033;">&nbsp;</td>
@@ -211,7 +212,7 @@
 </table>
 <span class="sub-header">POR ESTE MEDIO ESTAMOS ENTREGANDOLE EL SIGUIENTE EQUIPO REPARADO BAJO LOS ESTANDARES EASA
     AR-100</span>
-<table style="width: 100%;text-transform: uppercase;position: absolute;top: 380px;">
+<table style="width: 96%;text-transform: uppercase;position: absolute;top: 370px;">
     <tr>
         <td>
             <div
@@ -223,15 +224,15 @@
                 </div>
             </div>
             <div
-                style="border: 1px solid #ddd; border-radius: 4px; max-width: 240px;  padding: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                style="border: 1px solid #ddd; border-radius: 4px; max-width: 250px;  padding: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
                 <div style="padding: 5px;">
                     <img src="{{ public_path('storage' . $foto->foto) }}" alt="Imagen de Entrada"
-                        style="max-width: 100%; border-radius: 4px;">
+                        style="max-width: 100%; border-radius: 4px;max-height: 240px;">
                     <div style="width: 100%;color:#000033;text-align:center">Imagen SALIDA</div>
                 </div>
             </div>
         </td>
-        <td>
+        <td style="vertical-align: top; padding-top: 0px;">
             <table class="table-striped" style="margin-right:20px;">
                 <tr>
                     <td colspan="4" style="text-align: center;background:#000033;color:#ddd;font-size:24px;">DATOS
@@ -290,7 +291,7 @@
         </td>
     </tr>
 </table>
-<table style="width: 100%;text-transform: uppercase;position: absolute;top: 740px;">
+<table style="width: 96%;text-transform: uppercase;position: absolute;top: 770px;">
     <tr>
         <td width="33%" style="padding: 10px;">
             <table class="table-striped" style="margin-right:20p;">
@@ -321,7 +322,7 @@
                 </tr>
             </table>
         </td>
-        <td width="66%" style="vertical-align: top; padding-top: 40px;">
+        <td width="66%" style="vertical-align: top; padding-top: 25px;">
             <table class="table-parts" style="margin-left:20px;">
                 <tr>
                     <td colspan="4"
@@ -344,7 +345,7 @@
         </td>
     </tr>
 </table>
-<table class="table-striped" style="position:absolute;top:990px">
+<table class="table-striped" style="position:absolute;top:980px;width: 96%;">   
     <tr>
         <td colspan="4" style="text-align: center;background:#000033;color:#ddd;font-size:20px;padding:5px">DATOS DEL
             PILOTO</td>
@@ -362,7 +363,7 @@
         <td>{{ $motor->envioFinal->placa_vehiculo }}</td>
     </tr>
 </table>
-<table class="table-striped" style="position:absolute;top:1100px">
+<table class="table-striped" style="position:absolute;top:1090px;width: 96%;">
     <tr>
         <td style="text-align: center;background:#000033;color:#ddd;font-size:20px;padding:5px">COMENTARIOS</td>
     </tr>
@@ -371,11 +372,11 @@
 
     </tr>
 </table>
-<div style="width:100%;text-align:center;position:absolute;top:1220px">
+<div style="width:96%;text-align:center;position:absolute;top:1190px">
     <p style="font-size:24px;font-weight:bold">Guatemala,
         {{ \Carbon\Carbon::parse($motor->fin)->locale('es')->isoFormat('dddd D [de] MMMM [del] YYYY') }}</p>
 </div>
-<table style="width:100%;position:absolute;top:1320px">
+<table style="width:96%;position:absolute;top:1290px">
     <td style="border-top:2px solid #000033;text-align:center;width:33%;font-size:16px;color:#000033">
         Firma: CLIENTE
     </td>

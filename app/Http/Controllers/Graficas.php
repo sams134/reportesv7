@@ -49,7 +49,10 @@ class Graficas extends Controller
         $motor->temperaturas = $imageData;
         $motor->save();
 
-        return response()->json(['message' => 'Imagen guardada con éxito.']);
+     
+        return response()->json([
+            'message' => utf8_encode('Imagen guardada con exito.')
+        ]);
     }
     public function saveNoLoadChart(Request $request)
     {

@@ -17,7 +17,7 @@
                                 href="#tab-fit" role="tab" aria-controls="tab-fit"
                                 aria-selected="false">Ajustes Tapaderas</a>
                         </li>
-                        <li class="nav-item"><a class="nav-link  active" id="shaft-tab" data-bs-toggle="tab"
+                        <li class="nav-item"><a class="nav-link" id="shaft-tab" data-bs-toggle="tab"
                                 href="#tab-shaft" role="tab" aria-controls="tab-shaft"
                                 aria-selected="false">Ajustes Ejes</a>
                         </li>
@@ -33,7 +33,7 @@
                                 aria-selected="false">Vibraciones</a></li>
                         <li class="nav-item"><a class="nav-link" id="surge-tab" data-bs-toggle="tab" href="#tab-surge"
                                 role="tab" aria-controls="tab-surge" aria-selected="false">Surge</a></li>
-                        <li class="nav-item"><a class="nav-link " id="photos-tab" data-bs-toggle="tab" href="#tab-photos"
+                        <li class="nav-item"><a class="nav-link active" id="photos-tab" data-bs-toggle="tab" href="#tab-photos"
                             role="tab" aria-controls="tab-photos" aria-selected="false">Seleccion de fotos</a></li>
                         <li class="nav-item"><a class="nav-link " id="report-tab" data-bs-toggle="tab" href="#tab-report"
                             role="tab" aria-controls="tab-report" aria-selected="false">Informe</a></li>
@@ -48,7 +48,7 @@
                         <div class="tab-pane fade" id="tab-fit" role="tabpanel" aria-labelledby="fit-tab">
                             @livewire('pruebas.ajustes', ['motor' => $motor])
                         </div>
-                        <div class="tab-pane fade   show active" id="tab-shaft" role="tabpanel" aria-labelledby="shaft-tab">
+                        <div class="tab-pane fade " id="tab-shaft" role="tabpanel" aria-labelledby="shaft-tab">
                             @livewire('pruebas.shaft', ['motor' => $motor])
                         </div>
                        
@@ -65,8 +65,8 @@
                         <div class="tab-pane fade" id="tab-surge" role="tabpanel" aria-labelledby="surge-tab">
                             @livewire('pruebas.itig', ['motor' => $motor])
                         </div>
-                        <div class="tab-pane fade " id="tab-photos" role="tabpanel" aria-labelledby="photos-tab">
-                          fotos
+                        <div class="tab-pane fade show active" id="tab-photos" role="tabpanel" aria-labelledby="photos-tab">
+                           @livewire('pruebas.seleccion-fotos', ['motor' => $motor])
                         </div>
                         <div class="tab-pane fade" id="tab-report" role="tabpanel" aria-labelledby="report-tab">
                            hacer informe

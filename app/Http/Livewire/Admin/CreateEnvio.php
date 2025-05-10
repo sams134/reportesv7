@@ -135,7 +135,10 @@ class CreateEnvio extends Component
         } else {
             $this->motor->envioFinal()->create($data);
         }
-        $this->motor->envioFinal->enviosAdicionales()->delete();
+        if ($this->motor->envioFinal->enviosAdicionales) {
+            $this->motor->envioFinal->enviosAdicionales()->delete();
+        }
+        
 
         collect($this->partes)
             ->filter()
