@@ -9,7 +9,8 @@
 <style>
      body {
             font-family: Arial, sans-serif;
-            margin: 0;
+            margin-left: 20px;
+            margin-right: 20px;
             padding: 0;
             background-color: #fff;
             color: #333;
@@ -26,7 +27,7 @@
         .header-img {
             position: absolute;
             top: 40px;
-            left: 700px;
+            left: 820px;
             width: 200px;
         }
         .titulo {
@@ -38,7 +39,7 @@
         }
 
         .table-striped {
-            width: 100%;
+            width: 97%;
             border-collapse: collapse;
             margin-top: 20px;
             border: 1px solid #ddd;
@@ -69,7 +70,7 @@
             font-weight: bold;
         }
         .table-data {
-            width: 100%;
+            width: 97%;
             border-collapse: collapse;
             margin-top: 20px;
           
@@ -107,7 +108,7 @@
         </tr>
     </table>
     <span style="position: absolute;top:150px;left:200px;width:200px;font-size:20px"> {{$tecnico}}</span>
-    <span style="position: absolute;top:150px;left:580px;width:300px;font-size:20px;text-transform:uppercase "> {{$motor->cliente->cliente}}</span>
+    <span style="position: absolute;top:150px;left:670px;width:300px;font-size:20px;text-transform:uppercase "> {{$motor->cliente->cliente}}</span>
     
     
 

@@ -8,9 +8,13 @@ use App\Models\Piloto;
 use App\Models\Vehiculo;
 use Livewire\Component;
 use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
+use Illuminate\Support\Facades\Storage;
+use Livewire\WithFileUploads;
+use Intervention\Image\Facades\Image as IMG;
 
 class CreateEnvio extends Component
 {
+    use WithFileUploads;
     public $motor;
     public $fotoFinal;
     public $pilotosDB,$vehiculosDB;
@@ -20,6 +24,7 @@ class CreateEnvio extends Component
 
     public $agregarCojinetes=true,$agregarRetenedores=true;
     public $partes = [];
+    public $photo;
 
 
     protected $rules = [
@@ -48,8 +53,11 @@ class CreateEnvio extends Component
     }
     public function render()
     {
-        $this->fotoFinal = $this->motor->fotos->where('type', 100)->last();
 
+        $this->fotoFinal = $this->motor->fotos->where('type', 100)->last();
+        if (!$this->fotoFinal) {
+            $this->fotoFinal = $this->motor->fotos->first();
+        }
         if ($this->agregarCojinetes) 
             $this->partes[0] = 'Cojinetes en Mal Estado';
         if ($this->agregarRetenedores) 
@@ -104,6 +112,55 @@ class CreateEnvio extends Component
         } else {
             $this->partes[1] = 'Retenedores en Mal Estado';
         }
+    }
+    public function updatedPhoto()
+    {
+        $this->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+            ]);
+            if ($this->photo != "") {
+                $image = IMG::make($this->photo);
+                    
+                // Corregir la orientación basada en los metadatos EXIF
+                if ($image->exif('Orientation')) {
+                    $orientation = $image->exif('Orientation');
+                    switch ($orientation) {
+                    case 3:
+                        $image->rotate(180); // Rotar 180 grados
+                        break;
+                    case 6:
+                        $image->rotate(-90); // Rotar 90 grados en sentido horario
+                        break;
+                    case 8:
+                        $image->rotate(90); // Rotar 90 grados en sentido antihorario
+                        break;
+                    }
+                }
+                 // Redimensionar la imagen
+            $image->resize(1024, null, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+
+            // Generar un nombre único para la imagen
+            $uniqueName = uniqid('img_', true) . '.' . $this->photo->getClientOriginalExtension();
+
+            $folderPath = '/uploads/' . $this->motor->fullos . '/Fotos/Proceso';
+            // Definir la ruta de la imagen
+            $imagePath = $folderPath . '/' . $uniqueName;
+            Storage::disk('public')->put($imagePath, (string) $image->encode());
+
+            $foto = $this->motor->fotos()->create([
+                'titulo' => $uniqueName,
+                'foto' => $folderPath . '/' . $uniqueName,
+                'thumb' => $folderPath . '/' . $uniqueName,
+                'type' => 100,
+                'user_id' => auth()->id(),
+            ]);
+            $this->emit('photoAdded', $this->motor->fullos);
+            }
+            
+        
     }
     public function addPart()
     {

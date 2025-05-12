@@ -87,7 +87,7 @@
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <a href="{{ route('motores.downloadPdfDensidades', $motor) }}"
-                                    class="btn btn-falcon-primary me-1 mb-1 little-button @if ($motor->fin) disabled @endif"
+                                    class="btn btn-falcon-primary me-1 mb-1 little-button "
                                     type="button">
                                     <span><i class="far fa-file-pdf mx-1"></i> Hoja Densidades </span></a>
                                 </a>
@@ -95,7 +95,7 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <button class="btn btn-falcon-primary me-1 mb-1 little-button" type="button"
                                     wire:click="$emit('openAsignacionesModal', {{ $motor->id_motor }})"
-                                    @if ($motor->fin) disabled @endif>
+                                    >
                                     <span><i class="fas fa-user-plus mx-1"></i> Asignar a Tecnico </span></a>
                                 </button>
                             </li>

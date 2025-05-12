@@ -12,7 +12,20 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        @if (isset($fotoFinal) && Storage::exists('public/' . $fotoFinal->foto))
+                        <img class="img-thumbnail"
+                            src="{{ $photo ? $photo->temporaryUrl() : asset('storage' . $fotoFinal->foto) }}"
+                            alt="Foto Final" />
+                            <button class="btn btn-falcon-primary me-1 mb-1 little-button" type="button"
+                            onclick="document.getElementById('imagenBtn').click();">
+                            <span><i class="fas fa-camera mx-1"></i> Cambiar Foto Principal</span></a>
+                        </button>
+                        <input type="file" id="imagenBtn" wire:model="photo" accept="image/*" style="display: none;">
+                        @error('photo')
+                            <div class="alert alert-danger my-1 py-1" role="alert">Es indispensable que ingrese una foto
+                                del trabajo.</div>
+                        @enderror
+
+                      {{--   @if (isset($fotoFinal) && Storage::exists('public/' . $fotoFinal->foto))
                             <img class="img-thumbnail" src="{{ asset('storage/' . $fotoFinal->foto) }}" alt="Foto Final" />
                         @else
                             <img class="img-thumbnail" src="{{ asset('img/default-avatar.png') }}" alt="No hay foto" />
@@ -20,7 +33,7 @@
                         <button class="btn btn-falcon-primary me-1 mb-1 little-button" type="button"
                             onclick="loadCamera()">
                             <span><i class="fas fa-camera mx-1"></i> Cambiar Foto</span></a>
-                        </button>
+                        </button> --}}
 
                     </div>
                 </div>
@@ -189,4 +202,17 @@
                 </div>
             </div>
         </div>
+    <script>
+        document.addEventListener('livewire:load', function () {
+            Livewire.on('photoAdded', (os) => {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: `Se cambió la foto final para la OS: ${os}`,
+                    confirmButtonText: 'Aceptar'
+                });
+            });
+            });
+
+    </script>
     </div>

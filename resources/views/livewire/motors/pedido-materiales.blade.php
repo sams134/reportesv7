@@ -1,6 +1,6 @@
 <div>
     <button class="btn btn-falcon-primary me-1 mb-1 little-button" type="button" data-bs-toggle="modal"
-        data-bs-target="#pedidoMateriales" @if($motor->fin) disabled @endif>
+        data-bs-target="#pedidoMateriales">
         <span><i class="far fa-list-alt mx-1"></i>Pedir Materiales </span>
     </button>
     <div  wire:ignore.self class="modal fade" id="pedidoMateriales" tabindex="-1" aria-labelledby="pedidoMaterialesLabel" aria-hidden="true">
