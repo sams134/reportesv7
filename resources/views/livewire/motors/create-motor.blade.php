@@ -64,7 +64,7 @@
                             @if ($customer_id != '')
                                 @livewire('customers.create-contact', ['id_cliente' => $customer->id_cliente])
                             @endif
-
+                            @livewire('customers.create-contact', ['id_cliente' => 2])
                         </x-form-card>
                     </div>
                     <div class="col-12 col-lg-6">
@@ -853,5 +853,10 @@
         <script src="{{ asset('vendors/choices/choices.min.js') }}"></script>
         <script src="{{ asset('js/flatpickr.js') }}"></script>
         <script src="{{ asset('js/main.js') }}"></script>
+        <script>
+             window.addEventListener('prueba', () => {
+            console.log('📣 Evento "prueba" capturado');
+        });
+            </script>
     @endpush
 </div>

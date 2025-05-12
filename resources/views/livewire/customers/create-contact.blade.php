@@ -37,28 +37,35 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cerrar</button>
-                    <button class="btn btn-primary close-modal" wire:click.prevent="store()" type="button">Guardar </button>
+                    <button class="btn btn-primary close-modal"  type="button" onclick="guardar()">Guardar </button>
                 </div>
             </div>
         </div>
     </div>
-</div>
-@push('livescripts')
-     <script>
-        document.addEventListener('livewire:load', function () {
-            Livewire.on('closeNewContact', () => {
-            Swal.fire({
-                icon: 'success',
-                title: 'Nuevo contacto guardado',
-                showConfirmButton: false,
-                timer: 1500
-            });
-            var modal = document.getElementById('newContact-modal');
-            var bootstrapModal = bootstrap.Modal.getInstance(modal);
-            if (bootstrapModal) {
-                bootstrapModal.hide();
+
+    <script>
+        guardar = function() {
+            console.log('guardar contacto');
+            // Llama al método de Livewire para guardar el contacto
+            @this.store();
+        }
+        // Asegúrate de que el listener exista siempre, tan pronto cargue Livewire
+        console.log('📣 close-new-contact');
+        document.addEventListener('livewire:load', () => {
+          window.addEventListener('close-new-contact', () => {
+            console.log('📣 close-new-contact capturado');
+            
+            // cierra el modal de Bootstrap 5
+            const modalEl = document.getElementById('newContact-modal');
+            if (modalEl) {
+              const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+              modal.hide();
             }
-            });
+          });
         });
-        </script>
-@endpush
+        window.addEventListener('prueba', () => {
+            console.log('📣 Evento "prueba" capturado');
+        });
+          </script>
+
+</div>

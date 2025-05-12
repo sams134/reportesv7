@@ -24,7 +24,7 @@
                                         <h3>Ya tienes horas extra en este dia</h3>
                                     
                                     @elseif (!$authorized)
-                                        <h3 wire:poll.1000ms>{{ ucfirst(now()->locale('es')->isoFormat('dddd D [de] MMMM h:mm:ss A')) }}</h3>
+                                        <h3 >{{ ucfirst(now()->locale('es')->isoFormat('dddd D [de] MMMM h:mm:ss A')) }}</h3>
                                         A esta hora no puedes crear horas extra
                                         @else
                                         <div class="row">
