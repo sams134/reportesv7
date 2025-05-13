@@ -60,7 +60,7 @@
                                 </button>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                @livewire('admin.horas-extras', ['motor' => $motor])
+                               {{--  @livewire('admin.horas-extras', ['motor' => $motor]) --}}
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <button class="btn btn-falcon-primary me-1 mb-1 little-button" type="button"
