@@ -5,29 +5,29 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Fonts -->
-   {{--  <link href="https://fonts.googleapis.com/css?family=Nunito:400,600,700" rel="stylesheet"> --}}
+    {{--  <link href="https://fonts.googleapis.com/css?family=Nunito:400,600,700" rel="stylesheet"> --}}
     <meta name="theme-color" content="#ffffff">
     <script src="{{ asset('js/config.js') }}"></script>
     <!-- Styles -->
-   
-   {{--  <link
+
+    {{--  <link
         href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,600,700%7cPoppins:300,400,500,600,700,800,900&amp;display=swap"
         rel="stylesheet"> --}}
-        <link href="{{ asset('vendors/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('vendors/overlayscrollbars/OverlayScrollbars.min.css') }}"  rel="stylesheet">
-        <link href=" {{ asset('vendors/dropzone/dropzone.min.css') }}" rel="stylesheet">
-        <link href="{{ asset('vendors/flatpickr/flatpickr.min.css') }}" rel="stylesheet" />
-        
+    <link href="{{ asset('vendors/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('vendors/overlayscrollbars/OverlayScrollbars.min.css') }}" rel="stylesheet">
+    <link href=" {{ asset('vendors/dropzone/dropzone.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('vendors/flatpickr/flatpickr.min.css') }}" rel="stylesheet" />
+
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
     <link rel="stylesheet" href="{{ asset('css/user.css') }}">
-  
-   
+
+
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
         integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
@@ -37,13 +37,12 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/fontawesome.min.js"
-    
         integrity="sha512-PoFg70xtc+rAkD9xsjaZwIMkhkgbl1TkoaRrgucfsct7SVy9KvTj5LtECit+ZjQ3ts+7xWzgfHOGzdolfWEgrw=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
-   
+
+
     <script src="{{ asset('vendors/overlayscrollbars/OverlayScrollbars.min.js') }}"></script>
-    
+
 
 
 </head>
@@ -82,71 +81,67 @@
                         aria-controls="navbarVerticalCollapse" aria-expanded="false"
                         aria-label="Toggle Navigation"><span class="navbar-toggle-icon"><span
                                 class="toggle-line"></span></span></button>
-                   {{--  <a class="navbar-brand me-1 me-sm-3" href="../../index.html">
+                    {{--  <a class="navbar-brand me-1 me-sm-3" href="../../index.html">
                         <div class="d-flex align-items-center"><span class="font-sans-serif">CME-AMIR</span>
                         </div>
                     </a> --}}
-                    <ul class="navbar-nav align-items-center  d-block" style="width:600px">
+                    <ul class="navbar-nav align-items-center  d-block" style="width:90%;">
                         <li class="nav-item">
-                          @livewire('search.searchbox')
+                            @livewire('search.searchbox')
                         </li>
                     </ul>
                     <ul class="navbar-nav navbar-nav-icons ms-auto flex-row align-items-center">
-                        <li class="nav-item d-none d-md-block">
-                          <div class="theme-control-toggle fa-icon-wait px-2">
-                            <input class="form-check-input ms-0 theme-control-toggle-input" id="themeControlToggle" type="checkbox" data-theme-control="theme" value="dark" />
-                            <label class="mb-0 theme-control-toggle-label theme-control-toggle-light" for="themeControlToggle" data-bs-toggle="tooltip" data-bs-placement="left" title="Switch to light theme"><span class="fas fa-sun fs-0"></span></label>
-                            <label class="mb-0 theme-control-toggle-label theme-control-toggle-dark" for="themeControlToggle" data-bs-toggle="tooltip" data-bs-placement="left" title="Switch to dark theme"><span class="fas fa-moon fs-0"></span></label>
-                          </div>
-                        </li>
-                        <li class="nav-item">
-                          <a class="nav-link px-0 notification-indicator notification-indicator-warning notification-indicator-fill fa-icon-wait" href="../app/e-commerce/shopping-cart.html"><span class="fas fa-shopping-cart" data-fa-transform="shrink-7" style="font-size: 33px;"></span><span class="notification-indicator-number">1</span></a>
-          
-                        </li>
-                        
-                        <li class="nav-item dropdown"><a class="nav-link pe-0" id="navbarDropdownUser" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <div class="avatar avatar-xl">
-                              <img class="rounded-circle" src="{{asset('storage/' .Auth::user()->foto )}}" alt="{{ Auth::user()->name }}" />
-          
+
+
+                        <li class="nav-item dropdown"><a class="nav-link pe-0" id="navbarDropdownUser" href="#"
+                                role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <div class="avatar avatar-xl">
+                                    <img class="rounded-circle" src="{{ asset('storage/' . Auth::user()->foto) }}"
+                                        alt="{{ Auth::user()->name }}" />
+
+                                </div>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end py-0" aria-labelledby="navbarDropdownUser">
+                                <div class="bg-white dark__bg-1000 rounded-2 py-2">
+
+
+                                    <a class="dropdown-item" href="{{ route('profile.show') }}">Perfil de Usuario</a>
+                                    <a class="dropdown-item" href="#!">Feedback</a>
+
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#">Configuraciones</a>
+                                    <a class="dropdown-item" href="#"
+                                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Cerrar
+                                        Sesi&oacute;n</a>
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                                        style="display: none;">
+                                        @csrf
+                                    </form>
+                                </div>
                             </div>
-                          </a>
-                          <div class="dropdown-menu dropdown-menu-end py-0" aria-labelledby="navbarDropdownUser">
-                            <div class="bg-white dark__bg-1000 rounded-2 py-2">
-                             
-                              
-                              <a class="dropdown-item" href="{{route('profile.show')}}">Perfil de Usuario</a>
-                              <a class="dropdown-item" href="#!">Feedback</a>
-          
-                              <div class="dropdown-divider"></div>
-                              <a class="dropdown-item" href="#">Configuraciones</a>
-                              <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Cerrar Sesi&oacute;n</a>
-                              <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                @csrf
-                            </form>
-                            </div>
-                          </div>
                         </li>
-                      </ul>
+                    </ul>
                 </nav>
                 @if (session()->has('success'))
                     <div class="alert alert-success border-2 d-flex align-items-center" role="alert">
                         <div class="bg-success me-3 icon-item"><span class="fas fa-check-circle text-white fs-3"></span>
                         </div>
                         <p class="mb-0 flex-1"> {{ session()->get('success') }}</p>
-                        <button class="btn-close" type="button" data-bs-dismiss="alert"
-                            aria-label="Close"></button>
+                        <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
                 @if ($errors->any())
-                   
-                            @foreach ($errors->all() as $error)
-                            <div class="alert alert-danger border-2 d-flex align-items-center" role="alert">
-                                <div class="bg-danger me-3 icon-item"><span class="fas fa-times-circle text-white fs-3"></span></div>
-                                <p class="mb-0 flex-1">{{$error}}</p>
-                                <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
-                              </div>
-                            @endforeach
-                     
+
+                    @foreach ($errors->all() as $error)
+                        <div class="alert alert-danger border-2 d-flex align-items-center" role="alert">
+                            <div class="bg-danger me-3 icon-item"><span
+                                    class="fas fa-times-circle text-white fs-3"></span></div>
+                            <p class="mb-0 flex-1">{{ $error }}</p>
+                            <button class="btn-close" type="button" data-bs-dismiss="alert"
+                                aria-label="Close"></button>
+                        </div>
+                    @endforeach
+
                 @endif
                 {{ $slot }}
 
@@ -155,7 +150,7 @@
     </main>
 
 
-   
+
 
     @stack('modals')
 
@@ -168,13 +163,13 @@
     <script src="{{ asset('vendors/rater-js/index.js') }}"></script>
     <script src="{{ asset('vendors/lodash/lodash.min.js') }}"></script>
     <script src="{{ asset('vendors/echarts/echarts.min.js') }}"></script>
-    <script src="{{asset('vendors/countup/countUp.umd.js')}}"></script>
-    
+    <script src="{{ asset('vendors/countup/countUp.umd.js') }}"></script>
+
     <script src="{{ asset('vendors/fontawesome/all.min.js') }}"></script>
     <script src="{{ asset('vendors/dropzone/dropzone.min.js') }}"></script>
     <script src="{{ asset('vendors/list.js/list.min.js') }}"></script>
     <script src="{{ asset('vendors/tinymce/tinymce.min.js') }}"></script>
-    
+
     <script src="{{ asset('js/flatpickr.js') }}"></script>
     <script src="{{ asset('js/theme.js') }}"></script>
     {{-- <script src="{{ asset('js/app.js') }}"></script> --}}
@@ -184,7 +179,7 @@
     @stack('scripts')
     @yield('js')
 
-  
+
 
 </body>
 

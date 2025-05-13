@@ -1,4 +1,4 @@
-<div class="search-box w-100" data-list='{"valueNames":["title"]}'>
+<div class="search-box" data-list='{"valueNames":["title"]}' style="width: 100%;">
     <form class="position-relative" data-bs-toggle="search" data-bs-display="static">
         <input id="searchInput" class="form-control search-input fuzzy-search" type="search" placeholder="Buscar" aria-label="Search"
         wire:model="search"
