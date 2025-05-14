@@ -7,7 +7,7 @@ use Livewire\Component;
 
 class IndexJobs extends Component
 {
-    public $type,$jobs,$title;
+    public $type,$title;
 
     protected $listeners = ['delete'];
 
@@ -24,34 +24,41 @@ class IndexJobs extends Component
     public function mount($type)
     {
         $this->type = $type;
-        switch ($type) {
-            case 'all':
-                $this->jobs = Job::all();
-                break;
-            case 'tornos':
-                $this->jobs = Job::where('year', 'like', 'TOR%')->get();
-                $this->title = 'Trabajos de Tornos';
-                break;
-            case 'balanceos':
-                $this->jobs = Job::where('year', 'like', 'BAL%')->get();
-                $this->title = 'Balanceos dinamicos';
-                break;
-            case 'metalizados':
-                $this->jobs = Job::where('year', 'like', 'MET%')->get();
-                $this->title = 'Metalizados en frio';
-                break;
-            case 'soldaduras':
-                $this->jobs = Job::where('year', 'like', 'WEL%')->get();
-                $this->title = 'Soldaduras o reconstrucciones';
-                break;
-            default:
-                $this->jobs = Job::all();
-                break;
-        }
+        
      
     }
     public function render()
     {
-        return view('livewire.motors.index-jobs');
+        switch ($this->type) {
+            case 'all':
+                $jobs = Job::all();
+                break;
+            case 'tornos':
+                $jobs = Job::where('year', 'like', 'TOR%');
+                $this->title = 'Trabajos de Tornos';
+                break;
+            case 'balanceos':
+                $jobs = Job::where('year', 'like', 'BAL%');
+                $this->title = 'Balanceos dinamicos';
+                break;
+            case 'metalizados':
+                $jobs = Job::where('year', 'like', 'MET%');
+                $this->title = 'Metalizados en frio';
+                break;
+            case 'soldaduras':
+                $jobs = Job::where('year', 'like', 'WEL%');
+                $this->title = 'Soldaduras o reconstrucciones';
+                break;
+            default:
+                $jobs = Job::all();
+                break;
+        }
+        $jobs = $jobs->orderBy('year', 'desc')
+                ->orderBy('os', 'desc')
+                ->paginate(30);
+        return view('livewire.motors.index-jobs')->with([
+            'jobs' => $jobs,
+     
+        ]);
     }
 }
