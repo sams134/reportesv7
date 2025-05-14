@@ -207,7 +207,7 @@
     <tr>
         <td style="width:130px;font-size:18px;font-weight:bold">SE&Ntilde;ORES:</td>
         <td style="border-bottom:1px solid #000033;font-size:20px;text-align:center">{{ $motor->cliente->cliente }} /
-            Att: {{ $motor->infoMotor->contacto }}</td>
+            {{-- Att: {{ $motor->infoMotor->contacto }} --}}</td>
     </tr>
 </table>
 <span class="sub-header">POR ESTE MEDIO ESTAMOS ENTREGANDOLE EL SIGUIENTE EQUIPO REPARADO BAJO LOS ESTANDARES EASA
