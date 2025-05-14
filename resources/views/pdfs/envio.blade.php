@@ -311,13 +311,13 @@
                 <tr>
                     <td width="20%" style="font-size:12px">Fecha Finalizaci&oacute;n</td>
                     <td colspan="3" style="font-size:12px">
-                        {{ \Carbon\Carbon::parse($motor->fecha_ingreso)->locale('es')->isoFormat('dddd D [de] MMMM [del] YYYY') }}
+                        {{ \Carbon\Carbon::parse($motor->fin)->locale('es')->isoFormat('dddd D [de] MMMM [del] YYYY') }}
                     </td>
                 </tr>
                 <tr>
                     <td width="20%" style="font-size:12px">Fecha Entrega</td>
                     <td colspan="3" style="font-size:12px">
-                        {{ \Carbon\Carbon::parse($motor->fecha_ingreso)->locale('es')->isoFormat('dddd D [de] MMMM [del] YYYY') }}
+                        {{ \Carbon\Carbon::now()->locale('es')->isoFormat('dddd D [de] MMMM [del] YYYY') }}
                     </td>
                 </tr>
             </table>
