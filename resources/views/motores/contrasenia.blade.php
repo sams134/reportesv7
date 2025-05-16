@@ -10,7 +10,7 @@
         /* Estilos generales */
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
+            margin: 0px;
             padding: 0;
             left:30px;
             background-color: #fff;
@@ -18,8 +18,9 @@
 
         /* Estilo para la imagen en la parte superior */
         .header-image {
-            width: 100%;
-            
+            width: 95%;
+           position: absolute;
+            top:20px;
             height: auto;
             display: block;
         }
@@ -33,33 +34,33 @@
             color: #b1c9e4;
             font-size: 32px;
             font-weight: bold;
-            top: 20px;
+            top: 40px;
             /*  Ajusta según lo que necesites */
-            left: 10px;
+            left: 30px;
         }
 
         #subtitulo {
             color: #b1c9e4;
             font-size: 24px;
             font-weight: lighter;
-            top: 80px;
+            top: 100px;
             /* Coloca el subtítulo debajo del título */
-            left: 10px;
+            left: 30px;
         }
 
         #subtitulo2 {
             color: #fff;
             font-size: 26px;
             text-decoration: underline;
-            top: 150px;
+            top: 170px;
             font-weight: lighter;
-            left: 10px;
+            left: 30px;
         }
 
         .os {
             color: #fff;
             font-size: 36px;
-            top: 130px;
+            top: 150px;
             font-weight: bold;
             left: 520px;
         }
@@ -67,7 +68,7 @@
         .cliente {
             color: #fff;
             font-size: 16px;
-            top: 195px;
+            top: 205px;
 
             left: 520px;
         }
@@ -77,22 +78,22 @@
             font-size: 26px;
             width:100%;
             font-weight: bold;
-            left: 10px;
+            left: 30px;
         }
 
         .table-striped {
-            width: 97%;
+            width: 95%;
             border-collapse: collapse;
             margin-top: 20px;
             border: 1px solid #ddd;
             position: absolute;
             font-size:12px;
-            left: 10px;
+            left: 30px;
         }
 
         .table-striped th,
         .table-striped td {
-            padding: 8px 12px;
+            padding: 6px 8px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
@@ -124,12 +125,12 @@
             /* Distribuye las imágenes uniformemente */
             gap: 10px;
             /* Espacio entre las imágenes */
-            width: 100%;
+            width: 95%;
             /* Asegura que el contenedor ocupe el 100% del espacio disponible */
             padding: 10px;
             box-sizing: border-box;
             position: absolute;
-            left: 10px;
+            left: 30px;
         }
 
         .imagenes img {
@@ -235,9 +236,9 @@
     <h4 class="os tipo_letra">{{ $motor->year }}-{{ $motor->os }}</h4>
     <h5 class="cliente tipo_letra">{{ $motor->cliente->cliente }}</h5>
 
-    <h6 class="titulo tipo_letra" style="top: 190px;">DATOS DEL EQUIPO</h6>
+    <h6 class="titulo tipo_letra" style="top: 200px;">DATOS DEL EQUIPO</h6>
 
-    <table class="table-striped" style="top: 270px;">
+    <table class="table-striped" style="top: 280px;">
         <tr>
             <td>Nombre del Equipo</td>
             <td colspan="5">{{ $motor->infoMotor->nombre_equipo?$motor->infoMotor->nombre_equipo:"" }}</td>

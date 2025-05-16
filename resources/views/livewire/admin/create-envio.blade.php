@@ -59,9 +59,16 @@
                                 <label class="form-label" for="Piloto">Nombre del Piloto</label>
                                 <input class="form-control" id="Piloto" type="text"
                                     placeholder="Nombre del Piloto" name="piloto" wire:model="piloto" />
+                                    @error("piloto")
+                                        <div class="alert alert-danger my-1 py-1" role="alert">Es indispensable que ingrese el nombre del piloto.</div>
+                                    @enderror
+
                                 <label class="form-label" for="Piloto">DPI Piloto</label>
                                 <input class="form-control" id="dpiPiloto" type="text" placeholder="DPI del Piloto"
                                     name="dpi" wire:model="dpi" />
+                                    @error("dpi")
+                                        <div class="alert alert-danger my-1 py-1" role="alert">Es indispensable que ingrese el DPI del piloto.</div>
+                                    @enderror
                                 @if ($selectedPiloto == 0)
                                     <div class="form-check mt-2">
                                         <input class="form-check-input" id="flexCheckDefault" type="checkbox"
@@ -70,6 +77,7 @@
                                     </div>
                                 @endif
                             </div>
+                            
                         </div>
                         <div class="col-12 col-lg-6">
                             <select class="form-select" aria-label="Default select example"
@@ -84,9 +92,15 @@
                                 <label class="form-label" for="tipoVehilculo">Tipo de Vehiculo</label>
                                 <input class="form-control" id="tipoVehilculo" type="text"
                                     placeholder="Tipo de Vehiculo" name="tipoVehiculo" wire:model="tipo_vehiculo" />
+                                @error("tipo_vehiculo")
+                                    <div class="alert alert-danger my-1 py-1" role="alert">Es indispensable que ingrese el tipo de vehiculo.</div>
+                                @enderror
                                 <label class="form-label" for="placa">Placa</label>
                                 <input class="form-control" id="placa" type="text" placeholder="Placa"
                                     wire:model="placa" name="placa" />
+                                @error("placa")
+                                    <div class="alert alert-danger my-1 py-1" role="alert">Es indispensable que ingrese la placa del vehiculo.</div>
+                                @enderror
 
                                 @if ($selectedVehiculo == 0)
                                     <div class="form-check mt-2">
@@ -196,6 +210,9 @@
                         <button class="btn btn-falcon-danger me-1 mb-1" type="button" wire:click="generatePDF">
                             <i class="fas fa-file-pdf"></i> Guardar y Generar PDF
                         </button>
+                        @if ($errors->any())
+                            <div class="alert alert-danger my-1 py-1" role="alert">Es indispensable que ingrese todos los datos.</div>
+                        @endif
                     </div>
 
 

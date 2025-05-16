@@ -10,22 +10,22 @@
 <style>
     .header-img {
         position: absolute;
-        top: 10px;
+        top: 20px;
         left: 450px;
         width: 200px;
     }
 
     .motor-img {
         position: absolute;
-        top: 10px;
-        left: 20px;
+        top: 20px;
+        left: 30px;
         width: 150px;
     }
 
     .envio-title {
         position: absolute;
         top: 180px;
-        left: 20px;
+        left: 30px;
         width: 100%;
         font-size: 30px;
         font-weight: bold;
@@ -35,22 +35,22 @@
 
     .easa-img {
         position: absolute;
-        top: 10px;
-        right: 20px;
+        top: 30px;
+        right: 25px;
         width: 150px;
     }
 
     .weg-img {
         position: absolute;
-        top: 80px;
-        right: 20px;
+        top: 100px;
+        right: 25px;
         width: 120px;
     }
 
     body {
         font-family: Arial, sans-serif;
-        margin-left: 20px;
-        margin-right: 20px;
+        margin-left: 30px;
+        margin-right: 25px;
         padding: 0;
         background-color: #fff;
         color: #333;
@@ -58,7 +58,7 @@
 
     .header-text {
         position: absolute;
-        top: 110px;
+        top: 120px;
 
         width: 100%;
         font-size: 16px;
@@ -85,7 +85,7 @@
     }
 
     .table-striped {
-        width: 100%;
+        width: 95%;
         border-collapse: collapse;
         margin-top: 20px;
         border: 1px solid #ddd;
@@ -124,7 +124,7 @@
     }
 
     .table-parts {
-        width: 100%;
+        width: 95%;
         margin-bottom: 1rem;
         color: #212529;
         border-collapse: collapse;
@@ -217,17 +217,17 @@
         <td>
             <div
                 style="border: 1px solid #ddd; border-radius: 4px; max-width: 250px;  padding: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                <div style="padding: 5px;">
+                <div style="padding: 5px;text-align:center">
                     <img src="{{ public_path('storage' . $motor->fotos->first()->foto) }}" alt="Imagen de Entrada"
-                        style="max-width: 100%; border-radius: 4px;max-height: 240px;">
+                        style="max-width: 100%; border-radius: 4px;max-height: 160px;">
                     <div style="width: 100%;color:#000033;text-align:center">Imagen Entrada</div>
                 </div>
             </div>
             <div
                 style="border: 1px solid #ddd; border-radius: 4px; max-width: 250px;  padding: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                <div style="padding: 5px;">
+                <div style="padding: 5px;text-align:center">
                     <img src="{{ public_path('storage' . $foto->foto) }}" alt="Imagen de Entrada"
-                        style="max-width: 100%; border-radius: 4px;max-height: 240px;">
+                        style="max-width: 100%; border-radius: 4px;max-height: 160px;">
                     <div style="width: 100%;color:#000033;text-align:center">Imagen SALIDA</div>
                 </div>
             </div>
@@ -266,7 +266,7 @@
                 <tr>
                     <td>RPM</td>
                     <td>{{ $motor->rpm }}</td>
-                    <td>Factor Potencia</td>
+                    <td>PF</td>
                     <td>{{ $motor->pf }}</td>
 
                 </tr>
@@ -294,10 +294,10 @@
 <table style="width: 96%;text-transform: uppercase;position: absolute;top: 770px;">
     <tr>
         <td width="33%" style="padding: 10px;">
-            <table class="table-striped" style="margin-right:20p;">
+            <table class="table-striped" style="margin-right:20p;font-size:10px;">
                 <tr>
                     <td colspan="4"
-                        style="text-align: center;background:#fff;color:#000044;font-size:24px;border:1px solid #fff">
+                        style="text-align: center;background:#fff;color:#000044;font-size:22px;border:1px solid #fff">
                         Fechas Importantes</td>
 
                 </tr>
@@ -345,7 +345,7 @@
         </td>
     </tr>
 </table>
-<table class="table-striped" style="position:absolute;top:980px;width: 96%;">   
+<table class="table-striped" style="position:absolute;top:980px;width: 94%;">   
     <tr>
         <td colspan="4" style="text-align: center;background:#000033;color:#ddd;font-size:20px;padding:5px">DATOS DEL
             PILOTO</td>
@@ -363,7 +363,7 @@
         <td>{{ $motor->envioFinal->placa_vehiculo }}</td>
     </tr>
 </table>
-<table class="table-striped" style="position:absolute;top:1090px;width: 96%;">
+<table class="table-striped" style="position:absolute;top:1090px;width: 94%;">
     <tr>
         <td style="text-align: center;background:#000033;color:#ddd;font-size:20px;padding:5px">COMENTARIOS</td>
     </tr>

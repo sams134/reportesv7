@@ -143,14 +143,22 @@
                                             wire:model.defer="selectedMotors" value="{{ $motor->id_motor }}"></td>
                                     <td>
                                         <div class="col-auto">
-                                            @if ($motor->fotos && $motor->fotos->count() > 0 && Storage::exists('public' . $motor->fotos->first()->thumb))
+                                            @php
+                                                if ($motor->fotos && $motor->fotos->count() > 0) {
+                                                    $fotoType13 = $motor->fotos->where('type', 3)->first();
+                                                } else {
+                                                    $fotoType13 = null;
+                                                }
+                                               
+                                            @endphp
+                                            @if ($fotoType13 && Storage::exists('public' . $fotoType13->thumb))
                                                 <div class="avatar avatar-2xl ">
-                                                    <a href="{{route('motores.show',$motor)}}">
-                                                    <img class="rounded-circle"
-                                                        src="{{ asset('storage' . $motor->fotos->first()->thumb) }}"
-                                                        alt="" style="transition: transform 0.3s;"
-                                                        onmouseover="this.style.transform='scale(1.9)';"
-                                                        onmouseout="this.style.transform='scale(1)';" />
+                                                    <a href="{{ route('motores.show', $motor) }}">
+                                                        <img class="rounded-circle"
+                                                            src="{{ asset('storage' . $fotoType13->thumb) }}"
+                                                            alt="" style="transition: transform 0.3s;"
+                                                            onmouseover="this.style.transform='scale(1.9)';"
+                                                            onmouseout="this.style.transform='scale(1)';" />
                                                     </a>
                                                 </div>
                                             @else
