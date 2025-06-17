@@ -13,3 +13,5 @@ yarn-error.log
 /.idea
 /.vscode
 /config/snappy.php
+.DS_Store
+*/.DS_Store

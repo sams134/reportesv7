@@ -18,11 +18,13 @@
         .header-title {
             position: absolute;
             top: 30px;
+            left: 30px;
         }
         .header-subtitle {
             position: absolute;
             top: 60px;
             color: #0C5DD1;
+            left: 30px;
         }
         .header-img {
             position: absolute;
@@ -35,17 +37,17 @@
             font-size: 28px;
 
             font-weight: bold;
-            left: 10px;
+            left: 40px;
         }
 
         .table-striped {
-            width: 97%;
+            width: 93%;
             border-collapse: collapse;
             margin-top: 20px;
             border: 1px solid #ddd;
             position: absolute;
 
-            left: 10px;
+            left: 40px;
         }
 
         .table-striped th,
@@ -70,12 +72,12 @@
             font-weight: bold;
         }
         .table-data {
-            width: 97%;
+            width: 93%;
             border-collapse: collapse;
             margin-top: 20px;
           
             position: absolute;
-            left: 10px;
+            left: 40px;
         }
         .table-data th{
             padding: 8px 12px;
@@ -99,7 +101,7 @@
         <h1 class="header-subtitle">OS: {{$motor->fullOs}}</h1>
         <img src="{{ public_path('img/logo.jpg') }}" alt="Logo" class="header-img">
     </div>
-    <table style="width: 100%;text-transform: uppercase;position: absolute;top: 150px;">
+    <table style="width: 93%;text-transform: uppercase;position: absolute;top: 150px;left:40px">
         <tr>
             <td width="10%" style="font-weight: bold">Tecnico:</td>
             <td style="border-bottom: 1px solid #222"></td>
@@ -154,7 +156,7 @@
             <td colspan="4">{{ $motor->comentarios }}</td>
         </tr>
     </table>
-    <span style="position: absolute;top:420px;left:0px;width:200px;font-size:24px;text-transform:uppercase;font-weight:bold "> Materiales:</span>
+    <span style="position: absolute;top:420px;left:40px;width:200px;font-size:24px;text-transform:uppercase;font-weight:bold "> Materiales:</span>
     <table class="table-data" style="top: 440px;">
         <thead>
             <tr>
@@ -175,7 +177,7 @@
             @endforeach
         </tbody>
     </table>
-    <table style="width: 100%;text-transform: uppercase;position: absolute;top: 1320px;">
+    <table style="width: 93%;text-transform: uppercase;position: absolute;top: 1250px;left:40px">
         <tr style="border: 1px solid #222">
             <td width="20%" style="font-weight: bold;padding:0px">Autorizado Por:</td>
             <td style="border-bottom: 1px solid #222"></td>
@@ -184,6 +186,6 @@
         </tr>
     </table>
     
-    <span style="position: absolute;top:1320px;left:700px;width:150px;font-size:20px;text-transform:uppercase "> {{ \Carbon\Carbon::now()->format('d/m/Y') }}</span>
+    <span style="position: absolute;top:1250px;left:740px;width:150px;font-size:20px;text-transform:uppercase "> {{ \Carbon\Carbon::now()->format('d/m/Y') }}</span>
 </body>
 </html>
