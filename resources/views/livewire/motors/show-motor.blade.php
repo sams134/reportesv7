@@ -462,7 +462,7 @@
                     <div class="swiper-container theme-slider"
                         data-swiper='{
                                     "spaceBetween": 10,
-                                    "slidesPerView": 4,
+                                    "slidesPerView": 3,
                                     "loop": true,
                                     "grabCursor": true,
                                     "centeredSlides": false,
@@ -525,34 +525,16 @@
                                             @endif
                                             <p class="card-text">{{ $foto->comentario }}</p>
                                         </div>
+                                        <div class="d-flex justify-content-end">
+                                            <button class="btn btn-danger btn-sm " type="button" onclick="removePhoto({{ $foto->id }})">
+                                                <i class="fas fa-trash"></i> 
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                  @endforeach
                             </div>
                            
-                               {{--  <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12 my-2">
-                                    <div class="card card-gallery">
-                                        <img class="card-img-top" src="{{ asset('storage' . $foto->foto) }}"
-                                            alt="Foto"
-                                            ondblclick="openImageModal('{{ asset('storage' . $foto->foto) }}')">
-                                        <div class="card-footer">
-                                            <p style="font-size: 12px">
-                                                <span class="fw-bold">Fecha Foto: </span>
-                                                {{ Carbon\Carbon::parse($foto->created_at)->format('d/m/Y') }}
-                                            </p>
-
-                                            @if ($foto->user)
-                                                <p style="font-size: 12px">
-                                                    <span class="fw-bold">Foto Tomada por: </span>
-                                                    {{ $foto->user->name }}
-                                                </p>
-                                            @endif
-                                            <p class="card-text">{{ $foto->comentario }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
- --}}                       
                             @foreach ($motor->jobs as $job)
                                 @foreach ($job->images as $foto)
                                     <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12 my-2">
@@ -707,13 +689,7 @@
                 }
             })
         }
-        window.addEventListener('photoAdded', event => {
-            Swal.fire({
-                title: event.detail.message || 'Imagen agregada con éxito',
-                icon: 'success',
-                confirmButtonText: 'Aceptar'
-            });
-        });
+      
         window.addEventListener('init-swiper', event => {
             console.log('Evento "init-swiper" recibido. Reinicializando Swiper...');
             document.querySelectorAll('.swiper-container.theme-slider').forEach(container => {
@@ -730,6 +706,7 @@
             document.querySelector("#photoUpload").click();
         }
 
+        
         function finalizar(id) {
             Swal.fire({
                 title: 'Seguro que desea finalizar la orden de servicio?',
@@ -746,5 +723,31 @@
                 }
             })
         }
+        function removePhoto(id) {
+            Swal.fire({
+                title: 'Seguro que desea eliminar esta foto?',
+                text: "Este cambio no puede ser revertido",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Si, Borrarla',
+                cancelButtonText: 'No, cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Livewire.emit('removePhoto', id);
+                }
+            })
+        }
+    document.addEventListener('DOMContentLoaded', function () {
+        Livewire.on('photoAdded', function (data) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Foto agregada!',
+                text: 'La foto se ha agregado correctamente.',
+                confirmButtonText: 'Aceptar',
+            });
+        });
+    });
     </script>
 </div>

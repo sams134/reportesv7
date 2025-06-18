@@ -18,7 +18,7 @@ class ShowMotor extends Component
     public $equipo,$statuses,$newStatus,$full_gallery=true;
     public $doc,$photo,$comment;
     public $finalizado = false;
-    protected $listeners = ['removeDoc','render','motorFinalizado'=>'render'];
+    protected $listeners = ['removeDoc','render','motorFinalizado'=>'render','removePhoto'];
 
     public function mount(Motor $motor)
     {
@@ -113,7 +113,7 @@ class ShowMotor extends Component
             }
             
             // Redimensionar la imagen
-            $image->resize(1024, null, function ($constraint) {
+            $image->resize(2048, null, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
             });
@@ -147,7 +147,7 @@ class ShowMotor extends Component
         $this->photo = null;
         $this->motor = Motor::find($this->motor->id_motor);
         $this->full_gallery = true;
-        $this->render();
+    
         
     }
     public function saveComment()
@@ -206,5 +206,16 @@ class ShowMotor extends Component
 
     }
     
+    public function removePhoto($id)
+    {
+        $photo = $this->motor->fotos()->find($id);
+        if ($photo) {
+            Storage::disk('public')->delete($photo->foto);
+            Storage::disk('public')->delete($photo->thumb);
+            $photo->delete();
+        }
+        $this->motor = Motor::find($this->motor->id_motor);
+        $this->render();
+    }
     
 }
