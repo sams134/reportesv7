@@ -430,6 +430,7 @@
             margin-right: auto;
         }
     </style>
+    <link href="{{ asset('vendors/glightbox/glightbox.min.css')}}" rel="stylesheet" />
     <div class="row">
         <div class="col-12">
             <x-pretty-card>
@@ -497,8 +498,39 @@
                 @else
                     <div class="card py-3 px-1 mt-3">
                         <div class="row">
-                            @foreach ($motor->fotos->sortByDesc('id') as $foto)
+                            <div class="row mx-n1">
+                                @foreach ($motor->fotos->sortByDesc('id') as $foto)
+                                {{-- <div class="col-4 p-1">
+                                    <a class="post1" href="{{ asset('storage' . $foto->foto) }}" data-gallery="gallery-1">
+                                    <img class="img-fluid rounded" src="{{ asset('storage' . $foto->foto) }}" alt="" />
+                                    </a>
+                                </div> --}}
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12 my-2">
+                                    <div class="card card-gallery">
+                                         <a class="post1" href="{{ asset('storage' . $foto->foto) }}" data-gallery="gallery-1">
+                                        <img class="card-img-top" src="{{ asset('storage' . $foto->foto) }}"
+                                            alt="Foto">
+                                             </a>
+                                        <div class="card-footer">
+                                            <p style="font-size: 12px">
+                                                <span class="fw-bold">Fecha Foto: </span>
+                                                {{ Carbon\Carbon::parse($foto->created_at)->format('d/m/Y') }}
+                                            </p>
+
+                                            @if ($foto->user)
+                                                <p style="font-size: 12px">
+                                                    <span class="fw-bold">Foto Tomada por: </span>
+                                                    {{ $foto->user->name }}
+                                                </p>
+                                            @endif
+                                            <p class="card-text">{{ $foto->comentario }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                 @endforeach
+                            </div>
+                           
+                               {{--  <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12 my-2">
                                     <div class="card card-gallery">
                                         <img class="card-img-top" src="{{ asset('storage' . $foto->foto) }}"
                                             alt="Foto"
@@ -519,7 +551,8 @@
                                         </div>
                                     </div>
                                 </div>
-                            @endforeach
+
+ --}}                       
                             @foreach ($motor->jobs as $job)
                                 @foreach ($job->images as $foto)
                                     <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12 my-2">
@@ -646,6 +679,7 @@
     @livewire('motors.asignaciones-modal')
     <x-status-modal :statuses="$statuses" :equipo="$motor" />
     <script src="{{ asset('js/main.js') }}"></script>
+    <script src="{{ asset('vendors/glightbox/glightbox.min.js')}}"></script>
     <script>
         const documentBtn = document.querySelector('#addDocument');
 

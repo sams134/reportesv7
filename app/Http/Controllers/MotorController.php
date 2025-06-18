@@ -188,7 +188,11 @@ class MotorController extends Controller
             ->setOption('load-error-handling', 'ignore') // Ignorar errores de carga
             ->setOption('enable-local-file-access', true)
             ->setOption('no-stop-slow-scripts', true)
-            ->setOption('javascript-delay', 5000);
+            ->setOption('javascript-delay', 5000)
+            ->setOption('margin-top', '7mm')
+    ->setOption('margin-bottom', '7mm')
+    ->setOption('margin-left', '10mm')
+    ->setOption('margin-right', '10mm');
 
             $pdfContent = $pdf->output();
 

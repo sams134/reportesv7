@@ -15,7 +15,7 @@ class ShowMotor extends Component
 {
     use WithFileUploads;
     public $motor;
-    public $equipo,$statuses,$newStatus,$full_gallery=false;
+    public $equipo,$statuses,$newStatus,$full_gallery=true;
     public $doc,$photo,$comment;
     public $finalizado = false;
     protected $listeners = ['removeDoc','render','motorFinalizado'=>'render'];

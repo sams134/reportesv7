@@ -18,6 +18,9 @@
               
             </div>
           </div>
+        <button class="btn btn-success mb-2" wire:click="agregarPin">
+            <i class="fas fa-plus"></i> Compartir Con:
+        </button>
     </x-form-card>
     <x-pretty-card>
         <div class="row">

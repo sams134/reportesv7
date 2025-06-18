@@ -45,27 +45,27 @@ $left = 50; // Margen izquierdo
 </style>
 
 <body>
-    <div class="cuadro" style="top: 0px; left: 50%; width: 480px; height: 80px; margin-left: -240px;text-align:center">
+    <div class="cuadro" style="top: 0px; left: 50%; width: 480px; height: 70px; margin-left: -240px;text-align:center">
         <span style="font-size: 24px;position:relative;top:15px;font-weight:bold ">BALANCE CERTIFICATE</span>
         <p>
-            <span style="font-size: 14px;position:relative;top:5px;font-weight:bold ">
+            <span style="font-size: 14px;position:relative;top:4px;font-weight:bold ">
                 {{ rand(1000, 9999) }}{{ $motor->year }}{{ $motor->os }}{{ $motor->fecha_ingreso ? \Carbon\Carbon::parse($motor->fecha_ingreso)->format('dmyY') : '' }}
             </span>
         </p>
     </div>
     <div class="cuadro"
-        style="top: 90px; left: 50%; width: 440px; height: 100px; margin-left: -220px;text-align:center;background-color: #bbb">
+        style="top: 80px; left: 50%; width: 440px; height: 100px; margin-left: -220px;text-align:center;background-color: #bbb">
         <P style="font-size: 20px;position:relative;top:-10px;font-weight:bold ">CLINICA DE MOTORES ELECTRICOS</P>
         <P style="font-size: 14px;position:relative;top:-30px;font-weight:bold ">23 AVE 28-46 ZONA 5</P>
         <P style="font-size: 14px;position:relative;top:-40px;font-weight:bold ">GUATEMALA C.A.</P>
         <P style="font-size: 14px;position:relative;top:-50px;font-weight:bold ">(502)2331-1596</P>
         </p>
     </div>
-    <div class="cuadro" style="top:205px;width:900px;height:150px;">
+    <div class="cuadro" style="top:190px;width:900px;height:130px;">
    
     </div>
     @php
-    $top1 = 210;
+    $top1 = 190;
     $spacing1 = 22;
     @endphp
     <div style="width: 900px">
@@ -83,26 +83,26 @@ $left = 50; // Margen izquierdo
     </div>
 
     @php
-    $top2 = 0;
+    $top2 = -50;
     @endphp
-    <div class="cuadro" style="top:{{  370 }}px;width:900px;height:260px;"></div>
+    <div class="cuadro" style="top:{{  330 }}px;width:900px;height:230px;"></div>
     <div style="width: 900px">
         <p style="font-size: 16px;position:absolute;top:{{ $top2 + 380 }}px;left:15px;font-weight:bold ">Left Radius:</p>
         <p style="font-size: 16px;position:absolute;top:{{ $top2 + 380 }}px;left:670px;font-weight:bold ">Right Radius:</p>
-        <img src="{{ public_path($motor->balanceo->balanceoArt->image) }}" alt="Imagen Predeterminada" style="width: 440px; height: 230px;position:absolute;top:{{ $top2 + 390 }}px;left:220px;">
+        <img src="{{ public_path($motor->balanceo->balanceoArt->image) }}" alt="Imagen Predeterminada" style="width: 430px; height: 200px;position:absolute;top:{{ $top2 + 390 }}px;left:220px;">
         
-        <p style="font-size: 17px;position:absolute;top:{{ $top2 + 540 }}px;left:15px;font-weight:bold ">Dimension A:</p>
-        <p style="font-size: 17px;position:absolute;top:{{ $top2 + 570 }}px;left:15px;font-weight:bold ">Dimension B:</p>
+        <p style="font-size: 17px;position:absolute;top:{{ $top2 + 510 }}px;left:15px;font-weight:bold ">Dimension A:</p>
+        <p style="font-size: 17px;position:absolute;top:{{ $top2 + 540 }}px;left:15px;font-weight:bold ">Dimension B:</p>
 
         <p style="font-size: 17px;position:absolute;top:{{ $top2 + 380 }}px;left:130px;font-weight:200;width:170px "> {{ number_format($motor->balanceo->left_radius, 3) }} in</p>
         <p style="font-size: 17px;position:absolute;top:{{ $top2 + 380 }}px;left:780px;font-weight:200;width:140px ">{{ number_format($motor->balanceo->right_radius, 3) }} in</p>
         
-        <p style="font-size: 17px;position:absolute;top:{{ $top2 + 540 }}px;left:130px;font-weight:200;width:170px  ">{{ number_format($motor->balanceo->dimensionA, 3) }} in</p>
-        <p style="font-size: 17px;position:absolute;top:{{ $top2 + 570 }}px;left:130px;font-weight:200;width:170px  ">{{ number_format($motor->balanceo->dimensionB, 3) }} in</p>
+        <p style="font-size: 17px;position:absolute;top:{{ $top2 + 510 }}px;left:130px;font-weight:200;width:170px  ">{{ number_format($motor->balanceo->dimensionA, 3) }} in</p>
+        <p style="font-size: 17px;position:absolute;top:{{ $top2 + 540 }}px;left:130px;font-weight:200;width:170px  ">{{ number_format($motor->balanceo->dimensionB, 3) }} in</p>
     </div>
 
     @php
-    $top3 = 20;
+    $top3 = -50;
     @endphp
     
     <div class="cuadro" style="top:{{ $top3 + 620 }}px;width:900px;height:450px;"></div> {{-- cuadro de parte 5 --}}
@@ -158,30 +158,35 @@ $left = 50; // Margen izquierdo
         <p style="font-size: 19px;position:absolute;top:{{ $top3 + 995 }}px;left:720px;font-weight:200;width:200px"> {{number_format($motor->balanceo->item_weight,2)}} lb</p>
         <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1020 }}px;left:720px;font-weight:200;width:200px"> Off</p>
 
-        <div class="cuadro" style="top:{{ $top3 + 1100 }}px;width:900px;height:100px;"></div> {{-- cuadro de parte 6 --}}
-        <div class="cuadro" style="top:{{ $top3 + 1220 }}px;width:900px;height:130px;"></div> {{-- cuadro de parte 7 --}}
+        @php
+        $top4 = -65;
+        @endphp
+        <div class="cuadro" style="top:{{ $top3 + 1080 }}px;width:900px;height:80px;"></div> {{-- cuadro de parte 6 --}}
+        <div class="cuadro" style="top:{{ $top3 + 1170 }}px;width:900px;height:120px;"></div> {{-- cuadro de parte 7 --}}
 
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1105 }}px;left:15px;font-weight:bold;width:200px">Operator:</p>
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1140 }}px;left:15px;font-weight:bold;width:200px">Signature:</p>
-        <div style="border-bottom: 3px solid #333; position:absolute;top:{{ $top3 + 1175 }}px;left:130px;width:250px;"></div>
+        <p style="font-size: 19px;position:absolute;top:{{ $top4 + 1085 }}px;left:15px;font-weight:bold;width:200px">Operator:</p>
+        <p style="font-size: 19px;position:absolute;top:{{ $top4 + 1120 }}px;left:15px;font-weight:bold;width:200px">Signature:</p>
+        <div style="border-bottom: 3px solid #333; position:absolute;top:{{ $top4 + 1155 }}px;left:130px;width:250px;"></div>
 
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1105 }}px;left:415px;font-weight:bold;width:200px">Checked By:</p>
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1140 }}px;left:415px;font-weight:bold;width:200px">Signature:</p>
-        <div style="border-bottom: 3px solid #333; position:absolute;top:{{ $top3 + 1175 }}px;left:540px;width:250px;"></div>
+        <p style="font-size: 19px;position:absolute;top:{{ $top4 + 1085 }}px;left:415px;font-weight:bold;width:200px">Checked By:</p>
+        <p style="font-size: 19px;position:absolute;top:{{ $top4 + 1120 }}px;left:415px;font-weight:bold;width:200px">Signature:</p>
+        <div style="border-bottom: 3px solid #333; position:absolute;top:{{ $top4 + 1155 }}px;left:540px;width:250px;"></div>
+@php
+        $top5 = -110;
+        @endphp
+        <p style="font-size: 19px;position:absolute;top:{{ $top5 + 1225 }}px;left:345px;font-weight:bold;width:200px">Balancing Equipment</p>
+        <p style="font-size: 19px;position:absolute;top:{{ $top5 + 1260 }}px;left:15px;font-weight:bold;width:200px">Instrument:</p>
+        <p style="font-size: 19px;position:absolute;top:{{ $top5 + 1290 }}px;left:15px;font-weight:bold;width:200px">Machine:</p>
+        <p style="font-size: 19px;position:absolute;top:{{ $top5 + 1260 }}px;left:585px;font-weight:bold;width:200px">S/N:</p>
+        <p style="font-size: 19px;position:absolute;top:{{ $top5 + 1290 }}px;left:585px;font-weight:bold;width:200px">S/N:</p>
 
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1220 }}px;left:345px;font-weight:bold;width:200px">Balancing Equipment</p>
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1260 }}px;left:15px;font-weight:bold;width:200px">Instrument:</p>
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1290 }}px;left:15px;font-weight:bold;width:200px">Machine:</p>
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1260 }}px;left:585px;font-weight:bold;width:200px">S/N:</p>
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1290 }}px;left:585px;font-weight:bold;width:200px">S/N:</p>
+        <p style="font-size: 19px;position:absolute;top:{{ $top4 + 1085 }}px;left:135px;font-weight:200;width:200px">Maynor Garcia</p> {{-- operator --}}
+        <p style="font-size: 19px;position:absolute;top:{{ $top4 + 1085 }}px;left:545px;font-weight:200;width:200px">Samuel Mayorga</p> {{-- operator --}}
 
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1105 }}px;left:135px;font-weight:200;width:200px">Maynor Garcia</p> {{-- operator --}}
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1105 }}px;left:545px;font-weight:200;width:200px">Samuel Mayorga</p> {{-- operator --}}
-
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1260 }}px;left:135px;font-weight:200;width:200px">Dynabal D60</p> {{-- operator --}}
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1290 }}px;left:135px;font-weight:200;width:200px">Teco Westinghouse</p> {{-- operator --}}
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1260 }}px;left:635px;font-weight:200;width:200px">74849</p> {{-- operator --}}
-        <p style="font-size: 19px;position:absolute;top:{{ $top3 + 1290 }}px;left:635px;font-weight:200;width:200px">9399-DS-12344T</p> {{-- operator --}}
+        <p style="font-size: 19px;position:absolute;top:{{ $top5 + 1260 }}px;left:135px;font-weight:200;width:200px">Dynabal D60</p> {{-- operator --}}
+        <p style="font-size: 19px;position:absolute;top:{{ $top5 + 1290 }}px;left:135px;font-weight:200;width:200px">Teco Westinghouse</p> {{-- operator --}}
+        <p style="font-size: 19px;position:absolute;top:{{ $top5 + 1260 }}px;left:635px;font-weight:200;width:200px">74849</p> {{-- operator --}}
+        <p style="font-size: 19px;position:absolute;top:{{ $top5 + 1290 }}px;left:635px;font-weight:200;width:200px">9399-DS-12344T</p> {{-- operator --}}
 
     </div>
 
@@ -190,7 +195,8 @@ $left = 50; // Margen izquierdo
 
     {{-- segunda pagina --}}
     @php
-    $pagina1 = 1370;
+    $pagina1 = 1200;
+    $top1 = 210;
     @endphp
 <div>
     <span style="font-size: 26px;position:absolute;top:{{$pagina1+40}}px;left:335px;font-weight:bold ">BALANCE QUALITY</span>
@@ -216,6 +222,10 @@ $left = 50; // Margen izquierdo
     <p style="font-size: 16px;position:absolute;top:{{ $pagina1 + $top1 + $spacing1 * 3 }}px;left:110px;font-weight:250;width:400px "> {{$motor->balanceo->date}}</p>
     <p style="font-size: 16px;position:absolute;top:{{ $pagina1 + $top1 + $spacing1 * 4 }}px;left:110px;font-weight:200;;width:500px ">{{$motor->balanceo->comments}}</p>
     </div>
+     @php
+    $pagina1 = 1190;
+   
+    @endphp
     <div>
     <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + 400 }}px;left:15px;font-weight:bold;width:200px">Grade:</p>
     <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + 450 }}px;left:15px;font-weight:bold;width:100px">Rotor Mass:</p>
@@ -245,16 +255,16 @@ $left = 50; // Margen izquierdo
     <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + 1000 }}px;left:160px;font-weight:200;width:200px">{{number_format($motor->balanceo->key_rear_wide,2)}}" x {{number_format($motor->balanceo->key_rear_thick,2)}}" x {{number_format($motor->balanceo->key_rear_length,2)}}"</p>
     </div>
 
-    <div class="cuadro" style="top:{{ $pagina1 + $top3 + 1100 }}px;width:900px;height:100px;"></div> {{-- cuadro de parte 6 --}}
-    <div class="cuadro" style="top:{{ $pagina1 + $top3 + 1220 }}px;width:900px;height:130px;"></div> {{-- cuadro de parte 7 --}}
+    <div class="cuadro" style="top:{{ $pagina1 + $top3 + 1120 }}px;width:900px;height:80px;"></div> {{-- cuadro de parte 6 --}}
+    <div class="cuadro" style="top:{{ $pagina1 + $top3 + 1220 }}px;width:900px;height:120px;"></div> {{-- cuadro de parte 7 --}}
 
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1105 }}px;left:15px;font-weight:bold;width:200px">Operator:</p>
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1140 }}px;left:15px;font-weight:bold;width:200px">Signature:</p>
-    <div style="border-bottom: 3px solid #333; position:absolute;top:{{ $pagina1 + $top3 + 1175 }}px;left:130px;width:250px;"></div>
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1115 }}px;left:15px;font-weight:bold;width:200px">Operator:</p>
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1150 }}px;left:15px;font-weight:bold;width:200px">Signature:</p>
+    <div style="border-bottom: 3px solid #333; position:absolute;top:{{ $pagina1 + $top3 + 1185 }}px;left:130px;width:250px;"></div>
 
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1105 }}px;left:415px;font-weight:bold;width:200px">Checked By:</p>
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1140 }}px;left:415px;font-weight:bold;width:200px">Signature:</p>
-    <div style="border-bottom: 3px solid #333; position:absolute;top:{{ $pagina1 + $top3 + 1175 }}px;left:540px;width:250px;"></div>
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1115 }}px;left:415px;font-weight:bold;width:200px">Checked By:</p>
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1150 }}px;left:415px;font-weight:bold;width:200px">Signature:</p>
+    <div style="border-bottom: 3px solid #333; position:absolute;top:{{ $pagina1 + $top3 + 1185 }}px;left:540px;width:250px;"></div>
 
     <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1220 }}px;left:345px;font-weight:bold;width:200px">Balancing Equipment</p>
     <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1260 }}px;left:15px;font-weight:bold;width:200px">Instrument:</p>
@@ -262,8 +272,8 @@ $left = 50; // Margen izquierdo
     <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1260 }}px;left:585px;font-weight:bold;width:200px">S/N:</p>
     <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1290 }}px;left:585px;font-weight:bold;width:200px">S/N:</p>
 
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1105 }}px;left:135px;font-weight:200;width:200px">Maynor Garcia</p> {{-- operator --}}
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1105 }}px;left:545px;font-weight:200;width:200px">Samuel Mayorga</p> {{-- operator --}}
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1115 }}px;left:135px;font-weight:200;width:200px">Maynor Garcia</p> {{-- operator --}}
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1115 }}px;left:545px;font-weight:200;width:200px">Samuel Mayorga</p> {{-- operator --}}
 
     <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1260 }}px;left:135px;font-weight:200;width:200px">Dynabal D60</p> {{-- operator --}}
     <p style="font-size: 19px;position:absolute;top:{{ $pagina1 + $top3 + 1290 }}px;left:135px;font-weight:200;width:200px">Teco Westinghouse</p> {{-- operator --}}
@@ -272,7 +282,7 @@ $left = 50; // Margen izquierdo
 </div>
 
 @php
-$pagina2 = 1370+1370;
+$pagina2 = 1200+1260;
 @endphp
     
 <div>
@@ -343,8 +353,8 @@ $pagina2 = 1370+1370;
        $pagina2 = $pagina2 + 20;
     @endphp
 
-    <div class="cuadro" style="top:{{ $pagina2 + $top3 + 1100 }}px;width:900px;height:100px;"></div> {{-- cuadro de parte 6 --}}
-    <div class="cuadro" style="top:{{ $pagina2 + $top3 + 1220 }}px;width:900px;height:130px;"></div> {{-- cuadro de parte 7 --}}
+    <div class="cuadro" style="top:{{ $pagina2 + $top3 + 1110 }}px;width:900px;height:80px;"></div> {{-- cuadro de parte 6 --}}
+    <div class="cuadro" style="top:{{ $pagina2 + $top3 + 1210 }}px;width:900px;height:110px;"></div> {{-- cuadro de parte 7 --}}
 
     <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1105 }}px;left:15px;font-weight:bold;width:200px">Operator:</p>
     <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1140 }}px;left:15px;font-weight:bold;width:200px">Signature:</p>
@@ -354,19 +364,19 @@ $pagina2 = 1370+1370;
     <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1140 }}px;left:415px;font-weight:bold;width:200px">Signature:</p>
     <div style="border-bottom: 3px solid #333; position:absolute;top:{{ $pagina2 + $top3 + 1175 }}px;left:540px;width:250px;"></div>
 
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1220 }}px;left:345px;font-weight:bold;width:200px">Balancing Equipment</p>
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1260 }}px;left:15px;font-weight:bold;width:200px">Instrument:</p>
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1290 }}px;left:15px;font-weight:bold;width:200px">Machine:</p>
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1260 }}px;left:585px;font-weight:bold;width:200px">S/N:</p>
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1290 }}px;left:585px;font-weight:bold;width:200px">S/N:</p>
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1210 }}px;left:345px;font-weight:bold;width:200px">Balancing Equipment</p>
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1240 }}px;left:15px;font-weight:bold;width:200px">Instrument:</p>
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1270 }}px;left:15px;font-weight:bold;width:200px">Machine:</p>
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1240 }}px;left:585px;font-weight:bold;width:200px">S/N:</p>
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1270 }}px;left:585px;font-weight:bold;width:200px">S/N:</p>
 
     <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1105 }}px;left:135px;font-weight:200;width:200px">Maynor Garcia</p> {{-- operator --}}
     <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1105 }}px;left:545px;font-weight:200;width:200px">Samuel Mayorga</p> {{-- operator --}}
 
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1260 }}px;left:135px;font-weight:200;width:200px">Dynabal D60</p> {{-- operator --}}
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1290 }}px;left:135px;font-weight:200;width:200px">Teco Westinghouse</p> {{-- operator --}}
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1260 }}px;left:635px;font-weight:200;width:200px">74849</p> {{-- operator --}}
-    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1290 }}px;left:635px;font-weight:200;width:200px">9399-DS-12344T</p> {{-- operator --}}
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1240 }}px;left:135px;font-weight:200;width:200px">Dynabal D60</p> {{-- operator --}}
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1270 }}px;left:135px;font-weight:200;width:200px">Teco Westinghouse</p> {{-- operator --}}
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1240 }}px;left:635px;font-weight:200;width:200px">74849</p> {{-- operator --}}
+    <p style="font-size: 19px;position:absolute;top:{{ $pagina2 + $top3 + 1270 }}px;left:635px;font-weight:200;width:200px">9399-DS-12344T</p> {{-- operator --}}
 </div>
     
 </body>
