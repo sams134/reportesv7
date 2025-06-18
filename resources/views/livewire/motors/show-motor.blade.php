@@ -430,7 +430,7 @@
             margin-right: auto;
         }
     </style>
-    <link href="{{ asset('vendors/glightbox/glightbox.min.css')}}" rel="stylesheet" />
+    <link href="{{ asset('vendors/glightbox/glightbox.min.css') }}" rel="stylesheet" />
     <div class="row">
         <div class="col-12">
             <x-pretty-card>
@@ -438,14 +438,42 @@
                 <div class="card mb-3">
                     <div class="card-body">
                         <div class="d-flex ">
-                            <div class="d-flex">
-                                <button class="btn btn-success me-1 mb-1" type="button" onclick="loadCamera()">
-                                    <span><i class="fas fa-camera mx-1"></i> Agregar Foto</span>
-                                </button>
-                                <input type="file" id="photoUpload" wire:model="photo" accept="image/*"
-                                    style="display: none;">
+                            <!-- Botón + input múltiple + progreso -->
+                            <div x-data="{ isUploading: false, progress: 0 }" x-on:livewire-upload-start="isUploading = true"
+                                x-on:livewire-upload-finish="isUploading = false"
+                                x-on:livewire-upload-error="isUploading = false"
+                                x-on:livewire-upload-progress="progress = $event.detail.progress" class="mb-3">
 
+                                <!-- Botón para abrir el input -->
+                                <label class="btn btn-success me-1 mb-1" for="photoUpload">
+                                    <i class="fas fa-camera mx-1"></i> Agregar Fotos
+                                </label>
+
+                                <!-- Input de archivos múltiples -->
+                                <input type="file" id="photoUpload" wire:model="photos" multiple accept="image/*"
+                                    class="d-none">
+
+                                <!-- Barra de progreso -->
+                                <template x-if="isUploading">
+                                    <div class="progress mt-2" style="height: 6px;">
+                                        <div class="progress-bar" role="progressbar"
+                                            :style="'width: ' + progress + '%'"></div>
+                                    </div>
+                                </template>
+
+                                <!-- Previsualización de imágenes -->
+                                <div class="mt-3 d-flex flex-wrap gap-2">
+                                    @foreach ($photos as $p)
+                                        <img src="{{ $p->temporaryUrl() }}" class="img-thumbnail" width="120">
+                                    @endforeach
+                                </div>
                             </div>
+
+
+
+
+
+
                             <div class="form-check form-switch mt-1 mx-4">
 
                                 <input class="form-check-input" id="flexSwitchCheckDefault" type="checkbox"
@@ -500,41 +528,43 @@
                         <div class="row">
                             <div class="row mx-n1">
                                 @foreach ($motor->fotos->sortByDesc('id') as $foto)
-                                {{-- <div class="col-4 p-1">
+                                    {{-- <div class="col-4 p-1">
                                     <a class="post1" href="{{ asset('storage' . $foto->foto) }}" data-gallery="gallery-1">
                                     <img class="img-fluid rounded" src="{{ asset('storage' . $foto->foto) }}" alt="" />
                                     </a>
                                 </div> --}}
-                                <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12 my-2">
-                                    <div class="card card-gallery">
-                                         <a class="post1" href="{{ asset('storage' . $foto->foto) }}" data-gallery="gallery-1">
-                                        <img class="card-img-top" src="{{ asset('storage' . $foto->foto) }}"
-                                            alt="Foto">
-                                             </a>
-                                        <div class="card-footer">
-                                            <p style="font-size: 12px">
-                                                <span class="fw-bold">Fecha Foto: </span>
-                                                {{ Carbon\Carbon::parse($foto->created_at)->format('d/m/Y') }}
-                                            </p>
-
-                                            @if ($foto->user)
+                                    <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12 my-2">
+                                        <div class="card card-gallery">
+                                            <a class="post1" href="{{ asset('storage' . $foto->foto) }}"
+                                                data-gallery="gallery-1">
+                                                <img class="card-img-top" src="{{ asset('storage' . $foto->foto) }}"
+                                                    alt="Foto">
+                                            </a>
+                                            <div class="card-footer">
                                                 <p style="font-size: 12px">
-                                                    <span class="fw-bold">Foto Tomada por: </span>
-                                                    {{ $foto->user->name }}
+                                                    <span class="fw-bold">Fecha Foto: </span>
+                                                    {{ Carbon\Carbon::parse($foto->created_at)->format('d/m/Y') }}
                                                 </p>
-                                            @endif
-                                            <p class="card-text">{{ $foto->comentario }}</p>
-                                        </div>
-                                        <div class="d-flex justify-content-end">
-                                            <button class="btn btn-danger btn-sm " type="button" onclick="removePhoto({{ $foto->id }})">
-                                                <i class="fas fa-trash"></i> 
-                                            </button>
+
+                                                @if ($foto->user)
+                                                    <p style="font-size: 12px">
+                                                        <span class="fw-bold">Foto Tomada por: </span>
+                                                        {{ $foto->user->name }}
+                                                    </p>
+                                                @endif
+                                                <p class="card-text">{{ $foto->comentario }}</p>
+                                            </div>
+                                            <div class="d-flex justify-content-end">
+                                                <button class="btn btn-danger btn-sm " type="button"
+                                                    onclick="removePhoto({{ $foto->id }})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                 @endforeach
+                                @endforeach
                             </div>
-                           
+
                             @foreach ($motor->jobs as $job)
                                 @foreach ($job->images as $foto)
                                     <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12 my-2">
@@ -661,7 +691,7 @@
     @livewire('motors.asignaciones-modal')
     <x-status-modal :statuses="$statuses" :equipo="$motor" />
     <script src="{{ asset('js/main.js') }}"></script>
-    <script src="{{ asset('vendors/glightbox/glightbox.min.js')}}"></script>
+    <script src="{{ asset('vendors/glightbox/glightbox.min.js') }}"></script>
     <script>
         const documentBtn = document.querySelector('#addDocument');
 
@@ -689,7 +719,7 @@
                 }
             })
         }
-      
+
         window.addEventListener('init-swiper', event => {
             console.log('Evento "init-swiper" recibido. Reinicializando Swiper...');
             document.querySelectorAll('.swiper-container.theme-slider').forEach(container => {
@@ -706,7 +736,7 @@
             document.querySelector("#photoUpload").click();
         }
 
-        
+
         function finalizar(id) {
             Swal.fire({
                 title: 'Seguro que desea finalizar la orden de servicio?',
@@ -723,6 +753,7 @@
                 }
             })
         }
+
         function removePhoto(id) {
             Swal.fire({
                 title: 'Seguro que desea eliminar esta foto?',
@@ -739,15 +770,15 @@
                 }
             })
         }
-    document.addEventListener('DOMContentLoaded', function () {
-        Livewire.on('photoAdded', function (data) {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Foto agregada!',
-                text: 'La foto se ha agregado correctamente.',
-                confirmButtonText: 'Aceptar',
+        document.addEventListener('DOMContentLoaded', function() {
+            Livewire.on('photoAdded', function(data) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Foto agregada!',
+                    text: 'La foto se ha agregado correctamente.',
+                    confirmButtonText: 'Aceptar',
+                });
             });
         });
-    });
     </script>
 </div>

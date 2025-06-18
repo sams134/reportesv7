@@ -1,7 +1,9 @@
 <?php
+// ShowMotor component actualizado para carga múltiple y procesamiento en segundo plano
 
 namespace App\Http\Livewire\Motors;
 
+use App\Jobs\ProcessMotorPhoto; // <–– nuevo Job
 use App\Models\Motor;
 use App\Models\Status;
 use App\Models\User;
@@ -9,213 +11,154 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Intervention\Image\Facades\Image as IMG;
 
 class ShowMotor extends Component
 {
     use WithFileUploads;
-    public $motor;
-    public $equipo,$statuses,$newStatus,$full_gallery=true;
-    public $doc,$photo,$comment;
-    public $finalizado = false;
-    protected $listeners = ['removeDoc','render','motorFinalizado'=>'render','removePhoto'];
 
-    public function mount(Motor $motor)
+    public $motor;
+    public $equipo, $statuses, $newStatus, $full_gallery = true;
+    public $doc, $comment;
+    public bool $finalizado = false;
+
+    /** @var array<int, Livewire\TemporaryUploadedFile> */
+    public array $photos = []; // ⇦ ahora es un array de múltiples fotos
+
+    protected $listeners = [
+        'removeDoc',
+        'render',
+        'motorFinalizado' => 'render',
+        'removePhoto'
+    ];
+
+    /** Validaciones */
+    protected array $rules = [
+        'photos.*' => 'image|mimes:jpeg,png,jpg,webp,gif,svg',
+        'doc'      => 'nullable|file|mimes:pdf',
+        'newStatus'=> 'nullable|exists:statuses,id',
+        'comment'  => 'nullable|string|max:255',
+    ];
+
+    public function mount(Motor $motor): void
     {
-        $this->motor = $motor;
-        $this->equipo = $motor->equipo;
+        $this->motor    = $motor;
+        $this->equipo   = $motor->equipo;
         $this->statuses = Status::all();
     }
 
     public function render()
     {
         $this->dispatchBrowserEvent('init-swiper');
-        if ($this->motor->fin)
-          $finalizado = true;
-        return view('livewire.motors.show-motor')->with(["Carbon" => 'Carbon\Carbon']);
+        if ($this->motor->fin) {
+            $this->finalizado = true;
+        }
+        return view('livewire.motors.show-motor')->with(['Carbon' => 'Carbon\\Carbon']);
     }
-    public function loadStatusModal($id_motor)
+
+    /* ------------------------- Subida de documentos PDF ------------------------- */
+
+    public function updatedDoc(): void
     {
-        $this->equipo = Motor::find($id_motor);
+        $this->validateOnly('doc');
+
+        $folderPath = sprintf('/uploads/%s-%s/Documentos', $this->motor->year, $this->motor->os);
+        $uniqueFile = $this->doc->getClientOriginalName();
+
+        $this->doc->storeAs($folderPath, $uniqueFile, 'public');
+
+        $this->motor->documentos()->create([
+            'titulo'    => $uniqueFile,
+            'documento' => "$folderPath/$uniqueFile",
+            'id_user'   => auth()->id(),
+        ]);
+
+        $this->reset('doc');
+        $this->motor->refresh();
+    }
+
+    /* -------------------------- Subida de múltiples fotos -------------------------- */
+
+    public function updatedPhotos(): void
+    {
+        $this->validateOnly('photos.*');
+
+        foreach ($this->photos as $photo) {
+            ProcessMotorPhoto::dispatch(
+                $photo->getRealPath(),
+                $photo->getClientOriginalName(),
+                $this->motor->id_motor,
+                auth()->id()
+            );
+        }
+
+        $this->reset('photos');
+        $this->emit('photoAdded', $this->motor->fullos);
+        $this->motor->refresh();
+    }
+
+    /* ------------------------------ Otros métodos ------------------------------ */
+
+    public function loadStatusModal(int $id_motor): void
+    {
+        $this->equipo    = Motor::find($id_motor);
         $this->newStatus = $this->equipo->status_id;
-  
     }
-    public function updateStatus()
-    {
-        $this->validate([
-            'newStatus' => 'required|exists:statuses,id',
-        ]);
 
-        $this->motor->status_id = $this->newStatus;
-        $this->motor->save();
-        
-    }
-    public function updatedDoc()
+    public function updateStatus(): void
     {
-        $folderPath = '/uploads/' . $this->motor->year . '-' . $this->motor->os . '/Documentos';
-        
-        $this->validate([
-            'doc' => 'required|file|mimes:pdf',
-        ]);
+        $this->validateOnly('newStatus');
 
-        $uniqueFileName = $this->doc->getClientOriginalName();
-        $this->doc->storeAs($folderPath, $uniqueFileName, 'public');
-
-        $document = $this->motor->documentos()->create([
-            'titulo' => $uniqueFileName,
-            'documento' => $folderPath . '/' . $uniqueFileName,
-            'id_user' => auth()->id(),
-        ]);
-        
-        $this->doc = null;
-        $this->motor = Motor::find($this->motor->id_motor);
-        $this->render();
-        
+        $this->motor->update(['status_id' => $this->newStatus]);
     }
-    public function removeDoc($id)
+
+    public function removeDoc($id): void
     {
-        $doc = $this->motor->documentos()->find($id);
-        $doc->delete();
-        $this->motor = Motor::find($this->motor->id_motor);
-        $this->render();
+        $this->motor->documentos()->find($id)?->delete();
+        $this->motor->refresh();
     }
-    public function updatedFullGallery()
+
+    public function updatedFullGallery(): void
     {
         $this->dispatchBrowserEvent('init-swiper');
     }
-    public function updatedPhoto()
+
+    public function saveComment(): void
     {
+        $this->validateOnly('comment');
 
-        
-        try {
-            $this->validate([
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
-            ]);
-            
-            
-            if ($this->photo != "") {
-            $image = IMG::make($this->photo);
-                
-            // Corregir la orientación basada en los metadatos EXIF
-            if ($image->exif('Orientation')) {
-                $orientation = $image->exif('Orientation');
-                switch ($orientation) {
-                case 3:
-                    $image->rotate(180); // Rotar 180 grados
-                    break;
-                case 6:
-                    $image->rotate(-90); // Rotar 90 grados en sentido horario
-                    break;
-                case 8:
-                    $image->rotate(90); // Rotar 90 grados en sentido antihorario
-                    break;
-                }
-            }
-            
-            // Redimensionar la imagen
-            $image->resize(2048, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
+        $titulo = match (Auth::user()->userType) {
+            User::DEVELOPER      => 'Comentario de Gerencia',
+            User::GERENCIA       => 'Comentario de Gerencia',
+            User::ADMINISTRACION => 'Comentario de Administración',
+            User::BODEGA         => 'Comentario de Bodega',
+            User::TORNOS         => 'Comentario de Tornos',
+            User::TECNICO        => 'Comentario de Técnico',
+            User::AYUDANTES      => 'Comentario de Ayudantes',
+            User::PRUEBAS        => 'Comentario de departamento de Pruebas',
+            User::PILOTOS        => 'Comentario de Pilotos',
+            User::VENDEDORES     => 'Comentario de Vendedores',
+            User::JEFE           => 'Comentario de Jefe de Taller',
+            User::PINTURA        => 'Comentario de Pintura',
+        };
 
-            // Generar un nombre único para la imagen
-            $uniqueName = uniqid('img_', true) . '.' . $this->photo->getClientOriginalExtension();
-
-            $folderPath = '/uploads/' . $this->motor->fullos . '/Fotos/Proceso';
-            // Definir la ruta de la imagen
-            $imagePath = $folderPath . '/' . $uniqueName;
-
-            
-            
-            Storage::disk('public')->put($imagePath, (string) $image->encode());
-
-            $foto = $this->motor->fotos()->create([
-                'titulo' => $uniqueName,
-                'foto' => $folderPath . '/' . $uniqueName,
-                'thumb' => $folderPath . '/' . $uniqueName,
-                'type' => 2,
-                'user_id' => auth()->id(),
-            ]);
-            $this->emit('photoAdded', $this->motor->fullos);
-            }
-            $this->photo = null;
-        } catch (\Exception $e) {
-            $this->emit('error', $e->getMessage());
-        }
-       
-        
-        $this->photo = null;
-        $this->motor = Motor::find($this->motor->id_motor);
-        $this->full_gallery = true;
-    
-        
-    }
-    public function saveComment()
-    {
-        $this->validate([
-            'comment' => 'required|string|max:255',
-        ]);
-        $titulo = '';
-        switch (Auth::user()->userType) {
-            case User::DEVELOPER:
-                  $titulo = 'Comentario de Gerencia';
-                break;
-            case User::GERENCIA:
-                  $titulo = 'Comentario de Gerencia';
-                break;
-            case User::ADMINISTRACION:
-                  $titulo = 'Comentario de Administración';
-                break;
-            case User::BODEGA:
-                  $titulo = 'Comentario de Bodega';
-                break;
-            case User::TORNOS:
-                  $titulo = 'Comentario de Tornos';
-                break;
-            case User::TECNICO:
-                  $titulo = 'Comentario de Técnico';
-                break;
-            case User::AYUDANTES:
-                  $titulo = 'Comentario de Ayudantes';
-                break;
-            case User::PRUEBAS:
-                  $titulo = 'Comentario de departamento de Pruebas';
-                break;
-            case User::PILOTOS:
-                  $titulo = 'Comentario de Pilotos';
-                break;
-            case User::VENDEDORES:
-                  $titulo = 'Comentario de Vendedores';
-                break;
-            case User::JEFE:
-                  $titulo = 'Comentario de Jefe de Taller';
-                break;
-            case User::PINTURA:
-                  $titulo = 'Comentario de Pintura';
-                break;
-        }
         $this->motor->bitacoras()->create([
-            'titulo' => $titulo,
+            'titulo'      => $titulo,
             'descripcion' => $this->comment,
-            'id_usuario' => auth()->id(),
+            'id_usuario'  => auth()->id(),
         ]);
 
-        $this->comment = null;
-        $this->motor = Motor::find($this->motor->id_motor);
-        $this->render();
+        $this->reset('comment');
+        $this->motor->refresh();
+    }
 
-    }
-    
-    public function removePhoto($id)
+    public function removePhoto($id): void
     {
-        $photo = $this->motor->fotos()->find($id);
-        if ($photo) {
-            Storage::disk('public')->delete($photo->foto);
-            Storage::disk('public')->delete($photo->thumb);
-            $photo->delete();
+        $foto = $this->motor->fotos()->find($id);
+        if ($foto) {
+            Storage::disk('public')->delete([$foto->foto, $foto->thumb]);
+            $foto->delete();
+            $this->motor->refresh();
         }
-        $this->motor = Motor::find($this->motor->id_motor);
-        $this->render();
     }
-    
 }
+
