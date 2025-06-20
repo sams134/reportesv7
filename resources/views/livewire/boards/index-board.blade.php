@@ -6,21 +6,24 @@
         Revisa todos los motores agregados a este tablero
     </x-pretty-card>
     <x-form-card  title="Controles">
-        <div class="btn-group">
-            <button class="btn dropdown-toggle mb-2 btn-primary" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Ordenar Por {{$ver}}
-            </button>
-            <div class="dropdown-menu">
-              <a class="dropdown-item" href="#" wire:click="$set('ver', 'Fecha de Creación')">Fecha de Creación</a>
-              <a class="dropdown-item" href="#"  wire:click="$set('ver', 'OS (Numero de Orden)')">OS (Numero de Orden)</a>
-              <a class="dropdown-item" href="#" wire:click="$set('ver', 'Cliente')">Cliente</a>
-
-              <div class="dropdown-divider"></div>
-              
+        <div class="d-flex align-items-center gap-3 mb-2">
+            <div class="btn-group">
+                <button class="btn dropdown-toggle btn-primary" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Ordenar Por {{$ver}}
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#" wire:click="$set('ver', 'Fecha de Creación')">Fecha de Creación</a>
+                    <a class="dropdown-item" href="#" wire:click="$set('ver', 'OS (Numero de Orden)')">OS (Numero de Orden)</a>
+                    <a class="dropdown-item" href="#" wire:click="$set('ver', 'Cliente')">Cliente</a>
+                    <div class="dropdown-divider"></div>
+                </div>
             </div>
-          </div>
-        <button class="btn btn-success mb-2" wire:click="agregarPin">
-            <i class="fas fa-plus"></i> Compartir Con:
-        </button>
+            {{-- share board component --}}
+
+            @if (Auth::id() == $board->owner_id)
+                @livewire('boards.share-board', ['board' => $board])
+            @endif
+        </div>
     </x-form-card>
     <x-pretty-card>
         <div class="row">
