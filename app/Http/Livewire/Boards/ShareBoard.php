@@ -9,16 +9,16 @@ use Livewire\Component;
 
 class ShareBoard extends Component
 {
-    public Board $board;
+    public $board, $board_id;
     public $users;
     public $tecnicoSelected = [];
 
-    public function mount(Board $board): void
+    public function mount($board_id)
     {
-        // 1️⃣ Verificar que el usuario autenticado sea el propietario
-      //  abort_if(Auth::id() !== $board->owner_id, 403, 'Solo el propietario puede compartir este tablero.');
-
-        $this->board = $board;
+       $this->board = Board::with('sharedUsers')->findOrFail($board_id);
+        $this->board_id = $board_id;
+      
+       
         // 2️⃣ Cargar usuarios excepto el actual y los inactivos
         $this->users = User::where('id', '!=', Auth::id())
             ->where('activo', 1)

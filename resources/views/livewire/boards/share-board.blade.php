@@ -1,8 +1,10 @@
 <!-- Botón para abrir el modal -->
 <div>
-    <button class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#compartirModal_{{ $board->id }}">
-        <i class="fas fa-plus"></i> Compartir Con:
-    </button>
+   <button class="btn btn-success dropdown-toggle align-middle" style="height: 38px;"
+        data-bs-toggle="modal"
+        data-bs-target="#compartirModal_{{ $board->id }}">
+    <i class="fas fa-plus me-1"></i> Compartir Con:
+</button>
 
     <!-- Modal Bootstrap -->
     <div class="modal fade" id="compartirModal_{{ $board->id }}" tabindex="-1" aria-labelledby="compartirModalLabel"

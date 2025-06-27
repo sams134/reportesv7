@@ -251,6 +251,13 @@
                     </tr>
                 </table>
             </x-pretty-card>
+             <x-pretty-card>
+                <h3>Densidades</h3>
+                <div class="document-gallery" style="display: flex; flex-wrap: wrap; gap: 1rem;" id="documentGallery">
+                    {{-- add booton de clipboard --}}
+                    @livewire('motors.densidades-clipboard', ['motor' => $motor])
+                </div>
+             </x-pretty-card>
             <x-pretty-card>
                 <h3>Documentos Cargados</h3>
                 <div class="document-gallery" style="display: flex; flex-wrap: wrap; gap: 1rem;" id="documentGallery">
@@ -381,7 +388,7 @@
                                     <div class="col">
                                         <h6 class="text-800 mb-1">{{ $bitacoraItem->titulo }}</h5>
                                             <h6 class="text-700 mb-1" style="font-size: 12px; font-style: italic;">
-                                                {{ $bitacoraItem->user->name }} </h6>
+                                                {{ $bitacoraItem->user?$bitacoraItem->user->name:"" }} </h6>
                                             <p class="fs--1 text-600 mb-0">{{ $bitacoraItem->descripcion }}</p>
                                     </div>
                                     <div class="col-auto">

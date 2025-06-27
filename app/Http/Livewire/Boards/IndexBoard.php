@@ -15,8 +15,8 @@ class IndexBoard extends Component
     public $board, $photo;
     public $camera_id_motor;
     public $comment;
-    public $ver = "OS (Numero de Orden)", $pins;
-    protected $listeners = ['cameraLoaded', 'deletePin'];
+    public $ver = "OS (Numero de Orden)";
+    protected $listeners = ['cameraLoaded', 'deletePin', 'deleteTablero'];
     protected $rules = [
         'photo' => 'required|image|max:51200', // 50MB en kilobytes
     ];
@@ -29,35 +29,23 @@ class IndexBoard extends Component
     }
     public function render()
     {
-        $this->pins = $this->board->pins()->with('pinable')->get();
+        $pins = $this->board->pins()->with('pinable')->get();
 
         if ($this->ver == "OS (Numero de Orden)") {
-            $this->pins = $this->pins->sortByDesc(function ($pin) {
-            if ($pin->pinable_type === "App\\Models\\Motor") {
-                return $pin->pinable->os;
-            } elseif ($pin->pinable_type === "App\\Models\\Job") {
-                return $pin->pinable->os;
-            }
-            // En caso de otro tipo, se puede retornar un valor predeterminado
-            return 0;
-            })->values(); // values() reindexa la colección
-        }elseif ($this->ver == "Fecha de Creación") {
-            $this->pins = $this->pins->sortByDesc(function ($pin) {
-            return $pin->id;
-            })->values(); // values() reindexa la colección
-        }elseif ($this->ver == "Cliente") {
-            $this->pins = $this->pins->sortByDesc(function ($pin) {
-                if ($pin->pinable_type === "App\\Models\\Motor") {
-                    return $pin->pinable->cliente->cliente;
-                } elseif ($pin->pinable_type === "App\\Models\\Job") {
-                    return $pin->pinable->motor->cliente->cliente;
-                }
-                // En caso de otro tipo, se puede retornar un valor predeterminado
-                return 0;
-            })->values(); // values() reindexa la colección
+            $pins = $pins->sortByDesc(function ($pin) {
+                return $pin->pinable->os ?? 0;
+            })->values();
+        } elseif ($this->ver == "Fecha de Creación") {
+            $pins = $pins->sortByDesc(fn($pin) => $pin->id)->values();
+        } elseif ($this->ver == "Cliente") {
+            $pins = $pins->sortByDesc(function ($pin) {
+                return $pin->pinable->cliente->cliente ?? '';
+            })->values();
         }
 
-        return view('livewire.boards.index-board');
+         return view('livewire.boards.index-board', [
+        'pins' => $pins,
+    ]);
     }
     public function updatedComment($value, $propertyName)
     {
@@ -72,12 +60,15 @@ class IndexBoard extends Component
                 'comment' => $value,
             ]);
         }
+        $this->emit('commentUpdated', $pinId, $value);
+        $this->board->refresh();
     }
     public function deletePin($pinId)
     {
         $pin = $this->board->pins()->find($pinId);
         if ($pin) {
             $pin->delete();
+            $this->emit('pinDeleted', $pinId);
         }
         $this->board = Board::find($this->board->id);
     }
@@ -137,5 +128,10 @@ class IndexBoard extends Component
             $this->emit('photoAdded', $motor->fullos);
         }
         $this->photo = null;
+    }
+    public function deleteTablero()
+    {
+        $this->board->delete();
+        $this->emit('boardDeleted', $this->board->id);
     }
 }
