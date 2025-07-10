@@ -31,7 +31,8 @@
             @endif
 
             @if (in_array(auth()->user()->userType, [1, 2, 3]))
-                <button class="btn btn-falcon-warning ms-2 mb-1 d-none d-sm-block" type="button" wire:click="$emit('forceStatusChange')">
+                <button class="btn btn-falcon-warning ms-2 mb-1 d-none d-sm-block" type="button"
+                    wire:click="$emit('forceStatusChange')">
                     <span class="fas fa-exchange-alt me-1" data-fa-transform="shrink-3"></span>Forzar cambio de estado
                 </button>
             @endif
@@ -50,8 +51,149 @@
                     placeholder="Ingrese OS, nombre de equipo, cliente o t&eacute;cnico"
                     wire:model.live.debounce.500ms="search" />
             </div>
+            <p>
+                <a class="btn btn-falcon-default mt-2" data-bs-toggle="collapse" href="#collapseExample" role="button"
+                    aria-expanded="false" aria-controls="collapseExample">Ver Busqueda Avanzada</a>
+
+            </p>
+            <div wire:ignore.self class="collapse" id="collapseExample">
+                <div class="row">
+                    <div class="col-xxl-6 col-lg-12">
+                        <div class="card h-100">
+                            <div class="bg-holder bg-card"
+                                style="background-image:url(../assets/img/icons/spot-illustrations/corner-3.png);">
+                            </div>
+                            <!--/.bg-holder-->
+
+                            <div class="card-header z-index-1">
+                                <h5 class="text-primary">Busqueda Avanzada </h5>
+                                <h6 class="text-600">Busca equipos por caracteristicas</h6>
+                            </div>
+                            <div class="card-body z-index-1">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text" id="marca-label">Marca</span>
+                                            <input type="text" class="form-control" placeholder="Ingrese la marca"
+                                                aria-label="Marca" aria-describedby="marca-label"
+                                                wire:model.live.debounce.500ms="s_marca" value="{{ request('marca') }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text" id="serie-label">Serie</span>
+                                            <input type="text" class="form-control" placeholder="Ingrese la serie"
+                                                aria-label="Serie" aria-describedby="serie-label"
+                                                wire:model.live.debounce.500ms="s_serie" value="{{ request('serie') }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text" id="modelo-label">Modelo</span>
+                                            <input type="text" class="form-control" placeholder="Ingrese el modelo"
+                                                aria-label="Modelo" aria-describedby="modelo-label"
+                                                wire:model.live.debounce.500ms="s_modelo"
+                                                value="{{ request('modelo') }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text" id="rpm-label">RPM</span>
+                                            <input type="text" class="form-control" placeholder="Ingrese las RPM"
+                                                aria-label="RPM" aria-describedby="rpm-label"
+                                                wire:model.live.debounce.500ms="s_rpm" value="{{ request('rpm') }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text" id="potencia-label">Potencia</span>
+                                            <input type="text" class="form-control"
+                                                placeholder="Ingrese la potencia" aria-label="Potencia"
+                                                aria-describedby="potencia-label"
+                                                wire:model.live.debounce.500ms="s_potencia">
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text" id="volts-label">Volts</span>
+                                            <input type="text" class="form-control"
+                                                placeholder="Ingrese los volts" aria-label="Volts"
+                                                aria-describedby="volts-label"
+                                                wire:model.live.debounce.500ms="s_volts">
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text" id="amps-label">Amps</span>
+                                            <input type="text" class="form-control" placeholder="Ingrese los amps"
+                                                aria-label="Amps" aria-describedby="amps-label"
+                                                wire:model.live.debounce.500ms="s_amps">
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text" id="frame-label">Frame</span>
+                                            <input type="text" class="form-control" placeholder="Ingrese el frame"
+                                                aria-label="Frame" aria-describedby="frame-label"
+                                                wire:model.live.debounce.500ms="s_frame">
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text" id="hac-label">HAC</span>
+                                            <input type="text" class="form-control" placeholder="Ingrese el HAC"
+                                                aria-label="HAC" aria-describedby="hac-label"
+                                                wire:model.live.debounce.500ms="s_hac">
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="submit" value="Buscar" class="btn btn-primary"
+                                    onclick="console.log('clic en el botón')">
+                            </div>
+
+
+                        </div>
+
+                    </div>
+                    <div class="col-xxl-6 col-lg-12">
+                        <div class="card h-100">
+                            <div class="bg-holder bg-card"
+                                style="background-image:url(../assets/img/icons/spot-illustrations/corner-3.png);">
+                            </div>
+                            <!--/.bg-holder-->
+
+                            <div class="card-header z-index-1">
+                                <h5 class="text-primary">Busqueda Avanzada </h5>
+                                <h6 class="text-600">Busca equipos por caracteristicas</h6>
+                            </div>
+                            <div class="card-body z-index-1">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="input-group mb-3">
+                                            <span class="input-group-text" id="marca-label">Potencia Mayor a:</span>
+                                            <input type="text" class="form-control" placeholder="Ingrese la marca"
+                                                aria-label="Marca" aria-describedby="marca-label"
+                                                wire:model.live.debounce.500ms="s_pot_mayor"
+                                                value="{{ request('marca') }}">
+                                        </div>
+                                         <div class="input-group mb-3">
+                                            <span class="input-group-text" id="marca-label">Potencia Menor a:</span>
+                                            <input type="text" class="form-control" placeholder="Ingrese la marca"
+                                                aria-label="Marca" aria-describedby="s_pot_menor"
+                                                wire:model.live.debounce.500ms="s_pot_menor"
+                                                value="{{ request('marca') }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
 
         </div>
+
 
 
         <x-pretty-card class="mt-1">
@@ -72,7 +214,8 @@
                             <span class="fas fa-check me-1"></span>
                         @endif Todos
                     </a>
-                    <a class="dropdown-item" href="#" wire:click="$set('ver', 'Sin autorizar')">Sin autorizar</a>
+                    <a class="dropdown-item" href="#" wire:click="$set('ver', 'Sin autorizar')">Sin
+                        autorizar</a>
                     <a class="dropdown-item" href="#" wire:click="$set('ver', 'Trabajando')">Trabajando</a>
                     <a class="dropdown-item" href="#"
                         wire:click="$set('ver', 'Finalizados en Taller')">Finalizados en Taller</a>
@@ -101,7 +244,8 @@
                                     <i
                                         class="fa {{ $sort === 'fullos' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'fullos' ? 'text-success' : '' }}"></i>
                                 </th>
-                                <th class="sort" style="width:20%;cursor: pointer;" wire:click="sortBy('id_cliente')">
+                                <th class="sort" style="width:20%;cursor: pointer;"
+                                    wire:click="sortBy('id_cliente')">
                                     Cliente
                                     <i
                                         class="fa {{ $sort === 'id_cliente' ? 'fa-sort-' . ($direction === 'asc' ? 'up' : 'down') : 'fa-sort' }} {{ $sort === 'id_cliente' ? 'text-success' : '' }}"></i>
@@ -149,7 +293,7 @@
                                                 } else {
                                                     $fotoType13 = null;
                                                 }
-                                               
+
                                             @endphp
                                             @if ($fotoType13 && Storage::exists('public' . $fotoType13->thumb))
                                                 <div class="avatar avatar-2xl ">
@@ -330,11 +474,11 @@
 
                                 </p>
                                 <hr>
-                                <button class="btn btn-primary btn"  data-bs-toggle="tooltip"
-                                    data-bs-placement="top" title="Tomar foto" onclick="loadCamera({{ $motor->id_motor }})">
+                                <button class="btn btn-primary btn" data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="Tomar foto" onclick="loadCamera({{ $motor->id_motor }})">
                                     <i class="fas fa-camera"></i>
                                 </button>
-                                <button class="btn btn-primary btn ms-2"  data-bs-toggle="tooltip"
+                                <button class="btn btn-primary btn ms-2" data-bs-toggle="tooltip"
                                     data-bs-placement="top" title="Asignar Tecnico"
                                     wire:click="$emit('openAsignacionesModal', {{ $motor->id_motor }})">
                                     <i class="fas fa-user-plus"></i>
@@ -343,8 +487,7 @@
                         </div>
                     </div>
                 @endforeach
-                <input type="file" id="photoUpload" wire:model="photo" accept="image/*"
-                style="display: none;">
+                <input type="file" id="photoUpload" wire:model="photo" accept="image/*" style="display: none;">
             </div>
         @endif
 
@@ -361,11 +504,11 @@
 
 </div>
 <script>
-     loadCamera = function(id) {
-      
-                document.querySelector("#photoUpload").click();
-                Livewire.emit('cameraLoaded', id);
-            }
+    loadCamera = function(id) {
+
+        document.querySelector("#photoUpload").click();
+        Livewire.emit('cameraLoaded', id);
+    }
     document.addEventListener('livewire:load', function() {
         Livewire.on('boardUpdated', (board, cant) => {
             Swal.fire({
@@ -388,16 +531,16 @@
         });
         Livewire.on('error', (message) => {
             Swal.fire({
-            title: "Error",
-            text: message,
-            icon: "error"
+                title: "Error",
+                text: message,
+                icon: "error"
             });
         });
         Livewire.on('photoAdded', (message) => {
             Swal.fire({
-            title: "Excelente",
-            text: "Se ha agregado una imagen al la OS: "+message,
-            icon: "success"
+                title: "Excelente",
+                text: "Se ha agregado una imagen al la OS: " + message,
+                icon: "success"
             });
         });
     });

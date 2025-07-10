@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdvancedSearchController;
 use App\Http\Controllers\Calculos;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\DashboardController;
@@ -65,6 +66,8 @@ Route::middleware([
     Route::get('/clientes/{cliente}', ShowCustomers::class)->name('clientes.show');
 
 
+    Route::get('/motores/advanced-search', AdvancedSearchController::class)
+     ->name('motores.search.advanced');
 
     Route::get('/motores', IndexMotors::class)->name('motores.index');
 

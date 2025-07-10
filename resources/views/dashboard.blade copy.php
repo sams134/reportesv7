@@ -154,7 +154,7 @@
     </div>
     <div class="row g-3 mb-3">
         <div class="col-xxl-6 col-lg-12">
-           <form method="GET" action="{{ route('motores.search.advanced') }}">
+            <form method="GET" action="{{ route('motores.index') }}" onsubmit="console.log('¡submit!')">
                 <div class="card h-100">
                     <div class="bg-holder bg-card"
                         style="background-image:url(../assets/img/icons/spot-illustrations/corner-3.png);">
@@ -171,22 +171,22 @@
                                 <div class="input-group mb-3">
                                     <span class="input-group-text" id="marca-label">Marca</span>
                                     <input type="text" class="form-control" placeholder="Ingrese la marca"
-                                        aria-label="Marca" aria-describedby="marca-label" name="marca"
-                                        value="{{ request('marca') }}">
+                                        aria-label="Marca" aria-describedby="marca-label" name="search"
+                                        value="{{ request('search') }}">
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text" id="serie-label">Serie</span>
                                     <input type="text" class="form-control" placeholder="Ingrese la serie"
-                                        aria-label="Serie" aria-describedby="serie-label" name="serie" value="{{ request('serie') }}">
+                                        aria-label="Serie" aria-describedby="serie-label" name="serie">
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text" id="modelo-label">Modelo</span>
                                     <input type="text" class="form-control" placeholder="Ingrese el modelo"
-                                        aria-label="Modelo" aria-describedby="modelo-label" name="modelo" value="{{ request('modelo') }}">
+                                        aria-label="Modelo" aria-describedby="modelo-label" name="modelo">
                                 </div>
                             </div>
                             <div class="col-12">
@@ -232,10 +232,10 @@
                                 </div>
                             </div>
                         </div>
-                          <input type="submit" value="Buscar" class="btn btn-primary" onclick="console.log('clic en el botón')">
                     </div>
-                  
-                    
+                    <div class="card-footer text-end">
+                        <input type="submit" value="Buscar" class="btn btn-primary" onclick="console.log('clic en el botón')">
+                    </div>
                 </div>
             </form>
         </div>

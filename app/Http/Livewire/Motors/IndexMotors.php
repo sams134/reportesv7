@@ -20,14 +20,15 @@ class IndexMotors extends Component
     public $search;
     public $equipo, $statuses, $newStatus;
     public $sort = 'fullos', $direction = 'desc';
-    public $boards,$photo;
+    public $boards, $photo;
     public $selectedMotors = [];
     public $cards = true, $ver = "Todos";
     public $camera_id_motor;
-   
+    public $s_marca, $s_modelo, $s_serie, $s_rpm, $s_potencia, $s_volts, $s_amps, $s_frame, $s_hac, $s_pot_mayor, $s_pot_menor;
 
 
-    protected $listeners = ['removeMotor', 'render', 'boardStored' => 'render', 'forceStatusChange', 'status-changed' => 'statusChanged','cameraLoaded'];
+
+    protected $listeners = ['removeMotor', 'render', 'boardStored' => 'render', 'forceStatusChange', 'status-changed' => 'statusChanged', 'cameraLoaded'];
     protected $queryString = [
         'search' => ['except' => ''],
         'sort' => ['except' => 'fullos'],
@@ -39,7 +40,7 @@ class IndexMotors extends Component
         $this->equipo = new Motor();
         $this->statuses = Status::all();
         if (User::find(Auth::id())->config)
-            $this->cards = User::find(Auth::id())->config->view_cards==1 ? true: false;
+            $this->cards = User::find(Auth::id())->config->view_cards == 1 ? true : false;
         else
             $this->cards = false;
     }
@@ -111,6 +112,48 @@ class IndexMotors extends Component
                         });
                 });
             }
+        }
+        if ($this->s_marca) {
+            $motores = $motores->where('marca', 'like', "%{$this->s_marca}%");
+        }
+        if ($this->s_modelo) {
+            $motores = $motores->where('modelo', 'like', "%{$this->s_modelo}%");
+        }
+        if ($this->s_serie) {
+            $motores = $motores->where('serie', 'like', "%{$this->s_serie}%");
+        }
+        if ($this->s_rpm) {
+            $motores = $motores->where('rpm', 'like', "%{$this->s_rpm}%");
+        }
+        if ($this->s_potencia) {
+            $motores = $motores->where('hp', 'like', "%{$this->s_potencia}%");
+        }
+        if ($this->s_volts) {
+            $motores = $motores->where('volts', 'like', "%{$this->s_volts}%");
+        }
+        if ($this->s_amps) {
+            $motores = $motores->where('amps', 'like', "%{$this->s_amps}%");
+        }
+        if ($this->s_frame) {
+            $motores = $motores->where('frame', 'like', "%{$this->s_frame}%");
+        }
+        if ($this->s_hac) {
+            $motores = $motores->whereHas('infoMotor', function ($q) {
+                $q->where('nombre_equipo', 'like', "%{$this->s_hac}%");
+            });
+        }
+        if ($this->s_pot_mayor) {
+            $motores = $motores->whereRaw(
+                'CAST(hp AS DECIMAL(10,2)) >= ?',
+                [$this->s_pot_mayor]
+            );
+        }
+
+        if ($this->s_pot_menor) {
+            $motores = $motores->whereRaw(
+                'CAST(hp AS DECIMAL(10,2)) <= ?',
+                [$this->s_pot_menor]
+            );
         }
 
         if ($this->cards) {
@@ -237,68 +280,66 @@ class IndexMotors extends Component
     }
     public function cameraLoaded($id_motor)
     {
-        
+
         $this->camera_id_motor = $id_motor;
     }
     public function updatedPhoto()
     {
-      
 
-        
+
+
         try {
             $this->validate([
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
+                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
             ]);
-            
+
             $motor = Motor::find($this->camera_id_motor);
             if ($this->photo != "") {
-            $image = IMG::make($this->photo);
+                $image = IMG::make($this->photo);
 
-            // Corregir la orientación basada en los metadatos EXIF
-            if ($image->exif('Orientation')) {
-                $orientation = $image->exif('Orientation');
-                switch ($orientation) {
-                case 3:
-                    $image->rotate(180); // Rotar 180 grados
-                    break;
-                case 6:
-                    $image->rotate(-90); // Rotar 90 grados en sentido horario
-                    break;
-                case 8:
-                    $image->rotate(90); // Rotar 90 grados en sentido antihorario
-                    break;
+                // Corregir la orientación basada en los metadatos EXIF
+                if ($image->exif('Orientation')) {
+                    $orientation = $image->exif('Orientation');
+                    switch ($orientation) {
+                        case 3:
+                            $image->rotate(180); // Rotar 180 grados
+                            break;
+                        case 6:
+                            $image->rotate(-90); // Rotar 90 grados en sentido horario
+                            break;
+                        case 8:
+                            $image->rotate(90); // Rotar 90 grados en sentido antihorario
+                            break;
+                    }
                 }
-            }
 
-            // Redimensionar la imagen
-            $image->resize(1024, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
+                // Redimensionar la imagen
+                $image->resize(1024, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
 
-            // Generar un nombre único para la imagen
-            $uniqueName = uniqid('img_', true) . '.' . $this->photo->getClientOriginalExtension();
+                // Generar un nombre único para la imagen
+                $uniqueName = uniqid('img_', true) . '.' . $this->photo->getClientOriginalExtension();
 
-            $folderPath = '/uploads/' . "2M" . $motor->year . '-' . $motor->os . '/Fotos/Proceso';
-            // Definir la ruta de la imagen
-            $imagePath = $folderPath . '/' . $uniqueName;
-          
-            Storage::disk('public')->put($imagePath, (string) $image->encode());
+                $folderPath = '/uploads/' . "2M" . $motor->year . '-' . $motor->os . '/Fotos/Proceso';
+                // Definir la ruta de la imagen
+                $imagePath = $folderPath . '/' . $uniqueName;
 
-            $foto = $motor->fotos()->create([
-                'titulo' => $uniqueName,
-                'foto' => $folderPath . '/' . $uniqueName,
-                'thumb' => $folderPath . '/' . $uniqueName,
-                'type' => 2,
-                'user_id' => auth()->id(),
-            ]);
-            $this->emit('photoAdded', $motor->fullos);
+                Storage::disk('public')->put($imagePath, (string) $image->encode());
+
+                $foto = $motor->fotos()->create([
+                    'titulo' => $uniqueName,
+                    'foto' => $folderPath . '/' . $uniqueName,
+                    'thumb' => $folderPath . '/' . $uniqueName,
+                    'type' => 2,
+                    'user_id' => auth()->id(),
+                ]);
+                $this->emit('photoAdded', $motor->fullos);
             }
             $this->photo = null;
         } catch (\Exception $e) {
             $this->emit('error', $e->getMessage());
         }
     }
-
-     
 }
