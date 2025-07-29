@@ -118,7 +118,7 @@
                             <div class="mb-3">
                                 <label class="form-label" for="exampleFormControlTextarea1">Comentarios del
                                     cliente</label>
-                                <textarea class="form-control" rows="3" wire:model="comentariosCliente"></textarea>
+                                <textarea class="form-control" rows="3" wire:model.defer="comentariosCliente"></textarea>
                                 
                             </div>
                         </x-form-card>
@@ -131,7 +131,7 @@
                         <x-form-card title="Datos del equipo">
                             <div class="mb-3">
                                 <label class="form-label" for="exampleFormControlInput1">Nombre del equipo en planta</label>
-                                <input class="form-control"  type="text"  wire:model="equipmentName"/>
+                                <input class="form-control"  type="text"  wire:model.defer="equipmentName"/>
                               </div>
                               <div class="mb-3">
                                 <label class="form-label" for="exampleFormControlInput1">Tipo de Equipo</label>
@@ -184,7 +184,7 @@
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">Potencia</span>
                                         <input class="form-control" type="text" placeholder="100"
-                                            wire:model="potencia" />
+                                            wire:model.defer="potencia" />
                                         @error('hp')
                                             <div class="alert alert-danger my-1 py-1" role="alert"> {{ $message }}</div>
                                         @enderror
@@ -193,7 +193,7 @@
                                 <div class="col-3 pt-2">
                                     <div class="form-check form-switch align-bottom">
                                         <input class="form-check-input" id="flexSwitchCheckChecked" type="checkbox"
-                                            wire:model="aproximado" />
+                                            wire:model.defer="aproximado" />
                                         <label class="form-check-label" for="flexSwitchCheckChecked">Aprox.</label>
                                     </div>
                                 </div>
@@ -206,17 +206,17 @@
 
                                 <div class="form-check col-4">
                                     <input class="form-check-input" type="radio" value="0"
-                                        wire:model="powerUnit" />
+                                        wire:model.lazy="powerUnit" />
                                     <label class="form-check-label">HP</label>
                                 </div>
-                                <div class="form-check col-4">
+                                <div class="form-check col-4"> 
                                     <input class="form-check-input" type="radio" value="1"
-                                        wire:model="powerUnit" />
+                                        wire:model.lazy="powerUnit" />
                                     <label class="form-check-label">KW</label>
                                 </div>
                                 <div class="form-check col-4">
                                     <input class="form-check-input" type="radio" value="2"
-                                        wire:model="powerUnit" />
+                                        wire:model.lazy="powerUnit" />
                                     <label class="form-check-label">KVA</label>
                                 </div>
                             </div>
@@ -225,7 +225,7 @@
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">Rpm</span>
                                         <input class="form-control" type="text" placeholder="eg. 1770"
-                                            wire:model="rpm" />
+                                            wire:model.defer="rpm" />
                                     </div>
                                 </div>
                             </div>
@@ -234,7 +234,7 @@
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">Marca</span>
                                         <input class="form-control" type="text"
-                                            placeholder=" eg. General Electric / Weg / Siemens" wire:model="marca"
+                                            placeholder=" eg. General Electric / Weg / Siemens" wire:model.defer="marca"
                                             style="text-transform: uppercase;" />
                                     </div>
                                 </div>
@@ -244,7 +244,7 @@
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">No. Serie</span>
                                         <input class="form-control" type="text" placeholder="xxxx"
-                                            wire:model="serie" style="text-transform: uppercase;" />
+                                            wire:model.defer="serie" style="text-transform: uppercase;" />
                                     </div>
                                 </div>
                             </div>
@@ -253,7 +253,7 @@
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">No. Modelo</span>
                                         <input class="form-control" type="text" placeholder="xxxx"
-                                            wire:model="modelo" style="text-transform: uppercase;" />
+                                            wire:model.defer="modelo" style="text-transform: uppercase;" />
                                     </div>
                                 </div>
                             </div>
@@ -262,7 +262,7 @@
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">Voltajes</span>
                                         <input class="form-control" type="text" placeholder="eg. 208-230/460"
-                                            wire:model="voltaje" />
+                                            wire:model.defer="voltaje" />
                                     </div>
                                 </div>
                             </div>
@@ -271,7 +271,7 @@
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">Amperajes</span>
                                         <input class="form-control" type="text" placeholder="eg. 11.5-12/6"
-                                            wire:model="amperaje" />
+                                            wire:model.defer="amperaje" />
                                     </div>
                                 </div>
                             </div>
@@ -280,7 +280,7 @@
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">Frame</span>
                                         <input class="form-control" type="text" placeholder="eg. 256TZ / 132M"
-                                            wire:model="frame" style="text-transform: uppercase;" />
+                                            wire:model.defer="frame" style="text-transform: uppercase;" />
                                     </div>
                                 </div>
                             </div>
@@ -289,7 +289,7 @@
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">Factor de Potencia</span>
                                         <input class="form-control" type="text" placeholder="0.85"
-                                            wire:model="pf" style="text-transform: uppercase;" />
+                                            wire:model.defer="pf" style="text-transform: uppercase;" />
                                     </div>
                                 </div>
                             </div>
@@ -298,7 +298,7 @@
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">Eficiencia</span>
                                         <input class="form-control" type="text" placeholder="93%"
-                                            wire:model="eff" style="text-transform: uppercase;" />
+                                            wire:model.defer="eff" style="text-transform: uppercase;" />
                                     </div>
                                 </div>
                             </div>
@@ -307,7 +307,7 @@
                                     <div class="input-group mb-3"><span class="input-group-text"
                                             id="basic-addon1">Hz.</span>
                                         <input class="form-control" type="text" placeholder="eg. 60"
-                                            wire:model="hz" />
+                                            wire:model.defer="hz" />
                                     </div>
                                 </div>
                             </div>
@@ -315,24 +315,24 @@
 
                                 <div class="form-check col-4">
                                     <input class="form-check-input" type="radio" value="1"
-                                        wire:model="phases" />
+                                        wire:model.defer="phases" />
                                     <label class="form-check-label">Monof&aacute;sico</label>
                                 </div>
                                 <div class="form-check col-4">
                                     <input class="form-check-input" type="radio" value="3"
-                                        wire:model="phases" />
+                                        wire:model.defer="phases" />
                                     <label class="form-check-label">Trif&aacute;sico</label>
                                 </div>
                                 <div class="form-check col-4">
                                     <input class="form-check-input" type="radio" value="4"
-                                        wire:model="phases" />
+                                        wire:model.defer="phases" />
                                     <label class="form-check-label">DC</label>
                                 </div>
                             </div>
                             <div class="col-12 pt-2">
                                 <div class="form-check form-switch align-bottom">
                                     <input class="form-check-input" id="flexSwitchCheckChecked" type="checkbox"
-                                        wire:model="inverter" />
+                                        wire:model.defer="inverter" />
                                     <label class="form-check-label" for="flexSwitchCheckChecked">Inverter Duty</label>
                                 </div>
                             </div>
