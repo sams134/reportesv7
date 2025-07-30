@@ -84,6 +84,12 @@
                             
                             </h5></a>
                             <h6>{{$pin->pinable->cliente->cliente}}</h6>
+                            @foreach ($pin->pinable->tecnicos as $tecnico)
+                            <p class="my-1">
+                                <a href="{{ route('motores.index.search', $tecnico->name) }}"> <span><i
+                                            class="far fa-user mx-3"></i>{{ $tecnico->name }} </span></a>
+                            </p>
+                             @endforeach
                             <p class="card-text">
 
                             <table class="table table-sm">

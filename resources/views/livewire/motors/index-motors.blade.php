@@ -1,7 +1,7 @@
 <div>
     {{-- To attain knowledge, add things every day; To attain wisdom, subtract things every day. --}}
     <x-pretty-card>
-        <h2>Listado General de Motores del usuario {{ auth()->user()->name }}
+        <h2>Listado General de Motores del usuario{{ auth()->user()->name }}
         </h2>
         Revisa todos los motores en el sistema
     </x-pretty-card>
@@ -429,11 +429,19 @@
                                     @endif
                                 </a>
                             </div>
+                            
                             <div class="card-body">
                                 <h5 class="card-title">
                                     <a href="{{ route('motores.show', $motor) }}">{{ $motor->fullos }}</a>
                                     <x-status-badge status_id="{{ $motor->status_id }}" />
                                 </h5>
+
+                        @foreach ($motor->tecnicos as $tecnico)
+                            <p class="my-1">
+                                <a href="{{ route('motores.index.search', $tecnico->name) }}"> <span><i
+                                            class="far fa-user mx-3"></i>{{ $tecnico->name }} </span></a>
+                            </p>
+                        @endforeach
                                 <h6>{{ $motor->cliente->cliente }}</h6>
                                 <p class="card-text">
                                 <table class="table table-sm">
