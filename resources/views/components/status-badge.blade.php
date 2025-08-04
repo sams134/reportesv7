@@ -9,7 +9,7 @@
         <span class="badge badge-soft-danger">No Autorizado</span>
         @break
     @case(1)
-        <span class="badge badge-soft-primary">Diagnóstico</span>
+        <span class="badge badge-soft-primary">Asignado</span>
         @break
     @case(2)
         <span class="badge badge-soft-info">Pend. de autorización</span>

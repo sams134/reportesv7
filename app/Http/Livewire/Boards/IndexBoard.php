@@ -13,7 +13,7 @@ class IndexBoard extends Component
 {
     use WithFileUploads;
     public $board, $photo;
-    public $camera_id_motor;
+    public $camera_id_motor,$cards=false;
     public $comment;
     public $ver = "OS (Numero de Orden)";
     protected $listeners = ['cameraLoaded', 'deletePin', 'deleteTablero'];
@@ -133,5 +133,10 @@ class IndexBoard extends Component
     {
         $this->board->delete();
         $this->emit('boardDeleted', $this->board->id);
+    }
+     public function toggleView()
+    {
+        $this->cards = !$this->cards;
+       
     }
 }
