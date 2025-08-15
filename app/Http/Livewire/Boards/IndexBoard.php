@@ -13,7 +13,7 @@ class IndexBoard extends Component
 {
     use WithFileUploads;
     public $board, $photo;
-    public $camera_id_motor,$cards=false;
+    public $camera_id_motor, $cards = false;
     public $comment;
     public $ver = "OS (Numero de Orden)";
     protected $listeners = ['cameraLoaded', 'deletePin', 'deleteTablero'];
@@ -29,23 +29,44 @@ class IndexBoard extends Component
     }
     public function render()
     {
-        $pins = $this->board->pins()->with('pinable')->get();
+        $pins = $this->board
+            ->pins()
+            ->with(['pinable.tecnicos', 'pinable.cliente'])
+            ->get();
 
-        if ($this->ver == "OS (Numero de Orden)") {
-            $pins = $pins->sortByDesc(function ($pin) {
-                return $pin->pinable->os ?? 0;
-            })->values();
-        } elseif ($this->ver == "Fecha de Creación") {
-            $pins = $pins->sortByDesc(fn($pin) => $pin->id)->values();
-        } elseif ($this->ver == "Cliente") {
-            $pins = $pins->sortByDesc(function ($pin) {
-                return $pin->pinable->cliente->cliente ?? '';
-            })->values();
+        // 2) Aplica tu lógica de orden existente...
+        if ($this->ver === "OS (Numero de Orden)") {
+            $pins = $pins
+                ->sortByDesc(fn($pin) => $pin->pinable->os ?? 0)
+                ->values();
+        } elseif ($this->ver === "Fecha de Creación") {
+            $pins = $pins
+                ->sortByDesc(fn($pin) => $pin->id)
+                ->values();
+        } elseif ($this->ver === "Cliente") {
+            $pins = $pins
+                ->sortByDesc(fn($pin) => $pin->pinable->cliente->cliente ?? '')
+                ->values();
+        }
+        // 3) Nueva rama para Técnico
+        elseif ($this->ver === "Tecnico") {
+            $pins = $pins
+                ->sortBy(function ($pin) {
+                    // Si tiene varios técnicos, los concatenamos; si no, queda vacío
+                    $nombres = $pin->pinable
+                        ->tecnicos
+                        ->pluck('name')         // colección de nombres
+                        ->sort()               // opcional: orden alfabético dentro del grupo
+                        ->implode(', ');       // "Ana, Carlos, Juan"
+
+                    return $nombres;
+                })
+                ->values();
         }
 
-         return view('livewire.boards.index-board', [
-        'pins' => $pins,
-    ]);
+        return view('livewire.boards.index-board', [
+            'pins' => $pins,
+        ]);
     }
     public function updatedComment($value, $propertyName)
     {
@@ -134,9 +155,8 @@ class IndexBoard extends Component
         $this->board->delete();
         $this->emit('boardDeleted', $this->board->id);
     }
-     public function toggleView()
+    public function toggleView()
     {
         $this->cards = !$this->cards;
-       
     }
 }

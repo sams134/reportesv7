@@ -35,7 +35,7 @@ class ShowMotor extends Component
     protected array $rules = [
         'photos.*' => 'image|mimes:jpeg,png,jpg,webp,gif,svg',
         'doc'      => 'nullable|file|mimes:pdf',
-        'newStatus'=> 'nullable|exists:statuses,id',
+        'newStatus' => 'nullable|exists:statuses,id',
         'comment'  => 'nullable|string|max:255',
     ];
 
@@ -160,5 +160,16 @@ class ShowMotor extends Component
             $this->motor->refresh();
         }
     }
-}
+    public function toggleType($fotoId)
+    {
+        $foto = \App\Models\Foto::find($fotoId);
 
+        if ($foto) {
+            $foto->type = ($foto->type == 3) ? 2 : 3;
+            $foto->save();
+        }
+
+        // Recargar motor para refrescar fotos
+        $this->motor->load('fotos');
+    }
+}

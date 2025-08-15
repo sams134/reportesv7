@@ -29,6 +29,7 @@
                             <a class="dropdown-item" href="#" wire:click="$set('ver', 'OS (Numero de Orden)')">OS
                                 (Numero de Orden)</a>
                             <a class="dropdown-item" href="#" wire:click="$set('ver', 'Cliente')">Cliente</a>
+                             <a class="dropdown-item" href="#" wire:click="$set('ver', 'Tecnico')">Tecnico</a>
                             <div class="dropdown-divider"></div>
                         </div>
                     </div>

@@ -251,13 +251,13 @@
                     </tr>
                 </table>
             </x-pretty-card>
-             <x-pretty-card>
+            <x-pretty-card>
                 <h3>Densidades</h3>
                 <div class="document-gallery" style="display: flex; flex-wrap: wrap; gap: 1rem;" id="documentGallery">
                     {{-- add booton de clipboard --}}
                     @livewire('motors.densidades-clipboard', ['motor' => $motor])
                 </div>
-             </x-pretty-card>
+            </x-pretty-card>
             <x-pretty-card>
                 <h3>Documentos Cargados</h3>
                 <div class="document-gallery" style="display: flex; flex-wrap: wrap; gap: 1rem;" id="documentGallery">
@@ -388,7 +388,7 @@
                                     <div class="col">
                                         <h6 class="text-800 mb-1">{{ $bitacoraItem->titulo }}</h5>
                                             <h6 class="text-700 mb-1" style="font-size: 12px; font-style: italic;">
-                                                {{ $bitacoraItem->user?$bitacoraItem->user->name:"" }} </h6>
+                                                {{ $bitacoraItem->user ? $bitacoraItem->user->name : '' }} </h6>
                                             <p class="fs--1 text-600 mb-0">{{ $bitacoraItem->descripcion }}</p>
                                     </div>
                                     <div class="col-auto">
@@ -435,6 +435,32 @@
             display: block;
             margin-left: auto;
             margin-right: auto;
+        }
+
+        .card-gallery .heart-badge {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .15);
+        }
+
+        .card-gallery .heart-badge i {
+            line-height: 1;
+            font-size: 1.05rem;
+        }
+
+        .heart-btn {
+            background: white;
+            border: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .15);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .heart-btn:hover {
+            background: #ffe6e6;
+            transform: scale(1.1);
+        }
+
+        .heart-btn i {
+            font-size: 1.1rem;
+            line-height: 1;
         }
     </style>
     <link href="{{ asset('vendors/glightbox/glightbox.min.css') }}" rel="stylesheet" />
@@ -535,24 +561,31 @@
                         <div class="row">
                             <div class="row mx-n1">
                                 @foreach ($motor->fotos->sortByDesc('id') as $foto)
-                                    {{-- <div class="col-4 p-1">
-                                    <a class="post1" href="{{ asset('storage' . $foto->foto) }}" data-gallery="gallery-1">
-                                    <img class="img-fluid rounded" src="{{ asset('storage' . $foto->foto) }}" alt="" />
-                                    </a>
-                                </div> --}}
                                     <div class="col-lg-2 col-md-3 col-sm-4 col-xs-12 my-2">
-                                        <div class="card card-gallery">
+                                        <div class="card card-gallery position-relative">
+
+                                            {{-- Botón corazón --}}
+                                            <button type="button" wire:click="toggleType({{ $foto->id }})"
+                                                class="heart-btn position-absolute top-0 end-0 m-2 rounded-circle p-1"
+                                                title="Cambiar tipo de foto">
+                                                @if ($foto->type == 3)
+                                                    <i class="fas fa-heart text-danger"></i>
+                                                @else
+                                                    <i class="far fa-heart text-danger"></i>
+                                                @endif
+                                            </button>
+
                                             <a class="post1" href="{{ asset('storage' . $foto->foto) }}"
                                                 data-gallery="gallery-1">
                                                 <img class="card-img-top" src="{{ asset('storage' . $foto->foto) }}"
                                                     alt="Foto">
                                             </a>
+
                                             <div class="card-footer">
                                                 <p style="font-size: 12px">
                                                     <span class="fw-bold">Fecha Foto: </span>
-                                                    {{ Carbon\Carbon::parse($foto->created_at)->format('d/m/Y') }}
+                                                    {{ \Carbon\Carbon::parse($foto->created_at)->format('d/m/Y') }}
                                                 </p>
-
                                                 @if ($foto->user)
                                                     <p style="font-size: 12px">
                                                         <span class="fw-bold">Foto Tomada por: </span>
@@ -561,8 +594,9 @@
                                                 @endif
                                                 <p class="card-text">{{ $foto->comentario }}</p>
                                             </div>
+
                                             <div class="d-flex justify-content-end">
-                                                <button class="btn btn-danger btn-sm " type="button"
+                                                <button class="btn btn-danger btn-sm" type="button"
                                                     onclick="removePhoto({{ $foto->id }})">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
@@ -570,6 +604,7 @@
                                         </div>
                                     </div>
                                 @endforeach
+
                             </div>
 
                             @foreach ($motor->jobs as $job)
