@@ -3,7 +3,7 @@
     <x-pretty-card>
         <h2>Tablero: {{ $board->name }}
         </h2>
-        Revisa todos los motores agregados a este tablero
+        Dueño: {{ $board->owner->name }}
     </x-pretty-card>
     <x-form-card title="Controles">
         <div class="row">
@@ -46,6 +46,41 @@
                             <i class="fas fa-trash-alt me-2"></i> Eliminar Tablero
                         </button>
                     @endif
+                     @if (Auth::id() == $board->owner_id)
+                        <button class="btn btn-primary d-flex align-items-center" onclick="changeNameModal()">
+                            <i class="fas fa-edit me-2"></i> Cambiar Nombre
+                        </button>
+
+                        <!-- Modal para cambiar nombre del tablero -->
+                        <div class="modal fade" id="changeNameModal" tabindex="-1" aria-labelledby="changeNameModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form wire:submit.prevent="changeBoardName">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="changeNameModalLabel">Cambiar Nombre del Tablero</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <label for="currentBoardName" class="form-label">Nombre actual</label>
+                                            <input type="text" id="currentBoardName" class="form-control mb-2" value="{{ $board->name }}" disabled>
+                                            <input type="text" class="form-control" wire:model.defer="newBoardName" placeholder="Nuevo nombre del tablero">
+                                            @error('newBoardName') <span class="text-danger">{{ $message }}</span> @enderror
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <script>
+                            function changeNameModal() {
+                                var modal = new bootstrap.Modal(document.getElementById('changeNameModal'));
+                                modal.show();
+                            }
+                        </script>
+                     @endif
                 </div>
             </div>
         </div>
@@ -283,6 +318,15 @@
                 Swal.fire({
                     title: "¡Equipo eliminado del tablero!",
                     text: "El equipo ha sido eliminado del tablero correctamente.",
+                    icon: "success",
+                    confirmButtonText: "Aceptar"
+                });
+            });
+
+            Livewire.on('boardNameChanged', () => {
+                Swal.fire({
+                    title: "¡Nombre de tablero cambiado!",
+                    text: "El nombre del tablero ha sido cambiado correctamente.",
                     icon: "success",
                     confirmButtonText: "Aceptar"
                 });

@@ -62,6 +62,10 @@ class IndexMotors extends Component
         switch ($this->ver) {
             case 'Todos':
                 break;
+            case 'Sin asignar':
+               // $motores = $motores->whereDoesntHave('tecnicos'); // Filtrar motores sin técnicos asignados
+                 $motores = $motores->whereIn('status_id', [-1]);
+                break;
             case 'Sin autorizar':
                 $motores = $motores->whereIn('status_id', [0, 1, 2]);
                 break;

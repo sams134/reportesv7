@@ -214,6 +214,8 @@
                             <span class="fas fa-check me-1"></span>
                         @endif Todos
                     </a>
+                    <a class="dropdown-item" href="#" wire:click="$set('ver', 'Sin asignar')">Sin
+                        Asignar</a>
                     <a class="dropdown-item" href="#" wire:click="$set('ver', 'Sin autorizar')">Sin
                         autorizar</a>
                     <a class="dropdown-item" href="#" wire:click="$set('ver', 'Trabajando')">Trabajando</a>

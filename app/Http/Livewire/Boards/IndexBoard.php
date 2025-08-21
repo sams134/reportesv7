@@ -14,7 +14,7 @@ class IndexBoard extends Component
     use WithFileUploads;
     public $board, $photo;
     public $camera_id_motor, $cards = false;
-    public $comment;
+    public $comment,$newBoardName;
     public $ver = "OS (Numero de Orden)";
     protected $listeners = ['cameraLoaded', 'deletePin', 'deleteTablero'];
     protected $rules = [
@@ -158,5 +158,17 @@ class IndexBoard extends Component
     public function toggleView()
     {
         $this->cards = !$this->cards;
+    }
+    public function changeBoardName()
+    {
+        $this->validate([
+            'newBoardName' => 'required|string|max:255',
+        ]);
+
+        $this->board->update([
+            'name' => $this->newBoardName,
+        ]);
+
+        $this->emit('boardNameChanged', $this->board->id);
     }
 }
