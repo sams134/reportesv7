@@ -56,12 +56,11 @@
 
                                         </td>
                                         <td class="text-nowrap">
-                                            <button class="btn btn-falcon-primary rounded-pill me-1 mb-1"
+                                            <a href="{{ route('clientes.show', $cliente) }}" class="btn btn-falcon-primary rounded-pill me-1 mb-1"
                                                 type="button">
                                                 <span class="far fa-list-alt me-1" data-fa-transform="shrink-3"></span>
                                                 Ver Motores ({{$cliente->motors_count}})
-                                            
-                                            </button>
+                                            </a>
                                             <button class="btn btn-falcon-success rounded-pill me-1 mb-1"
                                                 type="button">
                                                 <span class="far fa-list-alt me-1" data-fa-transform="shrink-3"></span>

@@ -628,6 +628,7 @@
 
                 // 1) Busca primero el div interno generado por JSCharting
                 const innerDiv = container.querySelector('div[id^="JSCharting_"]');
+              
                 if (!innerDiv) {
                     console.error('Div interno de JSCharting no encontrado:', container.innerHTML);
                     return;
@@ -645,6 +646,7 @@
                 const svgBlob = new Blob([svgStr], {
                     type: 'image/svg+xml;charset=utf-8'
                 });
+                console.log('SVG Blob creado:', svgBlob);
                 const url = URL.createObjectURL(svgBlob);
                 const img = new Image();
                 img.onload = () => {

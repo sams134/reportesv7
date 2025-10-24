@@ -209,7 +209,7 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td class="align-middle text-nowrap">{{ $motor->year }}-{{ $motor->os }}
+                                        <td class="align-middle text-nowrap"><a href="{{ route('motores.show', $motor) }}"> {{ $motor->year }}-{{ $motor->os }}</a> 
                                         </td>
                                         <td class="w-auto">{{ $motor->potencia }}</td>
                                         <td class="align-middle text-nowrap">{{ $motor->rpm }}</td>
