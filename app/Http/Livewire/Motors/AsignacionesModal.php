@@ -74,10 +74,10 @@ class AsignacionesModal extends Component
     public function render()
     {
         $this->statuses = Status::all();
-        $this->tecnicos = User::where('userType', User::TECNICO)
-        ->where('activo', 1)
-        ->orderBy('name')
-        ->get();
+        $this->tecnicos = User::whereIn('userType', [User::TECNICO, User::JEFE])
+            ->where('activo', 1)
+            ->orderBy('name')
+            ->get();
         $this->ayudantes = User::where('userType', User::AYUDANTES)
         ->where('activo', 1)
         ->orderBy('name')

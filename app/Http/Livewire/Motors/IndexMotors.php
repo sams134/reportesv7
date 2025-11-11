@@ -88,6 +88,9 @@ class IndexMotors extends Component
             $motores = $motores->whereHas('tecnicos', function ($query) use ($user) {
                 $query->where('id_user', $user->id); // Solo motores asignados al técnico
             });
+        }else
+        if ($user->userType === User::CLIENTE) {
+            $motores = $motores->where('id_cliente', $user->id_cliente);
         }
 
         // Procesar la búsqueda si existe

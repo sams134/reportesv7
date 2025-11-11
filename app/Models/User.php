@@ -63,6 +63,7 @@ class User extends Authenticatable
     public const VENDEDORES = '10';
     public const JEFE = '11';
     public const PINTURA = '12';
+    public const CLIENTE = '13';
 
     /**
      * The accessors to append to the model's array form.
