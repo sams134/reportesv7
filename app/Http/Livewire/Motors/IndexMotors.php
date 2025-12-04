@@ -70,7 +70,7 @@ class IndexMotors extends Component
                 $motores = $motores->whereIn('status_id', [0, 1, 2]);
                 break;
             case 'Trabajando':
-                $motores = $motores->whereIn('status_id', [3, 4, 5, 6, 7, 8]);
+                $motores = $motores->whereIn('status_id', [3, 4]);
                 break;
             case 'Finalizados en Taller':
                 $motores = $motores->where('status_id', 9);
@@ -82,6 +82,8 @@ class IndexMotors extends Component
                 $motores = $motores->where('status_id', 5);
                 break;
         }
+        $motores = $motores->orderBy('year', 'desc')
+                ->orderBy('os', 'desc');
 
         // Si el usuario es técnico, filtrar por motores asignados al técnico
         if ($user->userType === User::TECNICO) {

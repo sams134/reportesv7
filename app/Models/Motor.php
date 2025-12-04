@@ -63,7 +63,7 @@ class Motor extends Model
         return $this->belongsToMany(User::class, 'asignacions', 'id_motor', 'id_user')
             ->withPivot('asignado_por', 'responsabilidad')
             ->withTimestamps()
-            ->where('userType', User::TECNICO);
+            ->whereIn('userType', [User::TECNICO, User::JEFE]);
     }
     public function ayudantes()
     {

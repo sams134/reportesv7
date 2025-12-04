@@ -44,7 +44,7 @@ class AsignacionesModal extends Component
     {
         // Eliminar todas las asignaciones
         $this->motor->tecnicos()->detach();
-        
+      
         // Asignar los técnicos seleccionados
         foreach ($this->tecnicoSelected as $id => $selected) {
             if ($selected) {

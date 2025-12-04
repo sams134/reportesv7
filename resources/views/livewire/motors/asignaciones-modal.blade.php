@@ -35,7 +35,7 @@
                             <div class="col-12 col-sm-6">
                                 <x-pretty-card>
                                     <div class="table-responsive scrollbar" style="max-height: 60vh; overflow-y: auto;">
-                                        <h3>Listado de Técnicos</h3>
+                                        <h3>Listado de Técnicos y jefe</h3>
                                         <table class="table table-hover">
                                             @foreach ($tecnicos as $tecnico)
                                                 <tr>
