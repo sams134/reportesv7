@@ -30,14 +30,7 @@ class DensidadesClipboard extends Component
     }
 
 
-    public function screenshotPasted($index, $dataUrl)
-    {
-        if ($index == 1) {
-            $this->image1 = $dataUrl;
-        } elseif ($index == 2) {
-            $this->image2 = $dataUrl;
-        }
-    }
+    
 
     public function savePdf(): void
     {
@@ -63,7 +56,7 @@ class DensidadesClipboard extends Component
                 $path = $this->{$key}->store('temp/densidades', 'public');
                 $stored[] = [
                     'relative' => $path,
-                    'absolute' => public_path('storage/' . $path), // path real en disco
+                    'public' => public_path('storage/' . $path), // path real en disco
                 ];
             }
         }
@@ -72,13 +65,13 @@ class DensidadesClipboard extends Component
         $folderPath = '/uploads/' . "{$this->motor->year}-{$this->motor->os}" . '/Documentos';
         Storage::disk('public')->makeDirectory($folderPath);
 
-        $pdfName = 'densidades_' . "2M{$this->motor->year}-{$this->motor->os}" . '.pdf';
+        $pdfName = 'densidades_' . "{$this->motor->year}-{$this->motor->os}" . '.pdf';
         $pdfFullPath = $folderPath . '/' . $pdfName;
 
         $pdf = SnappyPdf::loadView('pdfs.densidades-pdf', [
             'motor'   => $this->motor,
             'tecnico' => auth()->user()->name ?? '',
-            'images'  => collect($stored)->pluck('absolute')->values()->all(), // ABSOLUTAS
+            'images'  => collect($stored)->pluck('public')->values()->all(), // ABSOLUTAS
         ])
             ->setPaper('a4')
             ->setOption('enable-local-file-access', true)  // CLAVE

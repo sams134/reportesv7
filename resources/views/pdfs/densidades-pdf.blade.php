@@ -185,14 +185,15 @@
             <div class="grid" style="left:20px;text-align:left">
                 <div class="box">
                     @if (isset($images[0]))
-                        <img src="file://{{ $images[0] }}" alt="Densidad 1" style="max-width:900px">
+                        <img src="{{  $images[0] }}" alt="Densidad 1" style="max-width:900px">
+                      
                     @else
                         <span>Sin imagen 1</span>
                     @endif
                 </div>
                 <div class="box2">
                     @if (isset($images[1]))
-                        <img src="file://{{ $images[1] }}" alt="Densidad 2">
+                        <img src="{{ $images[1] }}" alt="Densidad 2">
                     @else
                         <span>Sin imagen 2</span>
                     @endif
