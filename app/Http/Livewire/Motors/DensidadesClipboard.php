@@ -6,96 +6,123 @@ use Livewire\Component;
 use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
+use Livewire\WithFileUploads;
+use App\Models\Motor;
 
 
 
 
 class DensidadesClipboard extends Component
 {
-    public $screenshot1 = null;
-    public $screenshot2 = null;
+    use WithFileUploads;
 
-    protected $listeners = ['screenshotPasted'];
+
+
+    public $image1; // TemporaryUploadedFile
+    public $image2; // TemporaryUploadedFile
+
+
+    public Motor $motor;
+
+    public function mount(Motor $motor)
+    {
+        $this->motor = $motor;
+    }
+
 
     public function screenshotPasted($index, $dataUrl)
     {
         if ($index == 1) {
-            $this->screenshot1 = $dataUrl;
+            $this->image1 = $dataUrl;
         } elseif ($index == 2) {
-            $this->screenshot2 = $dataUrl;
+            $this->image2 = $dataUrl;
         }
     }
-   public function savePdf(): void
-{
-    // 1️⃣ Recolectar capturas disponibles (base64)
-    $captures = collect([
-        $this->screenshot1,
-        $this->screenshot2,
-    ])->filter();
 
-    if ($captures->isEmpty()) {
-        $this->dispatchBrowserEvent('swal:alert', [
-            'title' => 'Sin capturas',
-            'text'  => 'Pega al menos una imagen antes de guardar.',
-            'icon'  => 'warning',
+    public function savePdf(): void
+    {
+        // Validación (ajusta tamaños si quieres)
+        $this->validate([
+            'image1' => 'nullable|image|max:5120', // 5MB
+            'image2' => 'nullable|image|max:5120',
         ]);
-        return;
-    }
 
-    // 2️⃣ Procesar imágenes y guardarlas como PNG temporales
-    $tempPaths   = [];
-    $publicPaths = [];
-
-    foreach ($captures as $capture) {
-        $img = Image::make($capture); // ← usando facade clásico
-
-        // Redimensionar si es necesario
-        if ($img->width() > 1200) {
-            $img->resize(1200, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
+        if (!$this->image1 && !$this->image2) {
+            $this->dispatchBrowserEvent('swal:alert', [
+                'title' => 'Sin capturas',
+                'text'  => 'Pega al menos una imagen antes de guardar.',
+                'icon'  => 'warning',
+            ]);
+            return;
         }
 
-        // Guardar imagen temporal
-        $fileName = 'densidad_' . uniqid() . '.png';
-        $temp     = 'temp/' . $fileName;
+        // Guardar imágenes temporalmente en public (para wkhtmltopdf)
+        $stored = [];
+        foreach (['image1', 'image2'] as $key) {
+            if ($this->{$key}) {
+                $path = $this->{$key}->store('temp/densidades', 'public');
+                $stored[] = [
+                    'relative' => $path,
+                    'absolute' => public_path('storage/' . $path), // path real en disco
+                ];
+            }
+        }
 
-        Storage::disk('public')->put($temp, (string) $img->encode('png'));
+        // Guardar PDF en el folder del motor (mismo patrón que tus Documentos)
+        $folderPath = '/uploads/' . "{$this->motor->year}-{$this->motor->os}" . '/Documentos';
+        Storage::disk('public')->makeDirectory($folderPath);
 
-        $tempPaths[]   = $temp;
-        $publicPaths[] = asset('storage/' . $temp);
-    }
+        $pdfName = 'densidades_' . "2M{$this->motor->year}-{$this->motor->os}" . '.pdf';
+        $pdfFullPath = $folderPath . '/' . $pdfName;
 
-    // 3️⃣ Generar el PDF con Snappy
-    $pdf = SnappyPdf::loadView('exports.densidades-pdf', [
-                'images' => $publicPaths,
-            ])
+        $pdf = SnappyPdf::loadView('pdfs.densidades-pdf', [
+            'motor'   => $this->motor,
+            'tecnico' => auth()->user()->name ?? '',
+            'images'  => collect($stored)->pluck('absolute')->values()->all(), // ABSOLUTAS
+        ])
             ->setPaper('a4')
+            ->setOption('enable-local-file-access', true)  // CLAVE
             ->setOption('margin-top', 10)
             ->setOption('margin-bottom', 10);
 
-    $pdfName = 'densidades_' . now()->format('Ymd_His') . '.pdf';
-    $pdfPath = 'densidades/' . $pdfName;
+        // 1) Guardar archivo PDF
+        Storage::disk('public')->put($pdfFullPath, $pdf->output());
 
-    Storage::disk('public')->put($pdfPath, $pdf->output());
+        // 2) Crear registro en documentos para que aparezca el card en "Documentos cargados"
+        //    (usa los mismos campos que usa tu subida normal)
+        $this->motor->documentos()->create([
+            'titulo'    => $pdfName,       // o 'Densidades' si prefieres
+            'documento' => $pdfFullPath,   // IMPORTANTE: relativo al disk public, sin 'storage/'
+            'id_user'   => auth()->id(),
+        ]);
 
-    // 4️⃣ Borrar imágenes temporales
-    foreach ($tempPaths as $temp) {
-        Storage::disk('public')->delete($temp);
+        // 3) Borrar temporales
+        foreach ($stored as $img) {
+            Storage::disk('public')->delete($img['relative']);
+        }
+
+        // 4) Reset
+        $this->reset(['image1', 'image2']);
+
+
+        // 5) Forzar refresh del padre (ShowMotor) para que se muestre el card sin recargar la página
+        $this->emitUp('refreshMotor');
+
+        // 6) Cerrar modal
+        $this->dispatchBrowserEvent('closeDensidadesModal');
+
+        // 6) Abrir el PDF recién creado
+        $this->dispatchBrowserEvent('pdfReady', asset('storage' . $pdfFullPath));
+
+        $this->dispatchBrowserEvent('swal:alert', [
+            'title' => 'PDF creado',
+            'text'  => 'El archivo se generó y se guardó en Documentos.',
+            'icon'  => 'success',
+        ]);
     }
 
-    // 5️⃣ Resetear y lanzar evento al frontend
-    $this->reset(['screenshot1', 'screenshot2']);
 
-    $this->dispatchBrowserEvent('pdfReady', asset('storage/' . $pdfPath));
 
-    $this->dispatchBrowserEvent('swal:alert', [
-        'title' => 'PDF creado',
-        'text'  => 'El archivo se generó correctamente.',
-        'icon'  => 'success',
-    ]);
-}
     public function render()
     {
         return view('livewire.motors.densidades-clipboard');

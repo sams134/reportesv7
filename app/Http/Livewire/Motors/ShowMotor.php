@@ -28,7 +28,8 @@ class ShowMotor extends Component
         'removeDoc',
         'render',
         'motorFinalizado' => 'render',
-        'removePhoto'
+        'removePhoto',
+        'refreshMotor' => 'refreshMotor',
     ];
 
     /** Validaciones */
@@ -171,5 +172,9 @@ class ShowMotor extends Component
 
         // Recargar motor para refrescar fotos
         $this->motor->load('fotos');
+    }
+    public function refreshMotor(): void
+    {
+        $this->motor->refresh();
     }
 }

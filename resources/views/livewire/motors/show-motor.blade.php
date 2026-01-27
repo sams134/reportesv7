@@ -181,6 +181,10 @@
                         <td>{{ $motor->phases }}</td>
                     </tr>
                     <tr>
+                        <td colspan="1">Recibido por:</td>
+                        <td colspan="5">{{ $motor->recibido }}</td>
+                    </tr>
+                    <tr>
                         <td colspan="2">Comentarios de Cliente</td>
                         <td colspan="4">{{ $motor->comentarios }}</td>
                     </tr>

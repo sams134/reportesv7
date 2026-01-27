@@ -4,16 +4,21 @@ namespace App\Http\Livewire\Pruebas;
 
 use App\Models\Motor;
 use App\Models\Temperatura;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Intervention\Image\Facades\Image as IMG;
 
 class Temperaturas extends Component
 {
+    use WithFileUploads;
     public $motor, $cliente;
     public $time = 0;
     public $timeFormatted = '00:00:00:00'; // Variable para el tiempo formateado
     public $temperatures = ['time' => [], 'carga' => [], 'opuesto' => [], 'estator' => []];
     public $estator_t, $carga_t, $opuesto_t;
     public $isRunning = false;
+    public $photo;
     protected $listeners = ['updateTime'];
 
 

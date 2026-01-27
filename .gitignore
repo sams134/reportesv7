@@ -15,3 +15,4 @@ yarn-error.log
 /config/snappy.php
 .DS_Store
 */.DS_Store
+backup-instructions.txt

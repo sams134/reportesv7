@@ -111,6 +111,45 @@
         </button>
     </div>
 
+    <div class="card mb-3">
+        <div class="card-title ms-3">Fotografías Termicas
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="card-title">Foto Termica de lado carga </h5>
+
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+
+                                    <img class="img-thumbnail"
+                                        src="{{ $photo ? $photo->temporaryUrl() : asset('img/default-avatar.png') }}"
+                                        alt="Foto Final" />
+
+
+                                    <button class="btn btn-falcon-primary me-1 mb-1 little-button" type="button"
+                                        onclick="document.getElementById('imagenBtn').click();">
+                                        <span><i class="fas fa-camera mx-1"></i> Cambiar Foto</span></a>
+                                    </button>
+                                    <input type="file" id="imagenBtn" wire:model="photo" accept="image/*"
+                                        style="display: none;">
+                                    @error('photo')
+                                        <div class="alert alert-danger my-1 py-1" role="alert">Es indispensable que
+                                            ingrese una foto del trabajo.</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ asset('vendors/chart/chart.min.js') }}"></script>
     <script>
         document.addEventListener('livewire:load', function() {

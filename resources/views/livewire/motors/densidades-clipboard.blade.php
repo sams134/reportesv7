@@ -66,9 +66,9 @@
                             <div class="col-md-6">
                                 <div class="clipboard-box text-center paste-zone" id="pasteZone1" data-index="1"
                                     contenteditable="true">
-                                    @if ($screenshot1)
+                                    @if ($image1)
                                         <div class="preview-wrapper">
-                                            <img src="{{ $screenshot1 }}" class="img-preview" />
+                                            <img src="{{ $image1->temporaryUrl() }}" class="img-preview" />
                                         </div>
                                     @else
                                         <i class="fas fa-paste fa-3x mb-2 text-muted"></i>
@@ -82,9 +82,9 @@
                             <div class="col-md-6">
                                 <div class="clipboard-box text-center paste-zone" id="pasteZone2" data-index="2"
                                     contenteditable="true">
-                                    @if ($screenshot2)
+                                    @if ($image2)
                                         <div class="preview-wrapper">
-                                            <img src="{{ $screenshot2 }}" class="img-preview" />
+                                            <img src="{{ $image2->temporaryUrl() }}" class="img-preview" />
                                         </div>
                                     @else
                                         <i class="fas fa-paste fa-3x mb-2 text-muted"></i>
@@ -108,35 +108,19 @@
         </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('livewire:load', function() {
+
+            // abrir modal
             const addCaptureCard = document.getElementById('addCapture');
             addCaptureCard.addEventListener('click', function() {
                 const modal = new bootstrap.Modal(document.getElementById('densidadesModal'));
                 modal.show();
+                // enfoca la primera zona para que ctrl+v funcione al instante
+                setTimeout(() => document.getElementById('pasteZone1')?.focus(), 150);
             });
 
-            document.querySelectorAll('.paste-zone').forEach(zone => {
-                zone.addEventListener('paste', function(e) {
-                    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-                    for (const item of items) {
-                        if (item.type.indexOf('image') !== -1) {
-                            const file = item.getAsFile();
-                            const reader = new FileReader();
-                            const index = zone.dataset.index;
-
-                            reader.onload = function(event) {
-                                Livewire.emit('screenshotPasted', index, event.target.result);
-                            };
-
-                            reader.readAsDataURL(file);
-                            e.preventDefault();
-                        }
-                    }
-                });
-            });
-            window.addEventListener('pdfReady', e => {
-                window.open(e.detail, '_blank');
-            });
+            // listeners globales
+            window.addEventListener('pdfReady', e => window.open(e.detail, '_blank'));
 
             window.addEventListener('swal:alert', e => {
                 Swal.fire({
@@ -146,6 +130,46 @@
                     confirmButtonText: 'Aceptar'
                 });
             });
+
+            function bindPasteZones() {
+                document.querySelectorAll('.paste-zone').forEach(zone => {
+                    if (zone.dataset.bound === "1") return;
+                    zone.dataset.bound = "1";
+
+                    zone.addEventListener('click', () => zone.focus());
+
+                    zone.addEventListener('paste', function(e) {
+                        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+
+                        for (const item of items) {
+                            if (item.type.includes('image')) {
+                                const file = item.getAsFile();
+                                const index = zone.dataset.index;
+
+                                if (index === "1") {
+                                    @this.upload('image1', file, () => {});
+                                } else {
+                                    @this.upload('image2', file, () => {});
+                                }
+
+                                e.preventDefault();
+                                return;
+                            }
+                        }
+                    });
+                });
+            }
+
+            bindPasteZones();
+            Livewire.hook('message.processed', () => bindPasteZones());
+        });
+        window.addEventListener('closeDensidadesModal', () => {
+            const modalEl = document.getElementById('densidadesModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+
+            if (modal) {
+                modal.hide();
+            }
         });
     </script>
 </div>

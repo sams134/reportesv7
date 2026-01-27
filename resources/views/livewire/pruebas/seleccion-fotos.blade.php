@@ -29,7 +29,7 @@
                                             {{-- al clic, alterna en BD --}} wire:click="toggleAddToReport({{ $foto->id }})"
                                             {{-- opcional: deshabilita mientras procesa --}} wire:loading.attr="disabled"
                                             wire:target="toggleAddToReport({{ $foto->id }})" />
-                                        <label class="form-check-label" for="addToReport-{{ $foto->id }}">
+                                        <label class="form-check-label" for="addToReport-{{ $foto->id }}" >
                                             Agregar a Informe
                                         </label>
                                     </div>

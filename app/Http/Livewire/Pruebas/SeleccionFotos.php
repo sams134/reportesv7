@@ -38,6 +38,7 @@ class SeleccionFotos extends Component
     public function toggleAddToReport($fotoId)
     {
         $foto = Foto::findOrFail($fotoId);
+        
 
         // (opcional) Autoriza que la foto pertenezca a este motor
         if ($foto->id_motor !== $this->motor->id_motor) {

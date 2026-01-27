@@ -668,8 +668,17 @@
                             </tr>
                         </table>
                         <p style="text-align: left;font-size:20px;font-weight:bold;margin-left:8px;margin-top:5px">NOTAS COMPLEMENTARIAS</p>
-
+                        <p style="text-align: left; margin-left:20px;margin-right:20px" >  
+                            <b>Recomendaci&oacute;n Inicial: </b> {{ $rodamiento['rodInicial']['recomendacion'] }} <br>
+                             <b>Recomendaci&oacute;n Final: </b> {{ $rodamiento['rod']['recomendacion'] }} <br>
+                           
+                        </p>
                     </div>
+                     <p style="text-align:left;font-size:10px;text-weight:100;margin-top:90px; margin-left:10px; position: absolute; bottom:40px; width:95%">
+                            - Las tolerancias recomendadas están basadas en la norma ISO 286 y EASA AR-100. <br>
+                            - Las medidas fueron tomadas con un micrómetro de interiores calibrado y certificado. <br>
+                            - Todas las medidas están expresadas en milímetros (mm) y micrómetros (μm). <br>
+                            </p>
                     <div style="position: absolute; width:100%;background:#000044;height:25px;bottom:0px"></div>
                 </div>
             @endforeach
@@ -851,7 +860,7 @@
                                         <tr>
                                             <td colspan="3"
                                                 style="background: #000033;color:#ddd;font-size:13px;font-weight:bold;padding:5px">
-                                                MEDIDAS EXTERNAS DEL COJINETE @ 25.3 °C </td>
+                                                MEDIDAS INTERNAS DEL COJINETE @ 25.3 °C </td>
                                         </tr>
                                         <tr>
                                             <td style="background: #333;color:#ddd">A @ 0</td>
@@ -1057,7 +1066,7 @@
                 <table style="width:100%">
                     <tr>
                         <td width="5%"></td>
-                        <td style="border:2px solid #333;padding:5px;background:#000033;color:#ddd">Comentario</td>
+                        <td style="border:2px solid #333;padding:5px;background:#000033;color:#ddd">{{ $fotos[$i]->titulo }}</td>
                         <td width="5%"></td>
                     </tr>
                 </table>
@@ -1067,7 +1076,7 @@
                 <table style="width:100%">
                     <tr>
                         <td width="5%"></td>
-                        <td style="border:2px solid #333;padding:5px;background:#000033;color:#ddd">Comentario</td>
+                        <td style="border:2px solid #333;padding:5px;background:#000033;color:#ddd">{{ $fotos[$i]->titulo }}</td>
                         <td width="5%"></td>
                     </tr>
                 </table>

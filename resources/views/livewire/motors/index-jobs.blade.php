@@ -23,6 +23,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {{ $jobs->links() }}
                     @foreach ($jobs->sortByDesc('id') as $job)
                         <tr>
                             <td style="width:30px"> <input type="checkbox" class="form-check-input"
