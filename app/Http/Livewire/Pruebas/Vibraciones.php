@@ -1,13 +1,13 @@
 <?php
 
 namespace App\Http\Livewire\Pruebas;
-
 use App\Models\Motor;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-class Itig extends Component
+
+class Vibraciones extends Component
 {
     use WithFileUploads;
 
@@ -22,20 +22,20 @@ class Itig extends Component
     public function updatedDoc()
     {
         $this->validate([
-            'doc' => 'required|file|mimes:pdf|max:20480', // 20MB
+            'doc' => 'required|file|mimes:pdf|max:20480',
         ]);
 
         $folderPath = '/uploads/' . "{$this->motor->year}-{$this->motor->os}" . '/Documentos';
         Storage::disk('public')->makeDirectory($folderPath);
 
-        $name = 'surge_' . now()->format('Ymd_His') . '.pdf';
+        $name = 'vibraciones_' . now()->format('Ymd_His') . '.pdf';
         $path = $this->doc->storeAs($folderPath, $name, 'public');
 
         $this->motor->documentos()->create([
             'titulo'    => $name,
             'documento' => '/' . ltrim($path, '/'),
             'id_user'   => auth()->id(),
-            'seccion'   => 'surge',
+            'seccion'   => 'vibraciones',
         ]);
 
         $this->reset('doc');
@@ -46,12 +46,11 @@ class Itig extends Component
     {
         $doc = $this->motor->documentos()
             ->where('id', $docId)
-            ->where('seccion', 'surge')
+            ->where('seccion', 'vibraciones')
             ->firstOrFail();
 
-        // borrar archivo físico
         if ($doc->documento) {
-            $relative = ltrim($doc->documento, '/'); // Storage disk 'public' no quiere leading /
+            $relative = ltrim($doc->documento, '/');
             Storage::disk('public')->delete($relative);
         }
 
@@ -60,18 +59,18 @@ class Itig extends Component
         $this->emitUp('refreshMotor');
         $this->dispatchBrowserEvent('swal:alert', [
             'title' => 'Eliminado',
-            'text'  => 'El PDF fue eliminado.',
+            'text'  => 'El PDF de vibraciones fue eliminado.',
             'icon'  => 'success',
         ]);
     }
 
     public function render()
     {
-        $docsSurge = $this->motor->documentos()
-            ->where('seccion', 'surge')
+        $docsVibraciones = $this->motor->documentos()
+            ->where('seccion', 'vibraciones')
             ->latest()
             ->get();
 
-        return view('livewire.pruebas.itig', compact('docsSurge'));
+        return view('livewire.pruebas.vibraciones', compact('docsVibraciones'));
     }
 }

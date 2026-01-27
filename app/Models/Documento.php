@@ -26,6 +26,7 @@ class Documento extends Model
         'descripcion',
         'id_motor',
         'id_user',
+        'seccion'
     ];
 
     // Relación con el modelo User
