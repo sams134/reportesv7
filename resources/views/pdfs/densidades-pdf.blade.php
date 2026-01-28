@@ -164,7 +164,7 @@
                 <td style="font-weight: bold;width:100px">OS:</td>
                 <td colspan="2">{{ $motor->fullos }}</td>
                 <td style="font-weight: bold;color:#550000" colspan="2">
-                    {{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : ($motor->tipoequipo->name? $motor->tipoequipo->name : 'N/A') }}
+                    {{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : '' }}
                 </td>
             </tr>
             <tr>
