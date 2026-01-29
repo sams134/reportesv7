@@ -33,27 +33,34 @@ class Graficas extends Controller
 
     public function saveTemperatureChart(Request $request)
     {
-
         $request->validate([
-            'image' => 'required',
-            'motor_id' => 'required',
+            'image'    => 'required|string',
+            'motor_id' => 'required|exists:motors,id_motor',
         ]);
-        $motor = Motor::find($request->motor_id);
 
-        // Decodificar la imagen base64
-        $imageData = $request->image;
-        $imageData = str_replace('data:image/png;base64,', '', $imageData);
-        $imageData = base64_decode($imageData);
+        $motor = Motor::findOrFail($request->motor_id);
 
-        // Guardar la imagen como BLOB en la base de datos
+        // Quitar prefijo data URI (png/jpeg/etc.)
+        $base64 = $request->input('image');
+        $base64 = preg_replace('#^data:image/\w+;base64,#i', '', $base64);
+
+        $imageData = base64_decode($base64);
+        if ($imageData === false) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Error al decodificar la imagen Base64.'
+            ], 422);
+        }
+
         $motor->temperaturas = $imageData;
         $motor->save();
 
-     
         return response()->json([
-            'message' => utf8_encode('Imagen guardada con exito.')
+            'ok' => true,
+            'message' => 'Imagen guardada con éxito.'
         ]);
     }
+
     public function saveNoLoadChart(Request $request)
     {
         // 1) Validamos que 'image' viene como string
@@ -89,6 +96,20 @@ class Graficas extends Controller
 
         return response()->json([
             'message' => 'Imagen No Load Test guardada con éxito.'
+        ]);
+    }
+
+    public function getTemperatureChart($motor_id)
+    {
+        $motor = Motor::findOrFail($motor_id);
+
+        if (!$motor->temperaturas) {
+            return response('', 404);
+        }
+
+        return response($motor->temperaturas, 200, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
         ]);
     }
 }

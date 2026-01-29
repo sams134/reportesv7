@@ -9,14 +9,14 @@ use Livewire\Component;
 class Amperajes extends Component
 {
     public $tested = false;
-    public $data_origin, $voltaje_placa, $amperaje_placa=1, $voltaje_1, $amperaje_1, $voltaje_2, $amperaje_2, $voltaje_3, $amperaje_3;
+    public $data_origin, $voltaje_placa, $amperaje_placa = 1, $voltaje_1, $amperaje_1, $voltaje_2, $amperaje_2, $voltaje_3, $amperaje_3;
     public $conexion_placa, $conexion_realizada;
-    public $circuitos_placa, $circuitos_prueba, $rpm_placa, $rpm_prueba, $hz_placa, $hz_prueba,$polos;
+    public $circuitos_placa, $circuitos_prueba, $rpm_placa, $rpm_prueba, $hz_placa, $hz_prueba, $polos;
     public $noLoadTest;
     public $motor;
-    public $isVoltageBalanced = false,$pt=1,$usePT=false,$ct=1,$force_ct=true,$force_pt=true,$fct=1,$fpt=1,$limit_min,$limit_max;
-    public $promA,$promV,$inbalance=2,$desbalanceV,$desbalanceA;
-    public $v1,$v2,$v3,$a1,$a2,$a3,$c1,$c2,$c3,$con,$circ,$noLoadAmps,$recorded=false;
+    public $isVoltageBalanced = false, $pt = 1, $usePT = false, $ct = 1, $force_ct = true, $force_pt = true, $fct = 1, $fpt = 1, $limit_min, $limit_max;
+    public $promA, $promV, $inbalance = 2, $desbalanceV, $desbalanceA;
+    public $v1, $v2, $v3, $a1, $a2, $a3, $c1, $c2, $c3, $con, $circ, $noLoadAmps, $recorded = false;
 
     protected $listeners = [
         'deleteTestNameplate' => 'deleteTestNameplate',
@@ -37,7 +37,7 @@ class Amperajes extends Component
             $this->rpm_placa = $this->noLoadTest->rpm_placa;
             $this->hz_placa = $this->noLoadTest->hz_placa;
             $this->voltaje_1 = $this->noLoadTest->volts_prueba_A;
-            
+
             $this->voltaje_2 = $this->noLoadTest->volts_prueba_B;
             $this->voltaje_3 = $this->noLoadTest->volts_prueba_C;
             $this->amperaje_1 = $this->noLoadTest->amps_prueba_A;
@@ -47,27 +47,25 @@ class Amperajes extends Component
             $this->circuitos_prueba = $this->noLoadTest->circuitos_prueba;
             $this->rpm_prueba = $this->noLoadTest->rpm_prueba;
             $this->hz_prueba = $this->noLoadTest->hz_prueba;
-            $this->isVoltageBalanced = ($this->noLoadTest->useBalanced==0)?false:true;
-            $this->fct=$this->ct = $this->noLoadTest->ct;
-            $this->fpt=$this->pt = $this->noLoadTest->pt;
-            $this->recorded = $this->noLoadTest->recorded==1?true:false;
+            $this->isVoltageBalanced = ($this->noLoadTest->useBalanced == 0) ? false : true;
+            $this->fct = $this->ct = $this->noLoadTest->ct;
+            $this->fpt = $this->pt = $this->noLoadTest->pt;
+            $this->recorded = $this->noLoadTest->recorded == 1 ? true : false;
             if ($this->fct != 1 || $this->fpt != 1)
-              $this->usePT = true;
+                $this->usePT = true;
             else
-              $this->usePT = false;
+                $this->usePT = false;
             if ($this->voltaje_1 != null) {
                 $this->tested = true;
-               
             }
             $this->pt = $this->ct = 1;
         }
-       
     }
     public function render()
     {
-        
-        if ($this->tested){
-            
+
+        if ($this->tested) {
+
             $this->circ = $this->circuitos_prueba;
             $this->con = $this->conexion_realizada;
             $this->promA = ($this->amperaje_1 + $this->amperaje_2 + $this->amperaje_3) / 3;
@@ -76,29 +74,29 @@ class Amperajes extends Component
             $this->desbalanceV = ($this->desbalanceV / $this->promV) * 100;
             $this->desbalanceA = max($this->amperaje_1, $this->amperaje_2, $this->amperaje_3) - min($this->amperaje_1, $this->amperaje_2, $this->amperaje_3);
             $this->desbalanceA = ($this->desbalanceA / $this->promA) * 100;
-            $this->v1 = $this->isVoltageBalanced?number_format($this->promV*(1-$this->inbalance/100), 1): number_format($this->voltaje_1, 1);
-            $this->v2 = $this->isVoltageBalanced?number_format($this->promV, 1): number_format($this->voltaje_2, 1);
-            $this->v3 = $this->isVoltageBalanced?number_format($this->promV*(1+$this->inbalance/100), 1): number_format($this->voltaje_3, 1);
-            $this->a1 = $this->isVoltageBalanced?number_format($this->promA*(1-$this->inbalance/100), 1): number_format($this->amperaje_1, 1);
-            $this->a2 = $this->isVoltageBalanced?number_format($this->promA, 1): number_format($this->amperaje_2, 1);
-            $this->a3 = $this->isVoltageBalanced?number_format($this->promA*(1+$this->inbalance/100), 1): number_format($this->amperaje_3, 1);
-            $this->c1 = $this->isVoltageBalanced?number_format(($this->promA*(1-$this->inbalance*2.1/100))/$this->amperaje_placa*100, 2): number_format($this->amperaje_1/$this->amperaje_placa*100, 2);
-            $this->c2 = $this->isVoltageBalanced?number_format(($this->promA)/$this->amperaje_placa*100, 2): number_format($this->amperaje_2/$this->amperaje_placa*100, 2);
-            $this->c3 = $this->isVoltageBalanced?number_format(($this->promA*(1+2.1*$this->inbalance/100))/$this->amperaje_placa*100, 2): number_format($this->amperaje_3/$this->amperaje_placa*100, 2);
-            for ($i = 2; $i < 36; $i+=2) {
-                $synchronusRpm = 2*($this->hz_placa * 60) / $i;
+            $this->v1 = $this->isVoltageBalanced ? number_format($this->promV * (1 - $this->inbalance / 100), 1) : number_format($this->voltaje_1, 1);
+            $this->v2 = $this->isVoltageBalanced ? number_format($this->promV, 1) : number_format($this->voltaje_2, 1);
+            $this->v3 = $this->isVoltageBalanced ? number_format($this->promV * (1 + $this->inbalance / 100), 1) : number_format($this->voltaje_3, 1);
+            $this->a1 = $this->isVoltageBalanced ? number_format($this->promA * (1 - $this->inbalance / 100), 1) : number_format($this->amperaje_1, 1);
+            $this->a2 = $this->isVoltageBalanced ? number_format($this->promA, 1) : number_format($this->amperaje_2, 1);
+            $this->a3 = $this->isVoltageBalanced ? number_format($this->promA * (1 + $this->inbalance / 100), 1) : number_format($this->amperaje_3, 1);
+            $this->c1 = $this->isVoltageBalanced ? number_format(($this->promA * (1 - $this->inbalance * 2.1 / 100)) / $this->amperaje_placa * 100, 2) : number_format($this->amperaje_1 / $this->amperaje_placa * 100, 2);
+            $this->c2 = $this->isVoltageBalanced ? number_format(($this->promA) / $this->amperaje_placa * 100, 2) : number_format($this->amperaje_2 / $this->amperaje_placa * 100, 2);
+            $this->c3 = $this->isVoltageBalanced ? number_format(($this->promA * (1 + 2.1 * $this->inbalance / 100)) / $this->amperaje_placa * 100, 2) : number_format($this->amperaje_3 / $this->amperaje_placa * 100, 2);
+            for ($i = 2; $i < 36; $i += 2) {
+                $synchronusRpm = 2 * ($this->hz_placa * 60) / $i;
                 if ($this->rpm_placa > $synchronusRpm) {
-                    $this->polos = $i-2;
+                    $this->polos = $i - 2;
                     break;
                 }
             }
             $this->limit_max = NoLoadAmp::where('poles', $this->polos)->value('maxA');
             $this->limit_min = NoLoadAmp::where('poles', $this->polos)->value('minA');
-            
-            $this->emit('testUpdated',number_format($this->promA/$this->amperaje_placa*100*$this->fct*$this->fpt, 1),$this->limit_min,$this->limit_max);
+
+            //$this->emit('testUpdated', number_format($this->promA / $this->amperaje_placa * 100 * $this->fct * $this->fpt, 1), $this->limit_min, $this->limit_max);
         }
-        
-       
+
+
         return view('livewire.pruebas.amperajes');
     }
 
@@ -124,11 +122,19 @@ class Amperajes extends Component
         ];
         if ($this->noLoadTest) {
             $this->noLoadTest->update($data);
-            $this->emit('noLoadTestSaved', 4);
+            //$this->emit('noLoadTestSaved', 4);
         } else {
             $this->motor->noLoadTest()->create($data);
-            $this->emit('noLoadTestSaved', 3);
+            //$this->emit('noLoadTestSaved', 3);
         }
+        $this->motor = Motor::find($this->motor->id_motor);
+        $this->noLoadTest = $this->motor->noLoadTest;
+
+        $this->dispatchBrowserEvent('swal:alert', [
+            'title' => 'Datos de placa guardados',
+            'text'  => 'Los valores de placa se registraron correctamente.',
+            'icon'  => 'success',
+        ]);
     }
 
     public function saveTest()
@@ -177,8 +183,43 @@ class Amperajes extends Component
         } else {
             $this->noLoadTest->update($data);
         }
-        $this->emit('noLoadTestSaved', 2);
+        // refrescar para asegurar valores
+        $this->motor = Motor::find($this->motor->id_motor);
+        $this->noLoadTest = $this->motor->noLoadTest;
+
         $this->tested = true;
+        // calcular valores
+        $promA = ($this->amperaje_1 + $this->amperaje_2 + $this->amperaje_3) / 3;
+
+        // calcular polos (mismo loop que render)
+        $polos = null;
+        for ($i = 2; $i < 36; $i += 2) {
+            $synchronusRpm = 2 * ($this->hz_placa * 60) / $i;
+            if ($this->rpm_placa > $synchronusRpm) {
+                $polos = $i - 2;
+                break;
+            }
+        }
+        $this->polos = $polos;
+
+        // límites
+        $limitMax = NoLoadAmp::where('poles', $polos)->value('maxA') ?? 90;
+        $limitMin = NoLoadAmp::where('poles', $polos)->value('minA') ?? 10;
+
+        $valor = number_format($promA / $this->amperaje_placa * 100 * $this->fct * $this->fpt, 1);
+
+        // ✅ ahora sí, dibujar
+        $this->dispatchBrowserEvent('amperajes:drawGauge', [
+            'valor' => $valor,
+            'min' => $limitMin,
+            'max' => $limitMax,
+        ]);
+
+
+
+        $this->emit('noLoadTestSaved', 2);
+
+      
     }
     public function deleteTest()
     {
@@ -195,7 +236,6 @@ class Amperajes extends Component
         ];
         if ($this->noLoadTest) {
             $this->noLoadTest->update($data);
-       
         }
         $this->tested = false;
         $this->mount($this->motor);
@@ -206,20 +246,33 @@ class Amperajes extends Component
         $this->motor->noLoadTest()->delete();
         $this->tested = false;
         $this->reset([
-            'data_origin', 'voltaje_placa', 'amperaje_placa', 'conexion_placa', 'circuitos_placa', 'rpm_placa', 'hz_placa',
-            'voltaje_1', 'amperaje_1', 'voltaje_2', 'amperaje_2', 'voltaje_3', 'amperaje_3',
-            'conexion_realizada', 'circuitos_prueba', 'rpm_prueba', 'hz_prueba'
+            'data_origin',
+            'voltaje_placa',
+            'amperaje_placa',
+            'conexion_placa',
+            'circuitos_placa',
+            'rpm_placa',
+            'hz_placa',
+            'voltaje_1',
+            'amperaje_1',
+            'voltaje_2',
+            'amperaje_2',
+            'voltaje_3',
+            'amperaje_3',
+            'conexion_realizada',
+            'circuitos_prueba',
+            'rpm_prueba',
+            'hz_prueba'
         ]);
         $this->noLoadTest = null;
         $this->motor = Motor::find($this->motor->id_motor);
         $this->mount($this->motor);
-        
     }
     public function balanceData()
     {
         $this->isVoltageBalanced = !$this->isVoltageBalanced;
         $this->noLoadTest->update([
-            'useBalanced' => $this->isVoltageBalanced?1:0
+            'useBalanced' => $this->isVoltageBalanced ? 1 : 0
         ]);
     }
     public function usePTFunc()
@@ -228,8 +281,7 @@ class Amperajes extends Component
         if ((abs($this->voltaje_placa - $this->promV) > 0.2 * $this->voltaje_placa) && ($this->usePT)) {
             $this->pt = round($this->voltaje_placa / $this->promV, 1);
             $this->ct = $this->pt;
-            
-        } 
+        }
         if (($this->conexion_realizada != $this->conexion_placa) && ($this->usePT)) {
             if ($this->conexion_realizada == 1) {
                 $this->ct /= 1.732;
@@ -242,74 +294,67 @@ class Amperajes extends Component
             $this->ct *= $this->circuitos_placa / $this->circuitos_prueba;
             $this->circ = $this->circuitos_placa;
         }
-        $this->ct = round($this->ct,2);
-        $this->pt = round($this->pt,2);
+        $this->ct = round($this->ct, 2);
+        $this->pt = round($this->pt, 2);
 
         $this->fct = $this->ct;
         $this->fpt = $this->pt;
 
-        if (!$this->usePT){
+        if (!$this->usePT) {
             $this->fct = $this->fpt = 1;
             $this->noLoadTest->update([
                 'ct' => 1,
                 'pt' => 1
             ]);
-        }else{
+        } else {
             $this->noLoadTest->update([
                 'ct' => $this->fct,
                 'pt' => $this->fpt
             ]);
         }
-
     }
     public function change_forcePT()
     {
         $this->force_pt = !$this->force_pt;
         if (!$this->force_pt)
-           $this->fpt = $this->pt;
-        
+            $this->fpt = $this->pt;
     }
     public function change_forceCT()
     {
         $this->force_ct = !$this->force_ct;
         if (!$this->force_ct)
-           $this->fct = $this->ct;
-        
+            $this->fct = $this->ct;
     }
     public function updatedFct($value)
     {
-       $this->noLoadTest->update([
+        $this->noLoadTest->update([
             'ct' => $this->fct
         ]);
     }
     public function updatedFpt($value)
     {
-       $this->noLoadTest->update([
+        $this->noLoadTest->update([
             'pt' => $this->fpt
         ]);
     }
     public function exportResults()
     {
-   
+
         if ($this->motor->fin == null || Auth()->user()->userType == 1) {
-            
+
             $this->noLoadTest->update([
                 'recorded' => 1,
                 'finished' => now(),
                 'id_user' => auth()->user()->id,
             ]);
             $this->recorded = true;
-            $this->emit ('testExported');
-        }
-        elseif($this->motor->fin != null && $this->recorded == true && Auth()->user()->userType == 1){
+            $this->emit('testExported');
+        } elseif ($this->motor->fin != null && $this->recorded == true && Auth()->user()->userType == 1) {
             $this->noLoadTest->update([
                 'recorded' => 1,
             ]);
             $this->recorded = true;
-            $this->emit ('testExported');
+            $this->emit('testExported');
         }
-        
     }
-    
-
 }

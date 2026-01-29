@@ -125,6 +125,8 @@ Route::middleware([
     });
     Route::POST('/api/save-temperature-chart', [Graficas::class, 'saveTemperatureChart']);
     Route::POST('/api/save-no-load-chart', [Graficas::class, 'saveNoLoadChart']);
+    Route::get('/api/temperature-chart/{motor_id}', [Graficas::class, 'getTemperatureChart']);
+
     
    
 });

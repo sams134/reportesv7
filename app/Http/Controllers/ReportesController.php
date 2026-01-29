@@ -15,14 +15,29 @@ class ReportesController extends Controller
     //
     protected $client;
     public function __construct() {}
+
+
     public function generateReport(Motor $motor)
     {
+        $tmpTempChart = null;
+
+        if (!empty($motor->temperaturas)) {
+            $tmpName = 'temp_chart_' . $motor->id_motor . '_' . time() . '.png';
+            $tmpRel  = 'temp/' . $tmpName;
+
+            Storage::disk('public')->makeDirectory('temp');
+            Storage::disk('public')->put($tmpRel, $motor->temperaturas);
+
+            // Esto da una ruta real en disco: /var/www/.../public/storage/temp/xxx.png
+            $tmpTempChart = public_path('storage/' . $tmpRel);
+        }
         $user = auth()->user();
 
         $html = view('pdfs.reportePdf')->with([
             'motor' => $motor,
             'tecnico' => $user->name,
             'foto_final' => $motor->fotos->where('type', 100)->last(),
+            'tmpTempChart' => $tmpTempChart,
         ])->render();
 
         $pdf = PDF::loadHTML($html)

@@ -8,11 +8,32 @@
             <div class="d-flex text-center justify-content-center mb-3">
                 <button class="btn btn-success ms-3 mb-1 me-3 px-8" type="button" id="counter">Iniciar</button>
                 <button class="btn btn-primary ms-3 mb-1 me-3 px-8" type="button" id="restart">Reiniciar</button>
+                <button class="btn btn-secondary ms-3 mb-1 me-3 px-8" type="button" wire:click="toggleManualMode">
+                    Ingreso manual
+                </button>
             </div>
 
         </div>
         <div class="card-body">
-            <div class="row {{ !$isRunning ? 'd-none' : '' }}" id="register_temp_form">
+            <div class="row {{ !$isRunning && !$manualMode ? 'd-none' : '' }}" id="register_temp_form">
+                @if ($manualMode)
+                    <div class="row">
+                        <div class="col-4 px-1">
+                            <label class="form-label">Segundos</label>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">s</span>
+                                <input class="form-control" type="number" min="0"
+                                    placeholder="Ej: 60, 900, 1832" wire:model="manual_seconds" />
+                            </div>
+                            @error('manual_seconds')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+
+                    </div>
+                @endif
+
                 <div class="col-4 px-1">
                     <label class="form-label" for="exampleFormControlInput1">Temp. Carga</label>
                     <div class="input-group mb-3">
@@ -47,10 +68,17 @@
                     @enderror
                 </div>
                 <div class="col-11">
-                    <button class="btn btn-falcon-primary ms-3 mb-1 me-3 w-100" type="button"
-                        wire:click="registerTemp()">Registrar
-                        Temperatura
-                    </button>
+                    @if (!$manualMode)
+                        <button class="btn btn-falcon-primary ms-3 mb-1 me-3 w-100" type="button"
+                            wire:click="registerTemp()">Registrar
+                            Temperatura
+                        </button>
+                    @else
+                        <button class="btn btn-falcon-primary ms-3 mb-1 me-3 w-100" type="button"
+                            wire:click="registerTempManual">
+                            Registrar Temperatura (Manual)
+                        </button>
+                    @endif
                 </div>
             </div>
             <div class="row {{ $motor->temps->count() > 0 ? '' : 'd-none' }}">
@@ -78,9 +106,9 @@
                                 @foreach ($motor->temps as $key => $temp)
                                     <tr class="btn-reveal-trigger">
                                         <td>{{ $temp->time }}</td>
-                                        <td>{{ $temp->carga }}</td>
-                                        <td>{{ $temp->opuesto }}</td>
-                                        <td>{{ $temp->estator }}</td>
+                                        <td>{{ $temp->carga }} &deg;C</td>
+                                        <td>{{ $temp->opuesto }} &deg;C</td>
+                                        <td>{{ $temp->estator }} &deg;C</td>
                                         <td class="text-end">
                                             <button class="btn btn-danger me-1 mb-1" type="button"
                                                 onclick="deleteTemp({{ $temp->id }})">Borrar
@@ -109,45 +137,156 @@
         </div>
         <button class="btn btn-falcon-primary me-1 mb-1" type="button" id="save">Guardar Grafica
         </button>
+        <div id="chartSaveStatus" class="mt-2 text-muted" style="font-size:12px;"></div>
+
+        <div id="chartPreviewWrap" class="mt-2 d-none" style="max-width:520px;">
+            <div class="text-muted" style="font-size:12px; margin-bottom:6px;">Vista previa (última guardada)</div>
+            <img id="chartPreviewImg" src="" style="width:100%; border:1px solid #ddd; border-radius:6px;">
+        </div>
     </div>
 
     <div class="card mb-3">
-        <div class="card-title ms-3">Fotografías Termicas
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-12 col-md-4">
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h5 class="card-title">Foto Termica de lado carga </h5>
+        <x-form-card title="Termografía (pegar desde clipboard)">
 
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
+            <style>
+                .clipboard-box {
+                    border: 2px dashed #6c757d;
+                    padding: 10px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    background-color: #f8f9fa;
+                    height: 260px;
+                    /* un poco más alto */
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                }
 
-                                    <img class="img-thumbnail"
-                                        src="{{ $photo ? $photo->temporaryUrl() : asset('img/default-avatar.png') }}"
-                                        alt="Foto Final" />
+                .thermo-footer {
+                    margin-top: 6px;
+                    text-align: center;
+                }
 
+                .preview-wrapper {
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    overflow: hidden;
+                }
 
-                                    <button class="btn btn-falcon-primary me-1 mb-1 little-button" type="button"
-                                        onclick="document.getElementById('imagenBtn').click();">
-                                        <span><i class="fas fa-camera mx-1"></i> Cambiar Foto</span></a>
-                                    </button>
-                                    <input type="file" id="imagenBtn" wire:model="photo" accept="image/*"
-                                        style="display: none;">
-                                    @error('photo')
-                                        <div class="alert alert-danger my-1 py-1" role="alert">Es indispensable que
-                                            ingrese una foto del trabajo.</div>
-                                    @enderror
+                .img-preview {
+                    max-width: 100%;
+                    max-height: 100%;
+                    object-fit: contain;
+                    border-radius: 6px;
+                }
+            </style>
+
+            @php
+                $slots = [
+                    1 => ['type' => 71, 'label' => 'Termografía 1', 'saved' => $thermo71, 'uploadProp' => 'thermo1'],
+                    2 => ['type' => 72, 'label' => 'Termografía 2', 'saved' => $thermo72, 'uploadProp' => 'thermo2'],
+                    3 => ['type' => 73, 'label' => 'Termografía 3', 'saved' => $thermo73, 'uploadProp' => 'thermo3'],
+                ];
+            @endphp
+
+            <div class="row g-3">
+                @foreach ($slots as $i => $s)
+                    <div class="col-md-4">
+                        <div class="clipboard-box text-center paste-zone-thermo" data-index="{{ $i }}"
+                            contenteditable="true">
+
+                            @if ($s['saved'])
+                                <div class="preview-wrapper">
+                                    <img src="{{ asset('storage' . $s['saved']->foto) }}" class="img-preview" />
                                 </div>
-                            </div>
+
+                                <div class="thermo-footer">
+                                    <button class="btn btn-sm btn-outline-danger px-3" type="button"
+                                        wire:click="deleteThermoByType({{ $s['type'] }})">
+                                        <i class="fas fa-trash-alt me-1"></i> Eliminar
+                                    </button>
+                                </div>
+                            @else
+                                @php $prop = $s['uploadProp']; @endphp
+
+                                @if ($$prop)
+                                    <div class="preview-wrapper">
+                                        <img src="{{ $$prop->temporaryUrl() }}" class="img-preview" />
+                                    </div>
+                                @else
+                                    <i class="fas fa-paste fa-2x mb-2 text-muted"></i>
+                                    <p class="mb-0"><strong>{{ $s['label'] }}</strong></p>
+                                    <small class="text-muted">Clic aquí y Ctrl + V</small>
+                                @endif
+                            @endif
+
                         </div>
                     </div>
+                @endforeach
+            </div>
 
 
+            <div class="mt-3 d-flex gap-2">
+                <button class="btn btn-primary" type="button" wire:click="saveThermography">
+                    <i class="fas fa-save"></i> Guardar imágenes
+                </button>
+            </div>
+
+            <hr class="my-3">
+
+            <div class="card mb-3">
+                <div class="card-body">
+                    <label class="form-label"><strong>Comentario (Temperaturas)</strong></label>
+                    <textarea class="form-control" rows="3"
+                        placeholder="Ej: La temperatura incrementó de forma estable, con aumento notable después de 15 min..."
+                        wire:model.defer="temp_comment"></textarea>
+
+                    <div class="mt-2">
+                        <button class="btn btn-secondary" type="button" wire:click="saveTempComment">
+                            Guardar comentario
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <script>
+                document.addEventListener('livewire:load', function() {
+                    function bindThermoZones() {
+                        document.querySelectorAll('.paste-zone-thermo').forEach(zone => {
+                            if (zone.dataset.bound === "1") return;
+                            zone.dataset.bound = "1";
+
+                            zone.addEventListener('click', () => zone.focus());
+
+                            zone.addEventListener('paste', function(e) {
+                                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+
+                                for (const item of items) {
+                                    if (item.type.includes('image')) {
+                                        const file = item.getAsFile();
+                                        const idx = zone.dataset.index;
+
+                                        if (idx === "1") @this.upload('thermo1', file, () => {});
+                                        if (idx === "2") @this.upload('thermo2', file, () => {});
+                                        if (idx === "3") @this.upload('thermo3', file, () => {});
+
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                }
+                            });
+                        });
+                    }
+
+                    bindThermoZones();
+                    Livewire.hook('message.processed', () => bindThermoZones());
+                });
+            </script>
+
+        </x-form-card>
     </div>
 
     <script src="{{ asset('vendors/chart/chart.min.js') }}"></script>
@@ -217,49 +356,86 @@
                                 datasets: [{
                                         type: 'line',
                                         label: 'Carga',
-                                        borderColor: '#007bff',
+                                        borderColor: '#0070C0',
                                         borderWidth: 2,
                                         fill: false,
                                         data: data.carga,
-                                        tension: 0.3
+                                        tension: 0.2
                                     },
                                     {
                                         type: 'line',
                                         label: 'Opuesto',
-                                        borderColor: '#dc3545',
+                                        borderColor: '#C00000',
                                         borderWidth: 2,
                                         fill: false,
                                         data: data.opuesto,
-                                        tension: 0.3
+                                        tension: 0.2
                                     },
                                     {
                                         type: 'line',
                                         label: 'Estator',
-                                        borderColor: '#000000',
+                                        borderColor: '#4B4B4B',
                                         borderWidth: 2,
                                         fill: false,
                                         data: data.estator,
-                                        tension: 0.3
-                                    }
+                                        tension: 0.2
+                                    },
                                 ]
                             },
                             options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
                                 plugins: {
-
+                                    title: {
+                                        display: true,
+                                        text: 'Registro de Temperaturas en operación',
+                                        font: {
+                                            size: 20,
+                                            weight: 'bold'
+                                        }
+                                    },
+                                    legend: {
+                                        display: true,
+                                        position: 'top'
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                const label = context.dataset.label || '';
+                                                const value = context.parsed.y;
+                                                return `${label}: ${value} °C`;
+                                            }
+                                        }
+                                    }
                                 },
                                 scales: {
                                     x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Tiempo',
+
+                                        },
                                         grid: {
                                             color: '#ccc'
                                         }
                                     },
                                     y: {
+                                        title: {
+                                            display: true,
+                                            text: 'Temperatura (°C)'
+                                        },
+                                        ticks: {
+                                            callback: function(value) {
+                                                return value + ' °C';
+                                            }
+                                        },
                                         grid: {
                                             color: '#ccc'
                                         }
                                     }
                                 }
                             }
+
                         };
                     };
 
@@ -285,11 +461,36 @@
 
         document.querySelector('#save').addEventListener('click', saveGraph);
 
-        function saveGraph() {
-            var chartCanvas = document.getElementById('grafica');
-            var imageData = chartCanvas.toDataURL(
-                'image/png'); // Convierte el gráfico en imagen PNG en formato base64
-            fetch('/api/save-temperature-chart', {
+        async function saveGraph() {
+            const btn = document.querySelector('#save');
+            const status = document.getElementById('chartSaveStatus');
+            const previewWrap = document.getElementById('chartPreviewWrap');
+            const previewImg = document.getElementById('chartPreviewImg');
+
+            try {
+                // si no hay chart, no guardes
+                if (!window.myChart) {
+                    Swal.fire({
+                        title: 'Sin gráfica',
+                        text: 'Primero genera la gráfica antes de guardar.',
+                        icon: 'warning',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
+
+                // UI: deshabilitar y mostrar estado
+                btn.disabled = true;
+                status.textContent = 'Guardando gráfica...';
+
+                // Asegurar que el chart terminó de dibujar
+                // (muy importante porque tú recreas canvas y chart)
+                await new Promise(requestAnimationFrame);
+
+                // Mejor que toDataURL: usa la función propia de Chart.js (más confiable)
+                const imageData = window.myChart.toBase64Image(); // PNG base64
+
+                const resp = await fetch('/api/save-temperature-chart', {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -300,21 +501,54 @@
                     },
                     body: JSON.stringify({
                         image: imageData,
-                        motor_id: {{ $motor->id_motor }} // Incluye el ID del motor si es necesario
+                        motor_id: {{ $motor->id_motor }}
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Imagen guardada:', data);
-                    Swal.fire({
-                        title: '¡Éxito!',
-                        text: 'Gráfica guardada con éxito.',
-                        icon: 'success',
-                        confirmButtonText: 'Aceptar'
-                    });
-                })
-                .catch(error => console.error('Error:', error));
+                });
+
+                // Manejo fino de errores HTTP
+                if (!resp.ok) {
+                    const text = await resp.text().catch(() => '');
+                    throw new Error(`HTTP ${resp.status} ${resp.statusText} ${text}`);
+                }
+
+                const data = await resp.json();
+
+                // Preview desde BLOB endpoint (no depende de data.url)
+                const url = '/api/temperature-chart/{{ $motor->id_motor }}?t=' + Date.now();
+                previewImg.src = url;
+                previewWrap.classList.remove('d-none');
+
+                status.textContent = 'Gráfica guardada correctamente.';
+
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: 'Gráfica guardada con éxito.',
+                    icon: 'success',
+                    confirmButtonText: 'Aceptar'
+                });
+
+                // Preview
+                if (data.url) {
+                    previewImg.src = data.url + '?t=' + Date.now(); // cache-bust
+                    previewWrap.classList.remove('d-none');
+                }
+
+            } catch (err) {
+                console.error('Error guardando gráfica:', err);
+                status.textContent = 'Error al guardar la gráfica.';
+
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudo guardar la gráfica. Revisa consola o inténtalo de nuevo.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+
+            } finally {
+                btn.disabled = false;
+            }
         }
+
 
         document.addEventListener('DOMContentLoaded', function() {
             let timer;
