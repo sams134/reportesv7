@@ -679,12 +679,7 @@
 
                     </p>
                 </div>
-                <p
-                    style="text-align:left;font-size:10px;text-weight:100;margin-top:90px; margin-left:10px; position: absolute; bottom:40px; width:95%">
-                    - Las tolerancias recomendadas están basadas en la norma ISO 286 y EASA AR-100. <br>
-                    - Las medidas fueron tomadas con un micrómetro de interiores calibrado y certificado. <br>
-                    - Todas las medidas están expresadas en milímetros (mm) y micrómetros (μm). <br>
-                </p>
+
                 <div style="position: absolute; width:100%;background:#000044;height:25px;bottom:0px"></div>
             </div>
         @endforeach
@@ -1030,6 +1025,12 @@
                     </table>
                     <p style="text-align: left;font-size:20px;font-weight:bold;margin-left:15px;margin-top:5px">NOTAS
                         COMPLEMENTARIAS</p>
+                    <p style="text-align: left; margin-left:20px;margin-right:20px">
+                        <b>Recomendaci&oacute;n Inicial: </b> {{ $rodamiento['rodInicial']['recomendacion_eje'] }}
+                        <br>
+                        <b>Recomendaci&oacute;n Final: </b> {{ $rodamiento['rod']['recomendacion_eje'] }} <br>
+
+                    </p>
                 </div>
                 <div style="position: absolute; width:100%;background:#000044;height:25px;bottom:0px"></div>
             </div>
@@ -1108,6 +1109,8 @@
         $page7 = $page4 * ($multi + 3);
 
     @endphp
+    
+    {{-- page 5 Amperajes --}}
     <div
         style="position: absolute;top:{{ $page5 }}px;left:20px;width:95%;height:1280px;border:3px solid #333">
         <div style="position: relative; width:100%;background:#000044;height:25px;"></div>
@@ -1141,52 +1144,195 @@
             </tr>
         </table>
         <div style="position: relative;width:100%;text-align:center;text-transform: uppercase;">
-            <h1>Temperaturas</h1>
-            <img src="data:image/png;base64,{{ base64_encode($motor->temperaturas) }}" alt="Temperaturas"
-                style="position: relative;max-width: 90%;max-height:400px; border-radius: 4px;margin-top:20px">
+            <h1>Amperajes</h1>
+
+            @php
+                $nl = $motor->noLoadTest;
+
+                // Datos de placa
+                $voltaje_placa = (float) ($nl->voltaje_placa ?? 0);
+                $amperaje_placa = (float) ($nl->amperaje_placa ?? 0);
+                $hz_placa = (float) ($nl->hz_placa ?? 0);
+                $conexion_placa = $nl->conexion_placa ?? '';
+                $rpm_placa = (float) ($nl->rpm_placa ?? 0);
+                $polos = $nl->polos ?? ($motor->infoMotor->polos ?? null);
+
+                // Datos de prueba
+                $vA = (float) ($nl->volts_prueba_A ?? 0);
+                $vB = (float) ($nl->volts_prueba_B ?? 0);
+                $vC = (float) ($nl->volts_prueba_C ?? 0);
+
+                $aA = (float) ($nl->amps_prueba_A ?? 0);
+                $aB = (float) ($nl->amps_prueba_B ?? 0);
+                $aC = (float) ($nl->amps_prueba_C ?? 0);
+
+                $rpm_prueba = (float) ($nl->rpm_prueba ?? 0);
+                $conexion_prueba = $nl->conexion_prueba ?? '';
+
+                // Factores CT/PT (si no existen, usamos 1)
+                $ct = (float) ($nl->ct ?? 1);
+                $pt = (float) ($nl->pt ?? 1);
+
+                // Promedios
+                $promV = ($vA + $vB + $vC) / 3;
+                $promA = ($aA + $aB + $aC) / 3;
+
+                // Desbalances (misma lógica que tu componente Livewire: (max-min)/prom * 100)
+                $desbalanceV = $promV > 0 ? ((max($vA, $vB, $vC) - min($vA, $vB, $vC)) / $promV) * 100 : null;
+                $desbalanceA = $promA > 0 ? ((max($aA, $aB, $aC) - min($aA, $aB, $aC)) / $promA) * 100 : null;
+
+                // % Carga por fase y promedio (A/placa *100 * ct * pt)
+                $cA = $amperaje_placa > 0 ? ($aA / $amperaje_placa) * 100 * $ct * $pt : null;
+                $cB = $amperaje_placa > 0 ? ($aB / $amperaje_placa) * 100 * $ct * $pt : null;
+                $cC = $amperaje_placa > 0 ? ($aC / $amperaje_placa) * 100 * $ct * $pt : null;
+                $cProm = $amperaje_placa > 0 ? ($promA / $amperaje_placa) * 100 * $ct * $pt : null;
+
+                // Velocidad (rpm) y % vs placa
+                $velocidadPct = $rpm_placa > 0 ? ($rpm_prueba / $rpm_placa) * 100 : null;
+
+                // Path de la gráfica
+                $noLoadGraphPath = null;
+                if (!empty($nl?->graph_fl)) {
+                    $noLoadGraphPath = public_path('storage/' . ltrim($nl->graph_fl, '/'));
+                }
+            @endphp
+
+            <table style="width:100%; border-collapse:collapse; margin-top:10px;">
+                <tr>
+                    <!-- DATOS DE PLACA -->
+                    <td style="width:50%; vertical-align:top; padding-right:10px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                            <tr>
+                                <th colspan="2"
+                                    style="background:#4a4a4a; color:#fff; padding:8px; text-align:center; border-radius:4px;">
+                                    Datos de Placa
+                                </th>
+                            </tr>
+
+                            <tr>
+                                <td style="padding:10px; border:1px solid #e9eef5;">Voltaje Placa</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">
+                                    {{ number_format($voltaje_placa, 0) }} VAC</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px; border:1px solid #e9eef5;">Amperaje Placa</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">
+                                    {{ number_format($amperaje_placa, 1) }} A</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px; border:1px solid #e9eef5;">Hz</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">{{ number_format($hz_placa, 0) }}
+                                    Hz</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px; border:1px solid #e9eef5;">Conexión</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">{{ $conexion_placa ?: '—' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px; border:1px solid #e9eef5;">RPM</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">
+                                    {{ $rpm_placa > 0 ? number_format($rpm_placa, 0) : '—' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px; border:1px solid #e9eef5;">Polos</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">{{ $polos ?? '—' }}</td>
+                            </tr>
+                        </table>
+                    </td>
+
+                    <!-- DATOS DE PRUEBA -->
+                    <td style="width:50%; vertical-align:top; padding-left:10px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                            <tr>
+                                <th colspan="4"
+                                    style="background:#4a4a4a; color:#fff; padding:8px; text-align:center; border-radius:4px;">
+                                    Datos de Prueba
+                                </th>
+                            </tr>
+                            <tr style="background:#f3f6fb; font-weight:bold;">
+                                <td style="padding:10px; border:1px solid #e9eef5;">Fase</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">Voltaje</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">Amperaje</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">% Carga</td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding:10px; border:1px solid #e9eef5;">A</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">{{ number_format($vA, 0) }} VAC
+                                </td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">{{ number_format($aA, 1) }} A
+                                </td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">
+                                    {{ $cA !== null ? number_format($cA, 2) . ' %' : '—' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px; border:1px solid #e9eef5;">B</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">{{ number_format($vB, 0) }} VAC
+                                </td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">{{ number_format($aB, 1) }} A
+                                </td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">
+                                    {{ $cB !== null ? number_format($cB, 2) . ' %' : '—' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px; border:1px solid #e9eef5;">C</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">{{ number_format($vC, 0) }} VAC
+                                </td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">{{ number_format($aC, 1) }} A
+                                </td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">
+                                    {{ $cC !== null ? number_format($cC, 2) . ' %' : '—' }}</td>
+                            </tr>
+
+                            <tr style="font-weight:bold;">
+                                <td style="padding:10px; border:1px solid #e9eef5;">Promedio</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">{{ number_format($promV, 1) }}
+                                    VAC</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">{{ number_format($promA, 1) }} A
+                                </td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">
+                                    {{ $cProm !== null ? number_format($cProm, 2) . ' %' : '—' }}</td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding:10px; border:1px solid #e9eef5;">Desbalance</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">
+                                    {{ $desbalanceV !== null ? number_format($desbalanceV, 2) . ' %' : '—' }}</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">
+                                    {{ $desbalanceA !== null ? number_format($desbalanceA, 2) . ' %' : '—' }}</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;"></td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding:10px; border:1px solid #e9eef5;">Velocidad</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">
+                                    {{ $rpm_prueba > 0 ? number_format($rpm_prueba, 0) : '—' }}</td>
+                                <td style="padding:10px; border:1px solid #e9eef5;"></td>
+                                <td style="padding:10px; border:1px solid #e9eef5;">
+                                    {{ $velocidadPct !== null ? number_format($velocidadPct, 1) . ' %' : '—' }}</td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding:10px; border:1px solid #e9eef5;">Conexión</td>
+                                <td colspan="3" style="padding:10px; border:1px solid #e9eef5;">
+                                    {{ $conexion_prueba ?: '—' }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            @if ($noLoadGraphPath && file_exists($noLoadGraphPath))
+                <div style="margin-top:15px;">
+                    <img src="{{ $noLoadGraphPath }}" style="max-width:90%; max-height:400px;">
+                </div>
+            @endif
+
+
         </div>
     </div>
-    {{-- page 6 Amperajes --}}
     <div
         style="position: absolute;top:{{ $page6 }}px;left:20px;width:95%;height:1280px;border:3px solid #333">
-        <div style="position: relative; width:100%;background:#000044;height:25px;"></div>
-        <div style="position: relative; width:100%;background:#550000;height:25px;"></div>
-        <table class="cajilla" style="width: 100%;border-collapse: collapse;">
-            <tr>
-                <td colspan="3" style="font-weight: bold;">INFORME TECNICO DE MANTENIMIENTO</td>
-                <td style="font-weight: bold;">Inicio:</td>
-                <td>{{ \Carbon\Carbon::parse($motor->fecha_ingreso)->format('d/m/Y') }}</td>
-                <td rowspan="4" style="width:200px"> <img src="{{ public_path('img/logo.jpg') }}"
-                        alt="Logo" style="max-height: 100px"></td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;width:100px">CLIENTE:</td>
-                <td colspan="2">{{ $motor->cliente->cliente }}</td>
-                <td style="font-weight: bold;">Fin:</td>
-                <td>{{ \Carbon\Carbon::parse($motor->fin)->format('d/m/Y') }}</td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;width:100px">OS:</td>
-                <td colspan="2">{{ $motor->fullos }}</td>
-                <td style="font-weight: bold;color:#550000" colspan="2">
-                    {{ $motor->infoMotor->nombre_equipo ? $motor->infoMotor->nombre_equipo : ($motor->tipoequipo ? $motor->tipoequipo->name : $motor->id_tipoequipo) }}
-                </td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;width:100px">Potencia:</td>
-                <td>{{ $motor->potencia }}</td>
-                <td style="font-weight: bold;">RPM:</td>
-                <td colspan="2">{{ $motor->rpm }}</td>
-            </tr>
-        </table>
-        <div style="position: relative;width:100%;text-align:center;text-transform: uppercase;">
-            <h1>Amperajes</h1>
-            <img src="data:image/png;base64,{{ base64_encode($motor->noLoadTest->graph_fl) }}" alt="Temperaturas"
-                style="position: relative;max-width: 90%;max-height:400px; border-radius: 4px;margin-top:20px">
-        </div>
-    </div>
-    <div
-        style="position: absolute;top:{{ $page7 }}px;left:20px;width:95%;height:1280px;border:3px solid #333">
         <div style="position: relative; width:100%;background:#000044;height:25px;"></div>
         <div style="position: relative; width:100%;background:#550000;height:25px;"></div>
         <table class="cajilla" style="width: 100%;border-collapse: collapse;">
@@ -1222,6 +1368,14 @@
             $t72 = $motor->fotos->where('type', 72)->last();
             $t73 = $motor->fotos->where('type', 73)->last();
         @endphp
+        @php
+            $tmpTempChart = null;
+
+            if (!empty($motor->temperaturas_path)) {
+                // Ruta absoluta para PDF (DOMPDF necesita path real)
+                $tmpTempChart = public_path('storage/' . ltrim($motor->temperaturas_path, '/'));
+            }
+        @endphp
         <div style="position: relative;width:100%;text-align:center;text-transform: uppercase;">
             {{-- ======= TEMPERATURAS: GRAFICA + TERMO ======= --}}
             <table style="width:100%; border-collapse:collapse; margin-top:10px;">
@@ -1233,14 +1387,16 @@
                     </td>
                 </tr>
 
-                {{-- GRAFICA --}}
+                {{-- GRAFICA TEMPERATURAS --}}
                 <tr>
                     <td style="border:1px solid #777; padding:10px; text-align:center;">
-                        @if (!empty($tmpTempChart) && file_exists($tmpTempChart))
+                        @if ($tmpTempChart && file_exists($tmpTempChart))
                             <img src="file://{{ $tmpTempChart }}"
                                 style="width:100%; max-height:420px; object-fit:contain;">
                         @else
-                            <div style="color:#666; font-size:12px;">Sin gráfica guardada</div>
+                            <div style="color:#666; font-size:12px;">
+                                Sin gráfica de temperaturas guardada
+                            </div>
                         @endif
                     </td>
                 </tr>

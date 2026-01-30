@@ -139,9 +139,16 @@
         </button>
         <div id="chartSaveStatus" class="mt-2 text-muted" style="font-size:12px;"></div>
 
-        <div id="chartPreviewWrap" class="mt-2 d-none" style="max-width:520px;">
+        @php
+            $tempPreviewUrl = !empty($motor->temperaturas_path)
+                ? asset('storage/' . ltrim($motor->temperaturas_path, '/'))
+                : null;
+        @endphp
+
+        <div id="chartPreviewWrap" class="mt-2 {{ $tempPreviewUrl ? '' : 'd-none' }}" style="max-width:520px;">
             <div class="text-muted" style="font-size:12px; margin-bottom:6px;">Vista previa (última guardada)</div>
-            <img id="chartPreviewImg" src="" style="width:100%; border:1px solid #ddd; border-radius:6px;">
+            <img id="chartPreviewImg" src="{{ $tempPreviewUrl ? $tempPreviewUrl . '?t=' . time() : '' }}"
+                style="width:100%; border:1px solid #ddd; border-radius:6px;">
         </div>
     </div>
 
@@ -329,25 +336,41 @@
             });
         }
         const graph = () => {
-            // Obtén el contenedor del canvas
-            const container = document.getElementById('grafica').parentNode;
-            // Elimina el canvas existente
-            const oldCanvas = document.getElementById('grafica');
-            if (oldCanvas) {
-                oldCanvas.remove();
+            // 0) Destruir chart previo si existe (clave para evitar "Sin gráfica")
+            if (window.myChart) {
+                try {
+                    window.myChart.destroy();
+                } catch (e) {
+                    console.warn('No se pudo destruir el chart anterior:', e);
+                }
+                window.myChart = null;
             }
-            // Crea un nuevo canvas con el mismo id y atributos
+
+            // 1) Obtén el contenedor del canvas
+            const oldCanvas = document.getElementById('grafica');
+            if (!oldCanvas) {
+                console.error('No se encontró el canvas #grafica');
+                return;
+            }
+            const container = oldCanvas.parentNode;
+
+            // 2) Elimina el canvas existente
+            oldCanvas.remove();
+
+            // 3) Crea un nuevo canvas con el mismo id y atributos
             const newCanvas = document.createElement('canvas');
             newCanvas.id = 'grafica';
-            newCanvas.width = 418;
-            newCanvas.height = 150;
+            newCanvas.style.width = '100%';
+            newCanvas.style.height = '520px'; // o el alto que te guste
             container.appendChild(newCanvas);
+
             document.getElementById('graphDiv').classList.remove('d-none');
-            // Ahora, realiza la llamada al backend y crea el gráfico usando el nuevo canvas
+
+            // 4) Llamada al backend y crear el gráfico usando el nuevo canvas
             fetch('/api/get-temperatures/' + {{ $motor->id_motor }})
                 .then(response => response.json())
                 .then(data => {
-                    // Define las opciones del gráfico
+                    // Define las opciones del gráfico (TU MISMA CONFIG)
                     const getOptions = function() {
                         return {
                             type: 'bar',
@@ -413,7 +436,6 @@
                                         title: {
                                             display: true,
                                             text: 'Tiempo',
-
                                         },
                                         grid: {
                                             color: '#ccc'
@@ -435,19 +457,37 @@
                                     }
                                 }
                             }
-
                         };
                     };
 
+                    // 5) Inicializar chart y guardarlo en window.myChart (CRÍTICO)
+                    //    Tu función chartJsInit debe devolver la instancia de Chart.
+                    //    Si no la devuelve, lo ajustamos al final (te dejo el fallback abajo).
+                    const chart = chartJsInit(newCanvas, getOptions);
 
-                    chartJsInit(newCanvas, getOptions);
+                    // Si chartJsInit retorna la instancia, la guardamos:
+                    if (chart) {
+                        window.myChart = chart;
+                    } else {
+                        // Fallback: intentar recuperar el chart por el canvas (Chart.js v3+)
+                        // Esto evita "Sin gráfica" aunque chartJsInit no retorne nada.
+                        if (window.Chart && Chart.getChart) {
+                            window.myChart = Chart.getChart(newCanvas);
+                        }
+                    }
+
+                    // Debug útil por ahora:
+                    console.log('Chart creado?', !!window.myChart);
+
                     setTimeout(() => {
                         //document.querySelector('#save').click();
                     }, 300);
                 })
                 .catch(error => console.error('Error:', error));
-            // guardar la imagen en la base de datos       
+
+            // guardar la imagen en la base de datos
         };
+
 
 
 
@@ -468,7 +508,6 @@
             const previewImg = document.getElementById('chartPreviewImg');
 
             try {
-                // si no hay chart, no guardes
                 if (!window.myChart) {
                     Swal.fire({
                         title: 'Sin gráfica',
@@ -479,25 +518,22 @@
                     return;
                 }
 
-                // UI: deshabilitar y mostrar estado
                 btn.disabled = true;
                 status.textContent = 'Guardando gráfica...';
 
-                // Asegurar que el chart terminó de dibujar
-                // (muy importante porque tú recreas canvas y chart)
                 await new Promise(requestAnimationFrame);
 
-                // Mejor que toDataURL: usa la función propia de Chart.js (más confiable)
-                const imageData = window.myChart.toBase64Image(); // PNG base64
+                const imageData = window.myChart.toBase64Image(); // data:image/png;base64,...
+
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
                 const resp = await fetch('/api/save-temperature-chart', {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute('content')
+                        'X-CSRF-TOKEN': csrf,
                     },
                     body: JSON.stringify({
                         image: imageData,
@@ -505,20 +541,24 @@
                     })
                 });
 
-                // Manejo fino de errores HTTP
-                if (!resp.ok) {
-                    const text = await resp.text().catch(() => '');
-                    throw new Error(`HTTP ${resp.status} ${resp.statusText} ${text}`);
+                let data = {};
+                try {
+                    data = await resp.json();
+                } catch (e) {}
+
+                if (!resp.ok || !data.ok) {
+                    throw new Error(data.message || `HTTP ${resp.status}`);
                 }
 
-                const data = await resp.json();
+                // ✅ Preview: cargar LA IMAGEN YA GUARDADA EN STORAGE
+                // cache-buster para evitar que el browser muestre la vieja
+                const url = (data.url || ('/storage/' + String(data.path || '').replace(/^\/+/, ''))) +
+                    '?t=' + Date.now();
 
-                // Preview desde BLOB endpoint (no depende de data.url)
-                const url = '/api/temperature-chart/{{ $motor->id_motor }}?t=' + Date.now();
                 previewImg.src = url;
                 previewWrap.classList.remove('d-none');
 
-                status.textContent = 'Gráfica guardada correctamente.';
+                status.textContent = '✅ Gráfica guardada y cargada en vista previa.';
 
                 Swal.fire({
                     title: '¡Éxito!',
@@ -527,19 +567,13 @@
                     confirmButtonText: 'Aceptar'
                 });
 
-                // Preview
-                if (data.url) {
-                    previewImg.src = data.url + '?t=' + Date.now(); // cache-bust
-                    previewWrap.classList.remove('d-none');
-                }
-
             } catch (err) {
                 console.error('Error guardando gráfica:', err);
                 status.textContent = 'Error al guardar la gráfica.';
 
                 Swal.fire({
                     title: 'Error',
-                    text: 'No se pudo guardar la gráfica. Revisa consola o inténtalo de nuevo.',
+                    text: err?.message || 'No se pudo guardar la gráfica. Revisa consola o inténtalo de nuevo.',
                     icon: 'error',
                     confirmButtonText: 'Aceptar'
                 });
@@ -548,6 +582,7 @@
                 btn.disabled = false;
             }
         }
+
 
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -618,6 +653,20 @@
                 @this.call('updateTime', totalMs);
             });
         });
+        window.addEventListener('temps:updated', async () => {
+            console.log('[temps] 🔄 updated -> rebuild graph');
+
+            document.getElementById('graphDiv')?.classList.remove('d-none');
+
+            // Regenerar chart desde backend
+            graph();
+
+            // Después del repaint, fuerza resize
+            requestAnimationFrame(() => {
+                if (window.myChart) window.myChart.resize();
+            });
+        });
+
         let tempCount = {{ $motor->temps->count() }};
         if (tempCount > 0) {
             document.getElementById('graphDiv').classList.remove('d-none');

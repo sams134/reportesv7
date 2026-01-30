@@ -55,9 +55,8 @@ class Amperajes extends Component
                 $this->usePT = true;
             else
                 $this->usePT = false;
-            if ($this->voltaje_1 != null) {
-                $this->tested = true;
-            }
+            $this->tested = $this->computeTested();
+
             $this->pt = $this->ct = 1;
         }
     }
@@ -98,6 +97,31 @@ class Amperajes extends Component
 
 
         return view('livewire.pruebas.amperajes');
+    }
+
+    private function computeTested(): bool
+    {
+        if (!$this->noLoadTest) return false;
+
+        // Campos mínimos para considerar "prueba completa"
+        $required = [
+            $this->voltaje_1,
+            $this->voltaje_2,
+            $this->voltaje_3,
+            $this->amperaje_1,
+            $this->amperaje_2,
+            $this->amperaje_3,
+            $this->rpm_prueba,
+            $this->conexion_realizada,
+            $this->circuitos_prueba,
+        ];
+
+        // Deben existir y no ser null (y no cadena vacía)
+        foreach ($required as $v) {
+            if ($v === null || $v === '') return false;
+        }
+
+        return true;
     }
 
     public function saveNameplate()
@@ -215,11 +239,10 @@ class Amperajes extends Component
             'max' => $limitMax,
         ]);
 
+        $this->tested = $this->computeTested();
 
 
         $this->emit('noLoadTestSaved', 2);
-
-      
     }
     public function deleteTest()
     {
@@ -268,6 +291,25 @@ class Amperajes extends Component
         $this->motor = Motor::find($this->motor->id_motor);
         $this->mount($this->motor);
     }
+
+    public function getDeltaRpmPercentProperty()
+    {
+        if (empty($this->rpm_placa) || $this->rpm_placa == 0) {
+            return null;
+        }
+
+        return abs($this->rpm_prueba - $this->rpm_placa) / $this->rpm_placa * 100;
+    }
+
+    public function getAmperajePercentProperty()
+    {
+        if (empty($this->amperaje_placa) || $this->amperaje_placa == 0) {
+            return null;
+        }
+
+        return ($this->promA / $this->amperaje_placa) * 100 * $this->fct * $this->fpt;
+    }
+
     public function balanceData()
     {
         $this->isVoltageBalanced = !$this->isVoltageBalanced;
@@ -339,22 +381,30 @@ class Amperajes extends Component
     }
     public function exportResults()
     {
+        logger()->info('exportResults called', ['motor' => $this->motor->id_motor]);
 
-        if ($this->motor->fin == null || Auth()->user()->userType == 1) {
-
-            $this->noLoadTest->update([
-                'recorded' => 1,
-                'finished' => now(),
-                'id_user' => auth()->user()->id,
+        if (!$this->noLoadTest || !$this->tested) {
+            $this->dispatchBrowserEvent('swal:alert', [
+                'title' => 'Faltan datos',
+                'text'  => 'Primero guarda los datos de la prueba para poder exportar resultados.',
+                'icon'  => 'warning',
             ]);
-            $this->recorded = true;
-            $this->emit('testExported');
-        } elseif ($this->motor->fin != null && $this->recorded == true && Auth()->user()->userType == 1) {
-            $this->noLoadTest->update([
-                'recorded' => 1,
-            ]);
-            $this->recorded = true;
-            $this->emit('testExported');
+            return;
         }
+
+        // Si quieres seguir marcando recorded/finished, mantenlo (opcional)
+        $this->noLoadTest->update([
+            'recorded' => 1,
+            'finished' => now(),
+            'id_user'  => auth()->id(),
+        ]);
+
+        $this->recorded = true;
+
+        // Dispara al JS
+        $this->dispatchBrowserEvent('no-load-export', [
+        'motor_id' => $this->motor->id_motor,
+    ]);
     }
+    
 }

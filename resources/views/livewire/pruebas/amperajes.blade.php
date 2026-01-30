@@ -215,253 +215,269 @@
     </x-form-card>
 
     {{-- WRAP RESULTADOS: NO LO ELIMINES --}}
-    <div id="wrapResultados" class="{{ $tested ? '' : 'd-none' }}">
-        <x-form-card title="Resultados de Prueba">
-            <h3>Resumen</h3>
+    @if ($tested)
+        <div id="wrapResultados" class="{{ $tested ? '' : 'd-none' }}">
+            <x-form-card title="Resultados de Prueba">
+                <h3>Resumen</h3>
 
-            @php $alerts = false; @endphp
+                @php $alerts = false; @endphp
 
-            @if ((abs($rpm_prueba - $rpm_placa) / $rpm_placa) * 100 > 5)
-                <div class="alert alert-danger border-2 d-flex align-items-center" role="alert">
-                    <div class="bg-danger me-3 icon-item"><span class="fas fa-times-circle text-white fs-3"></span>
+                @if ($this->deltaRpmPercent !== null && $this->deltaRpmPercent > 5)
+                    <div class="alert alert-danger border-2 d-flex align-items-center" role="alert">
+                        <div class="bg-danger me-3 icon-item"><span
+                                class="fas fa-times-circle text-white fs-3"></span>
+                        </div>
+                        <p class="mb-0 flex-1">La velocidad del equipo no es correcta... Revisar conexi&oacute;n y
+                            carga.
+                        </p>
+                        <button class="btn-close" type="button" data-bs-dismiss="alert"
+                            aria-label="Close"></button>
                     </div>
-                    <p class="mb-0 flex-1">La velocidad del equipo no es correcta... Revisar conexi&oacute;n y carga.
-                    </p>
-                    <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                @php $alerts = true; @endphp
-            @endif
-
-            @if (($promA / $amperaje_placa) * 100 * $fct * $fpt > $limit_max)
-                <div class="alert alert-warning border-2 d-flex align-items-center" role="alert">
-                    <div class="bg-warning me-3 icon-item"><span class="fas fa-times-circle text-white fs-3"></span>
-                    </div>
-                    <p class="mb-0 flex-1">El amperaje es muy alto, revisar y validar.</p>
-                    <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                @php $alerts = true; @endphp
-            @endif
-
-            @if (($promA / $amperaje_placa) * 100 * $fct * $fpt < $limit_min)
-                <div class="alert alert-warning border-2 d-flex align-items-center" role="alert">
-                    <div class="bg-warning me-3 icon-item"><span class="fas fa-times-circle text-white fs-3"></span>
-                    </div>
-                    <p class="mb-0 flex-1">El amperaje es muy bajo, revisar conexion o cambie relacion de CTs y Pts</p>
-                    <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                @php $alerts = true; @endphp
-            @endif
-
-            @if (($isVoltageBalanced && $inbalance > 5) || (!$isVoltageBalanced && $desbalanceA > 8))
-                <div class="alert alert-danger border-2 d-flex align-items-center" role="alert">
-                    <div class="bg-danger me-3 icon-item"><span class="fas fa-times-circle text-white fs-3"></span>
-                    </div>
-                    <p class="mb-0 flex-1">Hay un exceso de desbalance en corriente, alterne lineas y considere colocar
-                        funcion de balancear con desbalance correcto</p>
-                    <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                @php $alerts = true; @endphp
-            @endif
-
-            @if (!$alerts)
-                <div class="alert alert-success border-2 d-flex align-items-center" role="alert">
-                    <div class="bg-success me-3 icon-item"><span class="fas fa-check-circle text-white fs-3"></span>
-                    </div>
-                    <p class="mb-0 flex-1">Todo se ve bien...</p>
-                    <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            <div class="row">
-                <div class="col-12 col-md-6 col-xxl-4">
-                    <div
-                        style="border: 1px solid #ccc; padding: 0px; border-radius: 5px; text-align: center; background-color: #555;">
-                        <h4 style="color: aliceblue" class="mb-0">Datos de
-                            {{ $data_origin == 1 ? 'Placa' : 'Densidades' }}</h4>
-                    </div>
-
-                    <table class="table table-bordered">
-                        <tbody>
-                            <tr>
-                                <td>Voltaje Placa</td>
-                                <td>{{ $voltaje_placa }} VAC</td>
-                            </tr>
-                            <tr>
-                                <td>Amperaje Placa</td>
-                                <td>{{ $amperaje_placa }} A</td>
-                            </tr>
-                            <tr>
-                                <td>Hz</td>
-                                <td>{{ $hz_placa }} Hz</td>
-                            </tr>
-                            <tr>
-                                <td>Conexion</td>
-                                <td>{{ $circuitos_placa }} {{ $conexion_placa == 1 ? 'Δ' : 'Y' }}</td>
-                            </tr>
-                            <tr>
-                                <td>RPM</td>
-                                <td>{{ $rpm_placa }}</td>
-                            </tr>
-                            <tr>
-                                <td>Polos</td>
-                                <td>{{ $polos }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="col-12 col-md-6 col-xxl-4">
-                    <div
-                        style="border: 1px solid #ccc; padding: 0px; border-radius: 5px; text-align: center; background-color: #555;">
-                        <h4 style="color: aliceblue" class="mb-0">Datos de Prueba</h4>
-                    </div>
-
-                    <table class="table table-bordered">
-                        <thead>
-                            <th>Fase</th>
-                            <th>Voltaje</th>
-                            <th>Amperaje</th>
-                            <th>% Carga</th>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>A</td>
-                                <td>{{ $v1 * $fpt }} VAC</td>
-                                <td>{{ $a1 * $fct * $fpt }} A</td>
-                                <td>{{ $c1 * $fct * $fpt }} %</td>
-                            </tr>
-                            <tr>
-                                <td>B</td>
-                                <td>{{ $v2 * $fpt }} VAC</td>
-                                <td>{{ $a2 * $fct * $fpt }} A</td>
-                                <td>{{ $c2 * $fct * $fpt }} %</td>
-                            </tr>
-                            <tr>
-                                <td>C</td>
-                                <td>{{ $v3 * $fpt }} VAC</td>
-                                <td>{{ $a3 * $fct * $fpt }} A</td>
-                                <td>{{ $c3 * $fct * $fpt }} %</td>
-                            </tr>
-
-                            <tr style="font-weight: bold">
-                                <td>Promedio</td>
-                                <td>{{ number_format($promV * $fpt, 1) }} VAC</td>
-                                <td>{{ number_format($promA * $fct * $fpt, 1) }}</td>
-                                <td>{{ number_format(($promA / $amperaje_placa) * 100 * $fct * $fpt, 2) }}%</td>
-                            </tr>
-
-                            <tr>
-                                <td>Desbalance</td>
-                                <td>{{ $isVoltageBalanced ? number_format($inbalance, 2) : number_format($desbalanceV, 2) }}
-                                    %</td>
-                                <td>{{ $isVoltageBalanced ? number_format($inbalance * 2.1, 2) : number_format($desbalanceA, 2) }}
-                                    %</td>
-                                <td></td>
-                            </tr>
-
-                            <tr>
-                                <td>Velocidad</td>
-                                <td colspan="2">{{ $rpm_prueba }}</td>
-                                <td>{{ number_format(($rpm_prueba / $rpm_placa) * 100, 1) }}%</td>
-                            </tr>
-
-                            <tr>
-                                <td>Conexion</td>
-                                <td colspan="3">{{ $circ }} {{ $con == 1 ? 'Δ' : 'Y' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="col-12 col-md-6 col-xxl-4">
-                    <div
-                        style="border: 1px solid #ccc; padding: 0px; border-radius: 5px; text-align: center; background-color: #555;">
-                        <h4 style="color: aliceblue" class="mb-0">% Carga</h4>
-                    </div>
-
-                    {{-- wire:ignore para que Livewire no toque el SVG --}}
-                    <div wire:ignore id="chartDiv2"
-                        data-valor="{{ $tested ? number_format(($promA / $amperaje_placa) * 100 * $fct * $fpt, 1) : '' }}"
-                        data-min="{{ $tested ? $limit_min ?? 10 : '' }}"
-                        data-max="{{ $tested ? $limit_max ?? 90 : '' }}" style="max-width: 100%; height:300px;">
-                    </div>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-end my-3">
-                <div class="@if (!$usePT) d-none @else d-flex justify-content-end @endif ">
-                    <div class="input-group me-2" style="max-width:160px">
-                        <button class="input-group-text" style="cursor: pointer;" wire:click="change_forcePT()">
-                            @if ($force_pt)
-                                <i class="fas fa-lock me-2 text-danger"></i>
-                            @else
-                                <i class="fas fa-lock-open me-2 text-secondary"></i>
-                            @endif
-                            PT
-                        </button>
-                        <input class="form-control" type="number" step="0.1" wire:model="fpt"
-                            min="0" />
-                    </div>
-
-                    <div class="input-group me-2" style="max-width:160px">
-                        <button class="input-group-text" style="cursor: pointer;" wire:click="change_forceCT()">
-                            @if ($force_ct)
-                                <i class="fas fa-lock me-2 text-danger"></i>
-                            @else
-                                <i class="fas fa-lock-open me-2 text-secondary"></i>
-                            @endif
-                            CT
-                        </button>
-                        <input class="form-control" type="number" step="0.1" wire:model="fct"
-                            min="0" />
-                    </div>
-                </div>
-
-                <div class="input-group me-2" style="max-width:240px">
-                    <span class="input-group-text">% Desbalance</span>
-                    <input class="form-control" type="number" step="0.1" wire:model="inbalance" min="0"
-                        oninput="if(this.value===''){this.value='0';}" />
-                </div>
-
-                <button type="button" class="btn {{ $usePT ? 'btn-success' : 'btn-secondary' }} me-2"
-                    wire:click="usePTFunc">
-                    {{ $usePT ? 'Usando relaciones PT y CT' : 'Usar Relaciones PT y CT' }}
-                </button>
-
-                <button type="button" class="btn {{ $isVoltageBalanced ? 'btn-success' : 'btn-secondary' }} me-2"
-                    wire:click="balanceData">
-                    {{ $isVoltageBalanced ? ' Usando data ' : 'Usar data' }} balanceada
-                </button>
-
-                @if (!$motor->fin || auth()->user()->userType == 1)
-                    <button type="button" class="btn btn-{{ $recorded ? 'success' : 'primary' }}"
-                        wire:click="exportResults">
-                        {{ $recorded ? 'Actualizar Resultados' : 'Exportar Resultados' }}
-                    </button>
-                @else
-                    <button type="button" class="btn btn-secondary" disabled>Motor Finalizado</button>
+                    @php $alerts = true; @endphp
                 @endif
-            </div>
 
-            <h3>Tabla Referencia Consumo Amperajes en vacio</h3>
-            <div class="card col-12 d-flex justify-content-center">
-                <table class="table text-center" style="width:60%">
-                    <thead>
-                        <th class="text-center">#Polos</th>
-                        <th class="text-center">% Corriente M&iacute;nima</th>
-                        <th class="text-center">% Corriente M&aacute;xima</th>
-                    </thead>
-                    @foreach ($noLoadAmps as $amps)
-                        <tr @if ($amps->poles == $polos) class="bg-soft-primary" @endif>
-                            <td>{{ $amps->poles }}</td>
-                            <td>{{ $amps->minA }} %</td>
-                            <td>{{ $amps->maxA }} %</td>
-                        </tr>
-                    @endforeach
-                </table>
-            </div>
-        </x-form-card>
-    </div>
+                @if ($this->amperajePercent !== null && $this->amperajePercent > $limit_max)
+                    <div class="alert alert-warning border-2 d-flex align-items-center" role="alert">
+                        <div class="bg-warning me-3 icon-item"><span
+                                class="fas fa-times-circle text-white fs-3"></span>
+                        </div>
+                        <p class="mb-0 flex-1">El amperaje es muy alto, revisar y validar.</p>
+                        <button class="btn-close" type="button" data-bs-dismiss="alert"
+                            aria-label="Close"></button>
+                    </div>
+                    @php $alerts = true; @endphp
+                @endif
+
+                @if (($promA / $amperaje_placa) * 100 * $fct * $fpt < $limit_min)
+                    <div class="alert alert-warning border-2 d-flex align-items-center" role="alert">
+                        <div class="bg-warning me-3 icon-item"><span
+                                class="fas fa-times-circle text-white fs-3"></span>
+                        </div>
+                        <p class="mb-0 flex-1">El amperaje es muy bajo, revisar conexion o cambie relacion de CTs y Pts
+                        </p>
+                        <button class="btn-close" type="button" data-bs-dismiss="alert"
+                            aria-label="Close"></button>
+                    </div>
+                    @php $alerts = true; @endphp
+                @endif
+
+                @if (($isVoltageBalanced && $inbalance > 5) || (!$isVoltageBalanced && $desbalanceA > 8))
+                    <div class="alert alert-danger border-2 d-flex align-items-center" role="alert">
+                        <div class="bg-danger me-3 icon-item"><span
+                                class="fas fa-times-circle text-white fs-3"></span>
+                        </div>
+                        <p class="mb-0 flex-1">Hay un exceso de desbalance en corriente, alterne lineas y considere
+                            colocar
+                            funcion de balancear con desbalance correcto</p>
+                        <button class="btn-close" type="button" data-bs-dismiss="alert"
+                            aria-label="Close"></button>
+                    </div>
+                    @php $alerts = true; @endphp
+                @endif
+
+                @if (!$alerts)
+                    <div class="alert alert-success border-2 d-flex align-items-center" role="alert">
+                        <div class="bg-success me-3 icon-item"><span
+                                class="fas fa-check-circle text-white fs-3"></span>
+                        </div>
+                        <p class="mb-0 flex-1">Todo se ve bien...</p>
+                        <button class="btn-close" type="button" data-bs-dismiss="alert"
+                            aria-label="Close"></button>
+                    </div>
+                @endif
+
+                <div class="row">
+                    <div class="col-12 col-md-6 col-xxl-4">
+                        <div
+                            style="border: 1px solid #ccc; padding: 0px; border-radius: 5px; text-align: center; background-color: #555;">
+                            <h4 style="color: aliceblue" class="mb-0">Datos de
+                                {{ $data_origin == 1 ? 'Placa' : 'Densidades' }}</h4>
+                        </div>
+
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td>Voltaje Placa</td>
+                                    <td>{{ $voltaje_placa }} VAC</td>
+                                </tr>
+                                <tr>
+                                    <td>Amperaje Placa</td>
+                                    <td>{{ $amperaje_placa }} A</td>
+                                </tr>
+                                <tr>
+                                    <td>Hz</td>
+                                    <td>{{ $hz_placa }} Hz</td>
+                                </tr>
+                                <tr>
+                                    <td>Conexion</td>
+                                    <td>{{ $circuitos_placa }} {{ $conexion_placa == 1 ? 'Δ' : 'Y' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>RPM</td>
+                                    <td>{{ $rpm_placa }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Polos</td>
+                                    <td>{{ $polos }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xxl-4">
+                        <div
+                            style="border: 1px solid #ccc; padding: 0px; border-radius: 5px; text-align: center; background-color: #555;">
+                            <h4 style="color: aliceblue" class="mb-0">Datos de Prueba</h4>
+                        </div>
+
+                        <table class="table table-bordered">
+                            <thead>
+                                <th>Fase</th>
+                                <th>Voltaje</th>
+                                <th>Amperaje</th>
+                                <th>% Carga</th>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>A</td>
+                                    <td>{{ $v1 * $fpt }} VAC</td>
+                                    <td>{{ $a1 * $fct * $fpt }} A</td>
+                                    <td>{{ $c1 * $fct * $fpt }} %</td>
+                                </tr>
+                                <tr>
+                                    <td>B</td>
+                                    <td>{{ $v2 * $fpt }} VAC</td>
+                                    <td>{{ $a2 * $fct * $fpt }} A</td>
+                                    <td>{{ $c2 * $fct * $fpt }} %</td>
+                                </tr>
+                                <tr>
+                                    <td>C</td>
+                                    <td>{{ $v3 * $fpt }} VAC</td>
+                                    <td>{{ $a3 * $fct * $fpt }} A</td>
+                                    <td>{{ $c3 * $fct * $fpt }} %</td>
+                                </tr>
+
+                                <tr style="font-weight: bold">
+                                    <td>Promedio</td>
+                                    <td>{{ number_format($promV * $fpt, 1) }} VAC</td>
+                                    <td>{{ number_format($promA * $fct * $fpt, 1) }}</td>
+                                    <td>{{ number_format(($promA / $amperaje_placa) * 100 * $fct * $fpt, 2) }}%</td>
+                                </tr>
+
+                                <tr>
+                                    <td>Desbalance</td>
+                                    <td>{{ $isVoltageBalanced ? number_format($inbalance, 2) : number_format($desbalanceV, 2) }}
+                                        %</td>
+                                    <td>{{ $isVoltageBalanced ? number_format($inbalance * 2.1, 2) : number_format($desbalanceA, 2) }}
+                                        %</td>
+                                    <td></td>
+                                </tr>
+
+                                <tr>
+                                    <td>Velocidad</td>
+                                    <td colspan="2">{{ $rpm_prueba }}</td>
+                                    <td>{{ number_format(($rpm_prueba / $rpm_placa) * 100, 1) }}%</td>
+                                </tr>
+
+                                <tr>
+                                    <td>Conexion</td>
+                                    <td colspan="3">{{ $circ }} {{ $con == 1 ? 'Δ' : 'Y' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-xxl-4">
+                        <div
+                            style="border: 1px solid #ccc; padding: 0px; border-radius: 5px; text-align: center; background-color: #555;">
+                            <h4 style="color: aliceblue" class="mb-0">% Carga</h4>
+                        </div>
+
+                        {{-- wire:ignore para que Livewire no toque el SVG --}}
+                        <div wire:ignore id="chartDiv2"
+                            data-valor="{{ $tested ? number_format(($promA / $amperaje_placa) * 100 * $fct * $fpt, 1) : '' }}"
+                            data-min="{{ $tested ? $limit_min ?? 10 : '' }}"
+                            data-max="{{ $tested ? $limit_max ?? 90 : '' }}" style="max-width: 100%; height:300px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end my-3">
+                    <div class="@if (!$usePT) d-none @else d-flex justify-content-end @endif ">
+                        <div class="input-group me-2" style="max-width:160px">
+                            <button class="input-group-text" style="cursor: pointer;" wire:click="change_forcePT()">
+                                @if ($force_pt)
+                                    <i class="fas fa-lock me-2 text-danger"></i>
+                                @else
+                                    <i class="fas fa-lock-open me-2 text-secondary"></i>
+                                @endif
+                                PT
+                            </button>
+                            <input class="form-control" type="number" step="0.1" wire:model="fpt"
+                                min="0" />
+                        </div>
+
+                        <div class="input-group me-2" style="max-width:160px">
+                            <button class="input-group-text" style="cursor: pointer;" wire:click="change_forceCT()">
+                                @if ($force_ct)
+                                    <i class="fas fa-lock me-2 text-danger"></i>
+                                @else
+                                    <i class="fas fa-lock-open me-2 text-secondary"></i>
+                                @endif
+                                CT
+                            </button>
+                            <input class="form-control" type="number" step="0.1" wire:model="fct"
+                                min="0" />
+                        </div>
+                    </div>
+
+                    <div class="input-group me-2" style="max-width:240px">
+                        <span class="input-group-text">% Desbalance</span>
+                        <input class="form-control" type="number" step="0.1" wire:model="inbalance"
+                            min="0" oninput="if(this.value===''){this.value='0';}" />
+                    </div>
+
+                    <button type="button" class="btn {{ $usePT ? 'btn-success' : 'btn-secondary' }} me-2"
+                        wire:click="usePTFunc">
+                        {{ $usePT ? 'Usando relaciones PT y CT' : 'Usar Relaciones PT y CT' }}
+                    </button>
+
+                    <button type="button"
+                        class="btn {{ $isVoltageBalanced ? 'btn-success' : 'btn-secondary' }} me-2"
+                        wire:click="balanceData">
+                        {{ $isVoltageBalanced ? ' Usando data ' : 'Usar data' }} balanceada
+                    </button>
+
+                    @if (!$motor->fin || auth()->user()->userType == 1)
+                        <button type="button" class="btn btn-{{ $recorded ? 'success' : 'primary' }}"
+                            wire:click="exportResults">
+                            {{ $recorded ? 'Actualizar Resultados' : 'Exportar Resultados' }}
+                        </button>
+                    @else
+                        <button type="button" class="btn btn-secondary" disabled>Motor Finalizado</button>
+                    @endif
+                </div>
+
+                <h3>Tabla Referencia Consumo Amperajes en vacio</h3>
+                <div class="card col-12 d-flex justify-content-center">
+                    <table class="table text-center" style="width:60%">
+                        <thead>
+                            <th class="text-center">#Polos</th>
+                            <th class="text-center">% Corriente M&iacute;nima</th>
+                            <th class="text-center">% Corriente M&aacute;xima</th>
+                        </thead>
+                        @foreach ($noLoadAmps as $amps)
+                            <tr @if ($amps->poles == $polos) class="bg-soft-primary" @endif>
+                                <td>{{ $amps->poles }}</td>
+                                <td>{{ $amps->minA }} %</td>
+                                <td>{{ $amps->maxA }} %</td>
+                            </tr>
+                        @endforeach
+                    </table>
+                </div>
+            </x-form-card>
+        </div>
+    @endif
 
     @push('scripts')
         <script src="https://code.jscharting.com/latest/jscharting.js"></script>
@@ -710,52 +726,257 @@
             window.deleteTest = deleteTest;
 
             // ✅ Export SVG (si lo estás usando)
-            function saveGraphNoLoadViaSVG() {
-                const container = document.getElementById('chartDiv2');
-                const innerDiv = container?.querySelector('div[id^="JSCharting_"]');
-                const svgEl = innerDiv?.getElementsByTagName('svg')[0];
+            /**
+             * Exporta la gráfica "No Load" (JSCharting) a PNG (base64) y la guarda en backend.
+             * Requiere:
+             *  - Contenedor: #chartDiv2
+             *  - Ruta backend: POST /api/save-no-load-chart
+             *  - meta csrf-token en <head>
+             *
+             * @param {number|string} motorId - id_motor
+             * @returns {Promise<{ok:boolean, path?:string, message?:string}>}
+             */
 
-                if (!svgEl) {
-                    console.error('❌ SVG no encontrado para exportar');
-                    return;
+            async function saveGraphNoLoadViaSVG(motorId) {
+                const TAG = '[no_load_export]';
+                const endpoint = '/api/save-no-load-chart';
+
+                console.log(`${TAG} 🔥 start`, {
+                    motorId
+                });
+
+                if (!motorId) {
+                    console.error(`${TAG} ❌ motorId missing`);
+                    return {
+                        ok: false,
+                        message: 'motorId missing'
+                    };
                 }
 
-                const svgStr = new XMLSerializer().serializeToString(svgEl);
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                if (!csrf) {
+                    console.error(`${TAG} ❌ CSRF token missing`);
+                    return {
+                        ok: false,
+                        message: 'CSRF token missing'
+                    };
+                }
+
+                const container = document.getElementById('chartDiv2');
+                if (!container) {
+                    console.error(`${TAG} ❌ #chartDiv2 not found`);
+                    return {
+                        ok: false,
+                        message: '#chartDiv2 not found'
+                    };
+                }
+
+                const svgEl =
+                    container.querySelector('div[id^="JSCharting_"] svg') ||
+                    container.querySelector('svg');
+
+                if (!svgEl) {
+                    console.error(`${TAG} ❌ SVG not found`);
+                    return {
+                        ok: false,
+                        message: 'SVG not found'
+                    };
+                }
+
+                // ---- 1) Obtener bbox del contenido real
+                let bbox = null;
+                try {
+                    bbox = svgEl.getBBox();
+                    console.log(`${TAG} bbox`, bbox);
+                } catch (e) {
+                    console.warn(`${TAG} getBBox failed (fallback to rect)`, e);
+                }
+
+                // Tamaño target basado en bbox (si existe)
+                let width = 0,
+                    height = 0;
+
+                if (bbox && bbox.width > 0 && bbox.height > 0) {
+                    width = bbox.width;
+                    height = bbox.height;
+                } else {
+                    // fallback: rect del svg
+                    const rect = svgEl.getBoundingClientRect();
+                    width = rect.width || 900;
+                    height = rect.height || 420;
+                    console.log(`${TAG} fallback rect size`, {
+                        width,
+                        height
+                    });
+                }
+
+                // Añadir un pequeño padding opcional (evita cortar sombras)
+                const pad = 6;
+                width = Math.ceil(width + pad * 2);
+                height = Math.ceil(height + pad * 2);
+
+                console.log(`${TAG} export size`, {
+                    width,
+                    height,
+                    pad
+                });
+
+                // ---- 2) Serializar SVG y asegurar namespaces
+                const serializer = new XMLSerializer();
+                let svgStr = serializer.serializeToString(svgEl);
+
+                if (!svgStr.includes('xmlns=')) {
+                    svgStr = svgStr.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+                    console.warn(`${TAG} xmlns injected`);
+                }
+                if (!svgStr.includes('xmlns:xlink=')) {
+                    svgStr = svgStr.replace('<svg', '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+                    console.warn(`${TAG} xmlns:xlink injected`);
+                }
+
                 const svgBlob = new Blob([svgStr], {
                     type: 'image/svg+xml;charset=utf-8'
                 });
-                const url = URL.createObjectURL(svgBlob);
+                const svgUrl = URL.createObjectURL(svgBlob);
 
-                const img = new Image();
-                img.onload = () => {
+                // ---- 3) SVG -> PNG (canvas) recortado
+                let pngDataUrl = null;
+
+                try {
+                    const img = new Image();
+
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = () => reject(new Error('Failed to load SVG as image'));
+                        img.src = svgUrl;
+                    });
+
+                    const dpr = window.devicePixelRatio || 1;
                     const canvas = document.createElement('canvas');
-                    canvas.width = svgEl.clientWidth;
-                    canvas.height = svgEl.clientHeight;
-                    canvas.getContext('2d').drawImage(img, 0, 0);
-                    URL.revokeObjectURL(url);
+                    canvas.width = Math.round(width * dpr);
+                    canvas.height = Math.round(height * dpr);
 
-                    canvas.toBlob(pngBlob => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                            fetch('/api/save-no-load-chart', {
-                                method: 'POST',
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                        .getAttribute('content')
-                                },
-                                body: JSON.stringify({
-                                    image: reader.result,
-                                    motor_id: {{ $motor->id_motor }}
-                                })
-                            }).catch(err => console.error('Fetch error:', err));
+                    const ctx = canvas.getContext('2d');
+
+                    // Fondo blanco (PDF)
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Escala para nitidez
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                    // Si tenemos bbox, compensamos x/y para recortar al contenido
+                    if (bbox && bbox.width > 0 && bbox.height > 0) {
+                        const offsetX = -bbox.x + pad;
+                        const offsetY = -bbox.y + pad;
+
+                        console.log(`${TAG} drawing with bbox offsets`, {
+                            offsetX,
+                            offsetY
+                        });
+
+                        // drawImage sin width/height -> respeta el tamaño natural del SVG renderizado
+                        ctx.drawImage(img, offsetX, offsetY);
+                    } else {
+                        // fallback: dibuja escalado al tamaño
+                        ctx.drawImage(img, 0, 0, width, height);
+                    }
+
+                    URL.revokeObjectURL(svgUrl);
+
+                    const pngBlob = await new Promise((resolve) => {
+                        canvas.toBlob(resolve, 'image/png', 1.0);
+                    });
+
+                    if (!pngBlob) {
+                        console.error(`${TAG} ❌ canvas.toBlob returned null`);
+                        return {
+                            ok: false,
+                            message: 'canvas.toBlob returned null'
                         };
+                    }
+
+                    console.log(`${TAG} PNG blob created`, {
+                        bytes: pngBlob.size
+                    });
+
+                    pngDataUrl = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = () => reject(new Error('FileReader failed'));
                         reader.readAsDataURL(pngBlob);
-                    }, 'image/png');
-                };
-                img.src = url;
+                    });
+
+                    console.log(`${TAG} PNG dataURL ready`, {
+                        preview: String(pngDataUrl).slice(0, 40) + '...'
+                    });
+
+                } catch (err) {
+                    console.error(`${TAG} ❌ SVG->PNG failed`, err);
+                    try {
+                        URL.revokeObjectURL(svgUrl);
+                    } catch (e) {}
+                    return {
+                        ok: false,
+                        message: err?.message || 'SVG->PNG failed'
+                    };
+                }
+
+                // ---- 4) Enviar al backend
+                try {
+                    console.log(`${TAG} POST ->`, endpoint);
+
+                    const res = await fetch(endpoint, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrf,
+                        },
+                        body: JSON.stringify({
+                            motor_id: motorId,
+                            image: pngDataUrl,
+                        }),
+                    });
+
+                    let payload = null;
+                    try {
+                        payload = await res.json();
+                    } catch (e) {}
+
+                    console.log(`${TAG} response`, {
+                        status: res.status,
+                        ok: res.ok,
+                        payload
+                    });
+
+                    if (!res.ok) {
+                        const msg = payload?.message || `HTTP ${res.status}`;
+                        console.error(`${TAG} ❌ backend error`, msg);
+                        return {
+                            ok: false,
+                            message: msg
+                        };
+                    }
+
+                    console.log(`${TAG} ✅ success`, payload);
+                    return {
+                        ok: true,
+                        ...payload
+                    };
+
+                } catch (err) {
+                    console.error(`${TAG} ❌ fetch failed`, err);
+                    return {
+                        ok: false,
+                        message: err?.message || 'fetch failed'
+                    };
+                }
             }
+
+
+
 
             function waitForSVGThenExport() {
                 const container = document.getElementById('chartDiv2');
@@ -787,6 +1008,11 @@
             });
             document.addEventListener('DOMContentLoaded', () => {
                 initGaugeFromDom();
+            });
+        </script>
+        <script>
+            window.addEventListener('no-load-export', (e) => {
+                saveGraphNoLoadViaSVG(e.detail.motor_id);
             });
         </script>
     @endpush

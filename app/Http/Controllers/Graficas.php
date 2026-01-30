@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Motor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Motor;
 
 class Graficas extends Controller
 {
@@ -31,6 +32,8 @@ class Graficas extends Controller
         return response()->json(['message' => 'Imagen guardada con éxito.']);
     } */
 
+
+
     public function saveTemperatureChart(Request $request)
     {
         $request->validate([
@@ -40,9 +43,8 @@ class Graficas extends Controller
 
         $motor = Motor::findOrFail($request->motor_id);
 
-        // Quitar prefijo data URI (png/jpeg/etc.)
-        $base64 = $request->input('image');
-        $base64 = preg_replace('#^data:image/\w+;base64,#i', '', $base64);
+        // Quitar prefijo data URI
+        $base64 = preg_replace('#^data:image/\w+;base64,#i', '', $request->input('image'));
 
         $imageData = base64_decode($base64);
         if ($imageData === false) {
@@ -52,52 +54,68 @@ class Graficas extends Controller
             ], 422);
         }
 
-        $motor->temperaturas = $imageData;
+        // Guardar en TU estructura
+        $folder = "uploads/{$motor->year}-{$motor->os}/temperaturas";
+        $relativePath = "{$folder}/temperaturas.png"; // siempre sobrescribe
+
+        Storage::disk('public')->makeDirectory($folder);
+        Storage::disk('public')->put($relativePath, $imageData);
+
+        // Guardar path en DB (ya lo estás usando)
+        $motor->temperaturas_path = $relativePath;
         $motor->save();
 
         return response()->json([
             'ok' => true,
-            'message' => 'Imagen guardada con éxito.'
+            'message' => 'Gráfica guardada con éxito.',
+            'path' => $relativePath,
+            'url'  => asset('storage/' . ltrim($relativePath, '/')),
         ]);
     }
+
+
+
 
     public function saveNoLoadChart(Request $request)
     {
-        // 1) Validamos que 'image' viene como string
         $request->validate([
             'image'    => 'required|string',
-            'motor_id' => 'required|exists:motors,id_motor',
+            'motor_id' => 'required',
         ]);
 
-        // 2) Cargamos el motor y su prueba de no-load
-        $motor = Motor::with('noLoadTest')->findOrFail($request->motor_id);
-        $noLoadTest = $motor->noLoadTest;
-        if (! $noLoadTest) {
-            return response()->json([
-                'message' => 'No Load Test no encontrado para este motor.'
-            ], 404);
+        $motor = Motor::with('noLoadTest')->where('id_motor', $request->motor_id)->firstOrFail();
+
+        if (!$motor->noLoadTest) {
+            return response()->json(['message' => 'No Load Test no encontrado para este motor.'], 404);
         }
 
-        // 3) Limpiamos y decodificamos la cadena Base64
-        //    Quitamos cualquier prefijo data URI (png, jpeg, etc.)
-        $base64 = $request->input('image');
-        // Ejemplo de regex que cubre distintos formatos
-        $base64 = preg_replace('#^data:image/\w+;base64,#i', '', $base64);
+        // Limpia data URL
+        $base64 = preg_replace('#^data:image/\w+;base64,#i', '', $request->input('image'));
         $imageData = base64_decode($base64);
+
         if ($imageData === false) {
-            return response()->json([
-                'message' => 'Error al decodificar la imagen Base64.'
-            ], 422);
+            return response()->json(['message' => 'Base64 inválido.'], 422);
         }
 
-        // 4) Asignamos el binario al campo BLOB y guardamos
-        $noLoadTest->graph_fl = $imageData;
-        $noLoadTest->save();
+        // 🔥 TU RUTA ESPERADA
+        $folder = "uploads/{$motor->year}-{$motor->os}/no_load";
+        $relativePath = "{$folder}/no_load.png";
+
+        // Crear carpeta y sobrescribir
+        Storage::disk('public')->makeDirectory($folder);
+        Storage::disk('public')->put($relativePath, $imageData);
+
+        // Guardar ruta en DB (graph_fl VARCHAR)
+        $motor->noLoadTest->graph_fl = $relativePath;
+        $motor->noLoadTest->last_graph_saved_by = auth()->id();
+        $motor->noLoadTest->save();
 
         return response()->json([
-            'message' => 'Imagen No Load Test guardada con éxito.'
+            'message' => 'Gráfica guardada.',
+            'path' => $relativePath,
         ]);
     }
+
 
     public function getTemperatureChart($motor_id)
     {

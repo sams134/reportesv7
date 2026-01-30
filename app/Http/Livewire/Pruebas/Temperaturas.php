@@ -215,6 +215,8 @@ class Temperaturas extends Component
 
         $this->reset(['manual_seconds', 'carga_t', 'opuesto_t', 'estator_t']);
         $this->emit('updateGraph');
+        $this->dispatchBrowserEvent('temps:updated');
+
     }
     public function saveTempComment()
     {
