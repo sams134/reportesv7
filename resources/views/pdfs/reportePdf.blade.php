@@ -1392,7 +1392,9 @@
                     <td style="border:1px solid #777; padding:10px; text-align:center;">
                         @if ($tmpTempChart && file_exists($tmpTempChart))
                             <img src="file://{{ $tmpTempChart }}"
+                            
                                 style="width:100%; max-height:420px; object-fit:contain;">
+                             
                         @else
                             <div style="color:#666; font-size:12px;">
                                 Sin gráfica de temperaturas guardada
