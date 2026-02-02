@@ -212,6 +212,7 @@ class MotorController extends Controller
                 'titulo'    => $uniqueFileName,
                 'documento' => $folderPath . '/' . $uniqueFileName,
                 'id_user'   => $user->id,
+                'seccion'   => 'balanceo',
             ]);
         
             // Devolver el PDF en línea para verlo en pantalla

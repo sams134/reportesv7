@@ -56,7 +56,7 @@ class ReportesController extends Controller
         // 3) Buscar PDFs anexos desde documentos (por ahora: solo surge)
         //    OJO: esto asume que YA tienes la columna 'seccion' en documentos.
         $docsToAppend = $motor->documentos()
-            ->whereIn('seccion', ['surge', 'vibraciones'])
+            ->whereIn('seccion', ['densidades','surge', 'vibraciones', 'balanceo'])
             ->orderByRaw("FIELD(seccion, 'surge', 'vibraciones')") // primero surge, luego vibraciones
             ->orderBy('created_at')
             ->get();

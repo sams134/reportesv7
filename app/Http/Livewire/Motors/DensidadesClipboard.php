@@ -87,6 +87,7 @@ class DensidadesClipboard extends Component
             'titulo'    => $pdfName,       // o 'Densidades' si prefieres
             'documento' => $pdfFullPath,   // IMPORTANTE: relativo al disk public, sin 'storage/'
             'id_user'   => auth()->id(),
+            'seccion'   => 'densidades',
         ]);
 
         // 3) Borrar temporales
