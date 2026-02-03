@@ -21,15 +21,14 @@ class ReportesController extends Controller
     {
         $tmpTempChart = null;
 
-        if (!empty($motor->temperaturas)) {
-            $tmpName = 'temp_chart_' . $motor->id_motor . '_' . time() . '.png';
-            $tmpRel  = 'temp/' . $tmpName;
+        if (!empty($motor->temperaturas_path)) {
+            $relative = ltrim($motor->temperaturas_path, '/');
 
-            Storage::disk('public')->makeDirectory('temp');
-            Storage::disk('public')->put($tmpRel, $motor->temperaturas);
+            $fullPath = public_path('storage/' . $relative);
 
-            // Esto da una ruta real en disco: /var/www/.../public/storage/temp/xxx.png
-            $tmpTempChart = public_path('storage/' . $tmpRel);
+            if (file_exists($fullPath)) {
+                $tmpTempChart = $fullPath;
+            }
         }
         $user = auth()->user();
 
@@ -56,7 +55,7 @@ class ReportesController extends Controller
         // 3) Buscar PDFs anexos desde documentos (por ahora: solo surge)
         //    OJO: esto asume que YA tienes la columna 'seccion' en documentos.
         $docsToAppend = $motor->documentos()
-            ->whereIn('seccion', ['densidades','surge', 'vibraciones', 'balanceo'])
+            ->whereIn('seccion', ['densidades', 'surge', 'vibraciones', 'balanceo'])
             ->orderByRaw("FIELD(seccion, 'surge', 'vibraciones')") // primero surge, luego vibraciones
             ->orderBy('created_at')
             ->get();

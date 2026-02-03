@@ -448,15 +448,27 @@
                         {{ $isVoltageBalanced ? ' Usando data ' : 'Usar data' }} balanceada
                     </button>
 
-                    @if (!$motor->fin || auth()->user()->userType == 1)
                         <button type="button" class="btn btn-{{ $recorded ? 'success' : 'primary' }}"
                             wire:click="exportResults">
                             {{ $recorded ? 'Actualizar Resultados' : 'Exportar Resultados' }}
                         </button>
-                    @else
-                        <button type="button" class="btn btn-secondary" disabled>Motor Finalizado</button>
-                    @endif
+                   
                 </div>
+                 <div class="card mb-3">
+                <div class="card-body">
+                    <label class="form-label"><strong>Comentario (Amperajes)</strong></label>
+                    <textarea class="form-control" rows="3"
+                        placeholder="Ej: El consumo de amperaje se encuentra dentro de los rangos aceptables"
+                        wire:model.defer="amps_comment"></textarea>
+
+                    <div class="mt-2">
+                        <button class="btn btn-secondary" type="button" wire:click="saveAmpsComment">
+                            Guardar comentario
+                        </button>
+                    </div>
+                </div>
+            </div>
+
 
                 <h3>Tabla Referencia Consumo Amperajes en vacio</h3>
                 <div class="card col-12 d-flex justify-content-center">

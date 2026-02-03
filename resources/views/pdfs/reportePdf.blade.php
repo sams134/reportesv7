@@ -1109,7 +1109,7 @@
         $page7 = $page4 * ($multi + 3);
 
     @endphp
-    
+
     {{-- page 5 Amperajes --}}
     <div
         style="position: absolute;top:{{ $page5 }}px;left:20px;width:95%;height:1280px;border:3px solid #333">
@@ -1390,11 +1390,9 @@
                 {{-- GRAFICA TEMPERATURAS --}}
                 <tr>
                     <td style="border:1px solid #777; padding:10px; text-align:center;">
-                        @if ($tmpTempChart && file_exists($tmpTempChart))
-                            <img src="file://{{ $tmpTempChart }}"
-                            
+                        @if ($tmpTempChart)
+                            <img src="{{ $tmpTempChart }}"
                                 style="width:100%; max-height:420px; object-fit:contain;">
-                             
                         @else
                             <div style="color:#666; font-size:12px;">
                                 Sin gráfica de temperaturas guardada

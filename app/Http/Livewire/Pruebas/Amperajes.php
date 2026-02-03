@@ -16,6 +16,7 @@ class Amperajes extends Component
     public $motor;
     public $isVoltageBalanced = false, $pt = 1, $usePT = false, $ct = 1, $force_ct = true, $force_pt = true, $fct = 1, $fpt = 1, $limit_min, $limit_max;
     public $promA, $promV, $inbalance = 2, $desbalanceV, $desbalanceA;
+    public $amps_comment;
     public $v1, $v2, $v3, $a1, $a2, $a3, $c1, $c2, $c3, $con, $circ, $noLoadAmps, $recorded = false;
 
     protected $listeners = [
@@ -50,6 +51,7 @@ class Amperajes extends Component
             $this->isVoltageBalanced = ($this->noLoadTest->useBalanced == 0) ? false : true;
             $this->fct = $this->ct = $this->noLoadTest->ct;
             $this->fpt = $this->pt = $this->noLoadTest->pt;
+            $this->amps_comment = $this->noLoadTest->amps_comment;
             $this->recorded = $this->noLoadTest->recorded == 1 ? true : false;
             if ($this->fct != 1 || $this->fpt != 1)
                 $this->usePT = true;
@@ -405,6 +407,18 @@ class Amperajes extends Component
         $this->dispatchBrowserEvent('no-load-export', [
         'motor_id' => $this->motor->id_motor,
     ]);
+    }
+    public function saveAmpsComment()
+    {
+        $this->noLoadTest->update([
+            'amps_comment' => $this->amps_comment,
+        ]);
+
+        $this->dispatchBrowserEvent('swal:alert', [
+            'title' => 'Comentario guardado',
+            'text'  => 'El comentario sobre los amperajes ha sido guardado.',
+            'icon'  => 'success',
+        ]);
     }
     
 }
