@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Intervention\Image\Facades\Image as IMG;
+use Illuminate\Support\Facades\Log;
 
 
 
@@ -57,7 +58,7 @@ class CreateJob extends Component
         }
         $folderPath = '/uploads/' . $this->jobRecord->prefix . $this->year . '-' . $this->jobos . '/Fotos';
 
-        
+
         try {
             $image = IMG::make($this->photo);
             if ($image->exif('Orientation')) {
@@ -93,7 +94,7 @@ class CreateJob extends Component
                 'value_campo1' => $this->value_campo1,
                 'value_campo2' => $this->value_campo2,
             ]);
-            $comentario = $this->jobRecord->name.' '.$this->jobRecord->campo1.':' . $this->value_campo1 . ' ' . $this->jobRecord->campo2 . ':' . $this->value_campo2;
+            $comentario = $this->jobRecord->name . ' ' . $this->jobRecord->campo1 . ':' . $this->value_campo1 . ' ' . $this->jobRecord->campo2 . ':' . $this->value_campo2;
             $imgCreated = $job->images()->create([
                 'image' => $imagePath,
                 'comentario' => $comentario,
@@ -104,10 +105,19 @@ class CreateJob extends Component
                     $job->usersAssigned()->attach($selected, ['assigned_by' => auth()->user()->id]);
                 }
             }
-        } catch (\Exception $e) {
-            dd($e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('Error creando Job', [
+                'motor_id' => $this->motor->id ?? null,
+                'job_type_selected' => $this->jobTypeSelected ?? null,
+                'user_id' => auth()->id(),
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            session()->flash('error', 'Ocurrió un error al crear el trabajo. Revisa los datos e intenta de nuevo.');
+            return; // evita continuar y evita redirect
         }
-       
+
         return redirect()->route('motores.show', $this->motor)->with('success', 'Adicionamos el trabajo ' . $job->year . '-' . $job->os . ', al equipo ' . $this->motor->year . '-' . $this->motor->os);
     }
     public function render()
