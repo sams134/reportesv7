@@ -316,7 +316,7 @@
                     'cojineteMax' => $cojineteMax,
                     'cojineteMin' => $cojineteMin,
                     'eje_ball_Max' => $rod->rodamiento->eje_ball_max,
-                    'eje_ball_Min' => $rod->rodamiento->eje_ball_min,
+                    'eje_ball_min' => $rod->rodamiento->eje_ball_min,
                     'alojamientoInicialMax' => $alojamientoInicialMax,
                     'alojamientoInicialMin' => $alojamientoInicialMin,
                     'alojamientoFinalMax' => $alojamientoFinalMax,
