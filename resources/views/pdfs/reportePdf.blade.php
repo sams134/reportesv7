@@ -293,6 +293,10 @@
                     $rodInicial->cx,
                     $rodInicial->cy,
                 );
+                $ejeInicialMax = max($rodInicial->e1,$rodInicial->e2,$rodInicial->e3);
+                $ejeInicialMin = min($rodInicial->e1,$rodInicial->e2,$rodInicial->e3);
+                $ejeFinalMax = max($rod->e1,$rod->e2,$rod->e3);
+                $ejeFinalMin = min($rod->e1,$rod->e2,$rod->e3);
                 $alojamientoFinalMax = max($rod->ax, $rod->ay, $rod->bx, $rod->by, $rod->cx, $rod->cy);
                 $alojamientoFinalMin = min($rod->ax, $rod->ay, $rod->bx, $rod->by, $rod->cx, $rod->cy);
                 $rodamientos[] = [
@@ -315,6 +319,10 @@
                     'alojamientoInicialMin' => $alojamientoInicialMin,
                     'alojamientoFinalMax' => $alojamientoFinalMax,
                     'alojamientoFinalMin' => $alojamientoFinalMin,
+                    'ejeInicialMax' => $ejeInicialMax,
+                    'ejeInicialMin' => $ejeInicialMin,
+                    'ejeFinalMax' => $ejeFinalMax,
+                    'ejeFinalMin' => $ejeFinalMin,
                 ];
             }
         }
@@ -937,7 +945,7 @@
                                     <tr>
                                         <td colspan="3"
                                             style="background: #000033;color:#ddd;font-size:15px;font-weight:bold;padding:5px">
-                                            Medidas de Alojamientos @ 25.3 °C</td>
+                                            Medidas de Ejes @ 25.3 °C</td>
                                     </tr>
                                     <tr>
                                         <td>PUNTO</td>
@@ -963,10 +971,10 @@
                                     <tr>
                                         <td>TOL MAX:</td>
                                         @php
-                                            $diff = $rodamiento['alojamientoInicialMax'] - $rodamiento['cojineteMin'];
+                                            $diff = $rodamiento['ejeInicialMax'] - $rodamiento['eje_ball_min'];
                                             $color =
-                                                $diff > $rodamiento['rod']['rodamiento']['probable_min'] &&
-                                                $diff < $rodamiento['rod']['rodamiento']['probable_max']
+                                                $diff > $rodamiento['rod']['rodamiento']['eje_ball_min'] &&
+                                                $diff < $rodamiento['rod']['rodamiento']['eje_ball_max']
                                                     ? '#00aa00'
                                                     : '#dd0000';
                                         @endphp
@@ -977,8 +985,8 @@
                                         @php
                                             $diff = $rodamiento['alojamientoFinalMax'] - $rodamiento['cojineteMin'];
                                             $color =
-                                                $diff > $rodamiento['rod']['rodamiento']['probable_min'] &&
-                                                $diff < $rodamiento['rod']['rodamiento']['probable_max']
+                                                $diff > $rodamiento['rod']['rodamiento']['eje_ball_min'] &&
+                                                $diff < $rodamiento['rod']['rodamiento']['eje_ball_max']
                                                     ? '#00aa00'
                                                     : '#dd0000';
                                         @endphp
@@ -990,10 +998,10 @@
                                     <tr>
                                         <td>TOL MIN:</td>
                                         @php
-                                            $diff = $rodamiento['alojamientoInicialMin'] - $rodamiento['cojineteMax'];
+                                            $diff = $rodamiento['ejeInicialMin'] - $rodamiento['eje_ball_Max'];
                                             $color =
-                                                $diff > $rodamiento['rod']['rodamiento']['probable_min'] &&
-                                                $diff < $rodamiento['rod']['rodamiento']['probable_max']
+                                                $diff > $rodamiento['rod']['rodamiento']['eje_ball_min'] &&
+                                                $diff < $rodamiento['rod']['rodamiento']['eje_ball_max']
                                                     ? '#00aa00'
                                                     : '#dd0000';
                                         @endphp
@@ -1003,10 +1011,10 @@
                                             μm
                                         </td>
                                         @php
-                                            $diff = $rodamiento['alojamientoFinalMin'] - $rodamiento['cojineteMax'];
+                                            $diff = $rodamiento['ejeFinalMin'] - $rodamiento['eje_ball_Max'];
                                             $color =
-                                                $diff > $rodamiento['rod']['rodamiento']['probable_min'] &&
-                                                $diff < $rodamiento['rod']['rodamiento']['probable_max']
+                                                $diff > $rodamiento['rod']['rodamiento']['eje_ball_min'] &&
+                                                $diff < $rodamiento['rod']['rodamiento']['eje_ball_max']
                                                     ? '#00aa00'
                                                     : '#dd0000';
                                         @endphp
