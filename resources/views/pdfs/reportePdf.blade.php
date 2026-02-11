@@ -973,7 +973,7 @@
                                     <tr>
                                         <td>TOL MAX:</td>
                                         @php
-                                            $diff = $rodamiento['ejeInicialMax'] - $rodamiento['eje_ball_min'];
+                                            $diff = $rodamiento['ejeInicialMax'] - min($rodamiento['rod']['s'],$rodamiento['rod']['t']);
                                             $color =
                                                 $diff > $rodamiento['rod']['rodamiento']['eje_ball_min'] &&
                                                 $diff < $rodamiento['rod']['rodamiento']['eje_ball_max']
@@ -981,11 +981,13 @@
                                                     : '#dd0000';
                                         @endphp
                                         <td style="background:{{ $color }}">
-                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff * 1000), 0) }}
+                                           {{--  {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff), 0) }} --}}
+                                           {{ ($diff > 0 ? '(-)' : ($diff < 0 ? '(+)' : '')) . number_format(abs($diff * 1000), 0) }}
                                             μm
                                         </td>
                                         @php
-                                            $diff = $rodamiento['alojamientoFinalMax'] - $rodamiento['cojineteMin'];
+                                            
+                                            $diff = $rodamiento['ejeFinalMax'] - min($rodamiento['rod']['s'],$rodamiento['rod']['t']);
                                             $color =
                                                 $diff > $rodamiento['rod']['rodamiento']['eje_ball_min'] &&
                                                 $diff < $rodamiento['rod']['rodamiento']['eje_ball_max']
@@ -993,14 +995,15 @@
                                                     : '#dd0000';
                                         @endphp
                                         <td style="background:{{ $color }}">
-                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff * 1000), 0) }}
+                                            {{ ($diff > 0 ? '(-)' : ($diff < 0 ? '(+)' : '')) . number_format(abs($diff * 1000), 0) }}
                                             μm
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>TOL MIN:</td>
                                         @php
-                                            $diff = $rodamiento['ejeInicialMin'] - $rodamiento['eje_ball_Max'];
+                                             
+                                             $diff = $rodamiento['ejeInicialMin'] - max($rodamiento['rod']['s'],$rodamiento['rod']['t']);
                                             $color =
                                                 $diff > $rodamiento['rod']['rodamiento']['eje_ball_min'] &&
                                                 $diff < $rodamiento['rod']['rodamiento']['eje_ball_max']
@@ -1009,11 +1012,11 @@
                                         @endphp
                                         <td style="background:{{ $color }}">
 
-                                            {{ ($diff > 0 ? '(+)' : ($diff < 0 ? '(-)' : '')) . number_format(abs($diff * 1000), 0) }}
+                                            {{ ($diff > 0 ? '(-)' : ($diff < 0 ? '(+)' : '')) . number_format(abs($diff * 1000), 0) }}
                                             μm
                                         </td>
                                         @php
-                                            $diff = $rodamiento['ejeFinalMin'] - $rodamiento['eje_ball_Max'];
+                                            $diff = $rodamiento['ejeFinalMin'] - max($rodamiento['rod']['s'],$rodamiento['rod']['t']);
                                             $color =
                                                 $diff > $rodamiento['rod']['rodamiento']['eje_ball_min'] &&
                                                 $diff < $rodamiento['rod']['rodamiento']['eje_ball_max']
