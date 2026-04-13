@@ -215,10 +215,12 @@ class MotorController extends Controller
                 'seccion'   => 'balanceo',
             ]);
         
+        
             // Devolver el PDF en línea para verlo en pantalla
             return response($pdfContent, 200)
                    ->header('Content-Type', 'application/pdf')
                    ->header('Content-Disposition', 'inline; filename="balanceo.pdf"');
+            
         
     }
     public function downloadPdfMateriales(Motor $motor)

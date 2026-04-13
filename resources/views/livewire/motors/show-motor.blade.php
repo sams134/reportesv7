@@ -53,12 +53,14 @@
                         @endif
                         <HR>
                         </HR>
+                        @if (in_array(auth()->user()->userType, [1,2,3,5,6,8,11]))
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <a class="btn btn-falcon-danger me-1 mb-1 little-button"
                                 href="{{ route('motors.createJob', $motor) }}">
                                 <span><i class="fas fa-plus mx-1"></i> Agregar Trabajo a OS </span></a>
                             </a>
                         </li>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -98,12 +100,14 @@
                                     <span><i class="far fa-file-pdf mx-1"></i> Hoja Densidades </span></a>
                                 </a>
                             </li>
+                              @if (in_array(auth()->user()->userType, [1,2,3,5,6,8,11]))
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <button class="btn btn-falcon-primary me-1 mb-1 little-button" type="button"
                                     wire:click="$emit('openAsignacionesModal', {{ $motor->id_motor }})">
                                     <span><i class="fas fa-user-plus mx-1"></i> Asignar a Tecnico </span></a>
                                 </button>
                             </li>
+                                
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 @livewire('motors.pedido-materiales', ['motor' => $motor])
                             </li>
@@ -119,6 +123,7 @@
                                     <span><i class="fas fa-balance-scale mx-1"></i>Balanceo Dinamico </span></a>
                                 </a>
                             </li>
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -670,7 +675,9 @@
                         href="{{ route('motores.downloadPdfMateriales', $motor) }}" target="_blank">
                         <i class="far fa-file-pdf mx-1"></i> Imprimir PDF
                     </a>
+                     @if (in_array(auth()->user()->userType, [1,2,3,5,6,8,11]))
                     @livewire('motors.pedido-materiales', ['motor' => $motor])
+                    @endif
                 </div>
 
             </x-pretty-card>

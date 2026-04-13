@@ -11,6 +11,7 @@ class SeleccionFotos extends Component
 {
     public $motor;
     public $titulos = []; // foto_id => titulo
+    public $titulosJobs = []; // foto_id => titulo
     public $tipos_foto = []; // todos los tipos disponibles
     public $fotoTipos = []; // foto_id => type
 
@@ -29,6 +30,14 @@ class SeleccionFotos extends Component
         foreach ($this->motor->fotos as $f) {
             $this->titulos[$f->id] = $f->titulo ?? '';
             $this->fotoTipos[$f->id] = $f->type ?? null;
+        }
+        foreach($motor->jobs() as $job) {
+            foreach($job->fotos as $f) {
+                if (!array_key_exists($f->id, $this->titulosJobs)) {
+                    $this->titulosJobs[$f->id] = $f->comentario ?? '';
+                 
+                }
+            }
         }
     }
     public function render()
@@ -63,6 +72,23 @@ class SeleccionFotos extends Component
         $value = mb_substr($value, 0, 191); // si tu columna es varchar(191)
 
         $foto->titulo = $value;
+        $foto->save();
+
+        // refresca relación por si usas los datos en otros lados
+        $this->motor->load('fotos');
+    }
+    public function saveTituloJob($fotoId)
+    {
+        if (!array_key_exists($fotoId, $this->titulosJobs)) return;
+
+        $foto = Foto::find($fotoId);
+        if (!$foto) return;
+
+        // opcional: validación básica
+        $value = trim((string) $this->titulosJobs[$fotoId]);
+        $value = mb_substr($value, 0, 254); // si tu columna es varchar(254)
+
+        $foto->comentario = $value;
         $foto->save();
 
         // refresca relación por si usas los datos en otros lados

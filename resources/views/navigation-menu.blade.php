@@ -168,6 +168,7 @@
                 </a>
                 </li>
                 @endif
+                 @if (!in_array(auth()->user()->userType, [13]))
                 <li class="nav-item">
                     <!-- label-->
                     <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
@@ -209,7 +210,8 @@
                       </ul>
 
                 </li>
-
+                @endif
+                @if (!in_array(auth()->user()->userType, [13]))
                 <li class="nav-item">
                     <!-- label-->
                     <div class="row navbar-vertical-label-wrapper mt-3 mb-2">
@@ -234,6 +236,7 @@
                     </a>
 
                 </li>
+                @endif
 
                 
                 <li class="nav-item">
@@ -249,7 +252,7 @@
                     <a class="nav-link" href="#"
                         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         <div class="d-flex align-items-center">
-                            <span class="nav-link-icon"><span class="fas fa-horse"></span></span>
+                            <span class="nav-link-icon"><span class="fas fa-sign-out-alt"></span></span>
                             <span class="nav-link-text ps-1">Cerrar Sesi&oacute;n</span>
                         </div>
                     </a>

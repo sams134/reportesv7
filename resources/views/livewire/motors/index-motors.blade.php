@@ -1,10 +1,12 @@
 <div>
     {{-- To attain knowledge, add things every day; To attain wisdom, subtract things every day. --}}
     <x-pretty-card>
-        <h2>Listado General de Motores del usuario{{ auth()->user()->name }}
+        <h2>Listado General de Motores del usuario {{ auth()->user()->name }}
         </h2>
         Revisa todos los motores en el sistema
     </x-pretty-card>
+
+     @if (in_array(auth()->user()->userType, [1, 2, 3,8]))
     <x-pretty-card>
         <div class="d-flex">
             <a class="btn btn-outline-primary me-1 mb-1" type="button" href="{{ route('motores.create') }}">
@@ -38,10 +40,8 @@
             @endif
         </div>
 
-
-
-
     </x-pretty-card>
+        @endif
     <div class="card" id="runningProjectTable">
         <div class="card-header">
 

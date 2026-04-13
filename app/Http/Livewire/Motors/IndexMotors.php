@@ -94,7 +94,7 @@ class IndexMotors extends Component
         if ($user->userType === User::CLIENTE) {
             $motores = $motores->where('id_cliente', $user->id_cliente);
         }
-
+    
         // Procesar la búsqueda si existe
         if ($this->search !== '') {
             if (strpos($this->search, '-') !== false) {
