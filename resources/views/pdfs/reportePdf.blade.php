@@ -1051,7 +1051,11 @@
     @endif
     @php
         $fotos = $motor->fotos->where('addToReport', 1)->values();
-        $pageCount = 6;
+        if ($rodamientos)
+            $pageCount = 6;
+        else {
+            $pageCount = 2;
+        }
     @endphp
 
     @for ($i = 0; $i < $fotos->count(); $i++)
