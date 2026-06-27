@@ -2,6 +2,27 @@
     $seccionPdf = $seccionPdf ?? 'completo';
 @endphp
 @php
+    /*
+     * Convierte rutas locales para wkhtmltopdf.
+     * Especialmente necesario en Windows:
+     * C:\Apache24\htdocs\... -> file:///C:/Apache24/htdocs/...
+     */
+    $pdfFileUrl = function ($path) {
+        if (!$path) {
+            return '';
+        }
+
+        $path = str_replace('\\', '/', $path);
+        $path = str_replace(' ', '%20', $path);
+
+        if (preg_match('/^[A-Za-z]:\//', $path)) {
+            return 'file:///' . $path;
+        }
+
+        return 'file://' . $path;
+    };
+@endphp
+@php
     $logoPath = public_path('img/logo.jpg');
     $cajaPath = public_path('img/caja-portada1.png');
 
