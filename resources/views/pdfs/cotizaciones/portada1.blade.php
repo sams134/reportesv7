@@ -1,4 +1,7 @@
 @php
+    $seccionPdf = $seccionPdf ?? 'completo';
+@endphp
+@php
     $logoPath = public_path('img/logo.jpg');
     $cajaPath = public_path('img/caja-portada1.png');
 
@@ -332,6 +335,22 @@
     $cover1EquipoDescripcion = '';
     $cover1FotoPath = null;
 
+    /*
+     * 1. Si la cotización tiene foto propia de portada,
+     * usarla primero cuando no hay OS ingresada.
+     */
+    if (!empty($cotizacion->foto_portada)) {
+        $fotoPortada = ltrim($cotizacion->foto_portada, '/');
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($fotoPortada)) {
+            $cover1FotoPath = public_path('storage/' . $fotoPortada);
+        }
+    }
+
+    /*
+     * 2. Si hay motor/OS, cargar datos técnicos y, si existe,
+     * usar foto tipo 3 del motor.
+     */
     if (!empty($cotizacion->motor)) {
         $motor = $cotizacion->motor;
 
@@ -383,16 +402,35 @@
 
         $cover1EquipoDescripcion = implode(', ', $descParts);
 
-        // Foto principal tipo 3
-        if ($motor->fotos && $motor->fotos->count() > 0) {
-            $fotoType13 = $motor->fotos->where('type', 3)->first();
+        /*
+         * Foto principal tipo 3 del motor.
+         * Si quieres que la foto subida en la cotización tenga prioridad,
+         * deja esta parte condicionada con !$cover1FotoPath.
+         */
+        if (!$cover1FotoPath && $motor->fotos && $motor->fotos->count() > 0) {
+            $fotoType3 = $motor->fotos->where('type', 3)->first();
 
-            if ($fotoType13 && !empty($fotoType13->thumb) && Storage::exists('public' . $fotoType13->thumb)) {
-                $cover1FotoPath = public_path('storage' . $fotoType13->thumb);
+            if (
+                $fotoType3 &&
+                !empty($fotoType3->thumb) &&
+                \Illuminate\Support\Facades\Storage::exists('public' . $fotoType3->thumb)
+            ) {
+                $cover1FotoPath = public_path('storage' . $fotoType3->thumb);
             }
         }
     }
 
+    /*
+     * 3. Si no hay motor, pero sí hay resumen manual del equipo,
+     * usarlo como descripción.
+     */
+    if (!$cover1EquipoDescripcion && !empty($cotizacion->resumen_equipo)) {
+        $cover1EquipoDescripcion = $cotizacion->resumen_equipo;
+    }
+
+    /*
+     * 4. Cliente fallback.
+     */
     if (!$cover1Cliente) {
         $cover1Cliente = strtoupper(
             trim(
@@ -1483,272 +1521,336 @@
 </style>
 
 <body>
-    @if ($usarPortada)
+    @if (in_array($seccionPdf, ['completo', 'inicio']))
+        @if ($usarPortada)
 
-        @if ($esCotizacionUnificada)
-            <div class="cover2-page">
-                <div class="cover2-bg"></div>
+            @if ($esCotizacionUnificada)
+                <div class="cover2-page">
+                    <div class="cover2-bg"></div>
 
-                <div class="cover2-title-wrap">
-                    @if ($tituloLinea1)
-                        <div class="cover2-title-dark">
-                            {{ strtoupper($tituloLinea1) }}
+                    <div class="cover2-title-wrap">
+                        @if ($tituloLinea1)
+                            <div class="cover2-title-dark">
+                                {{ strtoupper($tituloLinea1) }}
+                            </div>
+                        @endif
+
+                        @if ($tituloLinea2)
+                            <div class="cover2-title-light">
+                                {{ strtoupper($tituloLinea2) }}
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="cover2-subtitle-box">
+                        {{ $subtituloPortada }}
+                    </div>
+
+                    {{-- SOLO el nombre del cliente abajo, porque el "Cliente:" ya viene en la imagen base --}}
+                    <div class="cover2-client-name">
+                        {{ strtoupper($clientePortada) }}
+                    </div>
+                </div>
+
+                <div class="page-break"></div>
+            @else
+                <div class="cover1-page">
+                    <div class="cover1-bg"></div>
+
+                    <div class="cover1-title">
+                        {!! nl2br(e($cover1Titulo)) !!}
+                    </div>
+
+                    @if ($cover1OS)
+                        <div class="cover1-os">
+                            {{ strtoupper($cover1OS) }}
                         </div>
                     @endif
 
-                    @if ($tituloLinea2)
-                        <div class="cover2-title-light">
-                            {{ strtoupper($tituloLinea2) }}
+                    @if ($cover1EquipoDescripcion)
+                        <div class="cover1-equipo">
+                            {{ $cover1EquipoDescripcion }}
+                        </div>
+                    @endif
+
+                    @if ($cover1Cliente)
+                        <div class="cover1-cliente">
+                            {{ $cover1Cliente }}
+                        </div>
+                    @endif
+
+                    @if ($cover1FotoPath)
+                        <div class="cover1-foto-wrap" style="background-image: url('{{ $cover1FotoPath }}');">
                         </div>
                     @endif
                 </div>
 
-                <div class="cover2-subtitle-box">
-                    {{ $subtituloPortada }}
-                </div>
+                <div class="page-break"></div>
+            @endif
 
-                {{-- SOLO el nombre del cliente abajo, porque el "Cliente:" ya viene en la imagen base --}}
-                <div class="cover2-client-name">
-                    {{ strtoupper($clientePortada) }}
-                </div>
-            </div>
-
-            <div class="page-break"></div>
-        @else
-            <div class="cover1-page">
-                <div class="cover1-bg"></div>
-
-                <div class="cover1-title">
-                    {!! nl2br(e($cover1Titulo)) !!}
-                </div>
-
-                @if ($cover1OS)
-                    <div class="cover1-os">
-                        {{ strtoupper($cover1OS) }}
-                    </div>
-                @endif
-
-                @if ($cover1EquipoDescripcion)
-                    <div class="cover1-equipo">
-                        {{ $cover1EquipoDescripcion }}
-                    </div>
-                @endif
-
-                @if ($cover1Cliente)
-                    <div class="cover1-cliente">
-                        {{ $cover1Cliente }}
-                    </div>
-                @endif
-
-                @if ($cover1FotoPath)
-                    <div class="cover1-foto-wrap" style="background-image: url('{{ $cover1FotoPath }}');">
-                    </div>
-                @endif
-            </div>
-
-            <div class="page-break"></div>
         @endif
+
+        <div class="page-break"></div>
+
+        <div class="page-letter">
+
+            @if (file_exists($logoPath))
+                <img src="{{ $logoPath }}" class="letter-logo" alt="CME">
+            @endif
+
+            @if (file_exists($wegPath))
+                <img src="{{ $wegPath }}" class="letter-weg" alt="WEG">
+            @endif
+
+            @if (file_exists($easaPath))
+                <img src="{{ $easaPath }}" class="letter-easa" alt="EASA">
+            @endif
+
+            <div class="letter-slogan-box">
+                Soluciones Electromecánicas de alta confiabilidad
+            </div>
+
+            <div class="letter-date">
+                {{ strtoupper($fechaCartaTexto) }}
+            </div>
+
+            <div class="letter-client">
+                <div>Señores</div>
+
+                <div class="cliente-nombre">
+                    {{ $clienteNombre }}
+                </div>
+
+                @if ($nombreContacto)
+                    <div>
+                        {{ $nombreContacto }}
+                        @if ($puestoContacto)
+                            - {{ $puestoContacto }}
+                        @endif
+                        @if ($emailContacto)
+                            [{{ $emailContacto }}]
+                        @endif
+                    </div>
+                @endif
+
+                <br>
+
+                @if ($razonSocial)
+                    <div>{{ $razonSocial }}</div>
+                @endif
+
+                @if ($direccionFiscal)
+                    <div>{{ $direccionFiscal }}</div>
+                @endif
+
+                @if ($paisCliente)
+                    <div>{{ $paisCliente }}</div>
+                @endif
+
+                @if ($nitCliente)
+                    <div>Nit: {{ $nitCliente }}</div>
+                @endif
+            </div>
+
+            <div class="letter-body">
+                {!! $textoPresentacion !!}
+            </div>
+
+            <div class="letter-signature">
+                <div class="saludo">
+                    Muy atentamente,
+                </div>
+
+                <div class="nombre">
+                    {{ $firmante['nombre'] }}
+                </div>
+
+                <div class="puesto">
+                    {{ $firmante['puesto'] }}
+                </div>
+
+                <div class="datos">
+                    <strong>E-mail:</strong> {{ $firmante['email'] }}<br>
+                    <strong>Celular:</strong> {{ $firmante['celular'] }}<br>
+                    <strong>Oficina:</strong> {{ $firmante['oficina'] }}<br>
+                    <strong>Fax:</strong> {{ $firmante['fax'] }}
+                </div>
+
+                <div class="direccion">
+                    {{ $firmante['direccion'] }}
+                </div>
+            </div>
+
+        </div>
+        <div class="page-break"></div>
 
     @endif
+    @if (in_array($seccionPdf, ['completo', 'items']))
+        <div class="page-items">
 
-    <div class="page-break"></div>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th colspan="5" class="items-header-cell">
+                            <div class="items-pdf-header">
 
-    <div class="page-letter">
-
-        @if (file_exists($logoPath))
-            <img src="{{ $logoPath }}" class="letter-logo" alt="CME">
-        @endif
-
-        @if (file_exists($wegPath))
-            <img src="{{ $wegPath }}" class="letter-weg" alt="WEG">
-        @endif
-
-        @if (file_exists($easaPath))
-            <img src="{{ $easaPath }}" class="letter-easa" alt="EASA">
-        @endif
-
-        <div class="letter-slogan-box">
-            Soluciones Electromecánicas de alta confiabilidad
-        </div>
-
-        <div class="letter-date">
-            {{ strtoupper($fechaCartaTexto) }}
-        </div>
-
-        <div class="letter-client">
-            <div>Señores</div>
-
-            <div class="cliente-nombre">
-                {{ $clienteNombre }}
-            </div>
-
-            @if ($nombreContacto)
-                <div>
-                    {{ $nombreContacto }}
-                    @if ($puestoContacto)
-                        - {{ $puestoContacto }}
-                    @endif
-                    @if ($emailContacto)
-                        [{{ $emailContacto }}]
-                    @endif
-                </div>
-            @endif
-
-            <br>
-
-            @if ($razonSocial)
-                <div>{{ $razonSocial }}</div>
-            @endif
-
-            @if ($direccionFiscal)
-                <div>{{ $direccionFiscal }}</div>
-            @endif
-
-            @if ($paisCliente)
-                <div>{{ $paisCliente }}</div>
-            @endif
-
-            @if ($nitCliente)
-                <div>Nit: {{ $nitCliente }}</div>
-            @endif
-        </div>
-
-        <div class="letter-body">
-            {!! $textoPresentacion !!}
-        </div>
-
-        <div class="letter-signature">
-            <div class="saludo">
-                Muy atentamente,
-            </div>
-
-            <div class="nombre">
-                {{ $firmante['nombre'] }}
-            </div>
-
-            <div class="puesto">
-                {{ $firmante['puesto'] }}
-            </div>
-
-            <div class="datos">
-                <strong>E-mail:</strong> {{ $firmante['email'] }}<br>
-                <strong>Celular:</strong> {{ $firmante['celular'] }}<br>
-                <strong>Oficina:</strong> {{ $firmante['oficina'] }}<br>
-                <strong>Fax:</strong> {{ $firmante['fax'] }}
-            </div>
-
-            <div class="direccion">
-                {{ $firmante['direccion'] }}
-            </div>
-        </div>
-
-    </div>
-    <div class="page-break"></div>
-
-    <div class="page-items">
-
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th colspan="5" class="items-header-cell">
-                        <div class="items-pdf-header">
-
-                            <table class="items-logos-table">
-                                <tr>
-                                    <td class="items-logo-cme-cell">
-                                        @if (file_exists($logoPath))
-                                            <img src="{{ $logoPath }}" class="items-logo-cme" alt="CME">
-                                        @endif
-
-                                        <div class="items-slogan-box">
-                                            Soluciones Electromecánicas de alta confiabilidad
-                                        </div>
-                                    </td>
-
-                                    <td class="items-logo-certificaciones-cell">
-                                        @if (file_exists($wegPath))
-                                            <img src="{{ $wegPath }}" class="items-logo-weg" alt="WEG">
-                                        @endif
-
-                                        @if (file_exists($easaPath))
-                                            <img src="{{ $easaPath }}" class="items-logo-easa" alt="EASA">
-                                        @endif
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <div class="items-title">
-                                DETALLE DE TRABAJOS Y MATERIALES COTIZADOS
-                            </div>
-
-                            <div class="items-info-card">
-                                <table class="items-info-table">
+                                <table class="items-logos-table">
                                     <tr>
-                                        <td class="label">Cotización:</td>
-                                        <td class="value">{{ $cotizacion->numero }}</td>
+                                        <td class="items-logo-cme-cell">
+                                            @if (file_exists($logoPath))
+                                                <img src="{{ $logoPath }}" class="items-logo-cme" alt="CME">
+                                            @endif
 
-                                        <td class="label">Cliente:</td>
-                                        <td class="value">{{ $clienteNombre }}</td>
+                                            <div class="items-slogan-box">
+                                                Soluciones Electromecánicas de alta confiabilidad
+                                            </div>
+                                        </td>
+
+                                        <td class="items-logo-certificaciones-cell">
+                                            @if (file_exists($wegPath))
+                                                <img src="{{ $wegPath }}" class="items-logo-weg" alt="WEG">
+                                            @endif
+
+                                            @if (file_exists($easaPath))
+                                                <img src="{{ $easaPath }}" class="items-logo-easa" alt="EASA">
+                                            @endif
+                                        </td>
                                     </tr>
-
-                                    @if ($motor)
-                                        <tr>
-                                            <td class="label">OS:</td>
-                                            <td class="value">
-                                                {{ $motor->fullos ?? ($motor->year ?? '') . '-' . ($motor->os ?? '') }}
-                                            </td>
-
-                                            <td class="label">Equipo:</td>
-                                            <td class="value">{{ $nombreEquipo }}</td>
-                                        </tr>
-                                    @endif
                                 </table>
+
+                                <div class="items-title">
+                                    DETALLE DE TRABAJOS Y MATERIALES COTIZADOS
+                                </div>
+
+                                <div class="items-info-card">
+                                    <table class="items-info-table">
+                                        <tr>
+                                            <td class="label">Cotización:</td>
+                                            <td class="value">{{ $cotizacion->numero }}</td>
+
+                                            <td class="label">Cliente:</td>
+                                            <td class="value">{{ $clienteNombre }}</td>
+                                        </tr>
+
+                                        @if ($motor)
+                                            <tr>
+                                                <td class="label">OS:</td>
+                                                <td class="value">
+                                                    {{ $motor->fullos ?? ($motor->year ?? '') . '-' . ($motor->os ?? '') }}
+                                                </td>
+
+                                                <td class="label">Equipo:</td>
+                                                <td class="value">{{ $nombreEquipo }}</td>
+                                            </tr>
+                                        @endif
+                                    </table>
+                                </div>
+
                             </div>
+                        </th>
+                    </tr>
 
-                        </div>
-                    </th>
-                </tr>
+                    <tr class="items-columns">
+                        <th class="item-numero">No. Item</th>
+                        <th class="item-descripcion">Descripción</th>
+                        <th class="item-cantidad">Cantidad</th>
+                        <th class="item-precio">Precio Unitario</th>
+                        <th class="item-total">Precio Total</th>
+                    </tr>
+                </thead>
 
-                <tr class="items-columns">
-                    <th class="item-numero">No. Item</th>
-                    <th class="item-descripcion">Descripción</th>
-                    <th class="item-cantidad">Cantidad</th>
-                    <th class="item-precio">Precio Unitario</th>
-                    <th class="item-total">Precio Total</th>
-                </tr>
-            </thead>
+                <tbody>
+                    @if ($esCotizacionUnificada)
 
-            <tbody>
-                @if ($esCotizacionUnificada)
+                        @forelse($gruposItemsUnificados as $grupo)
+                            <tr class="unified-group-row">
+                                <td colspan="5">
+                                    <div class="unified-group-header">
+                                        <div>
+                                            <div class="unified-group-title">
+                                                {{ $grupo['titulo'] }}
+                                            </div>
 
-                    @forelse($gruposItemsUnificados as $grupo)
-                        <tr class="unified-group-row">
-                            <td colspan="5">
-                                <div class="unified-group-header">
-                                    <div>
-                                        <div class="unified-group-title">
-                                            {{ $grupo['titulo'] }}
-                                        </div>
+                                            <div class="unified-group-subtitle">
+                                                @if ($grupo['numero_origen'])
+                                                    Cotización origen: {{ $grupo['numero_origen'] }}
+                                                @endif
 
-                                        <div class="unified-group-subtitle">
-                                            @if ($grupo['numero_origen'])
-                                                Cotización origen: {{ $grupo['numero_origen'] }}
-                                            @endif
+                                                @if ($grupo['equipo'])
+                                                    &nbsp; | &nbsp; {{ $grupo['equipo'] }}
+                                                @endif
 
-                                            @if ($grupo['equipo'])
-                                                &nbsp; | &nbsp; {{ $grupo['equipo'] }}
-                                            @endif
-
-                                            @if ($grupo['potencia'])
-                                                &nbsp; | &nbsp; {{ $grupo['potencia'] }}
-                                            @endif
+                                                @if ($grupo['potencia'])
+                                                    &nbsp; | &nbsp; {{ $grupo['potencia'] }}
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
 
-                        @forelse($grupo['items'] as $item)
+                            @forelse($grupo['items'] as $item)
+                                @php
+                                    $precioTotal = (float) ($item->precio_total ?? 0);
+                                    $precioUnitario = (float) ($item->precio_unitario ?? 0);
+                                    $esDescuento = $precioTotal < 0;
+                                @endphp
+
+                                <tr>
+                                    <td class="item-numero">
+                                        {{ $loop->iteration }}
+                                    </td>
+
+                                    <td class="item-descripcion">
+                                        <div class="item-nombre {{ $esDescuento ? 'item-descuento' : '' }}">
+                                            {{ $item->nombre }}
+                                        </div>
+
+                                        @if ($item->descripcion)
+                                            <div class="item-detalle">
+                                                {{ $item->descripcion }}
+                                            </div>
+                                        @endif
+                                    </td>
+
+                                    <td class="item-cantidad">
+                                        {{ number_format((float) $item->cantidad, 2) }}
+                                    </td>
+
+                                    <td class="item-precio {{ $esDescuento ? 'item-descuento' : '' }}">
+                                        {{ $formatoMoneda($precioUnitario) }}
+                                    </td>
+
+                                    <td class="item-total {{ $esDescuento ? 'item-descuento' : '' }}">
+                                        {{ $formatoMoneda($precioTotal) }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center">
+                                        No hay ítems registrados para este equipo.
+                                    </td>
+                                </tr>
+                            @endforelse
+
+                            <tr class="unified-subtotal-row">
+                                <td colspan="4">
+                                    Subtotal {{ $grupo['titulo'] }}
+                                </td>
+
+                                <td>
+                                    {{ $formatoMoneda($grupo['subtotal']) }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 20px;">
+                                    No hay grupos registrados en esta cotización unificada.
+                                </td>
+                            </tr>
+                        @endforelse
+                    @else
+                        @forelse($itemsCotizacion as $item)
                             @php
                                 $precioTotal = (float) ($item->precio_total ?? 0);
                                 $precioUnitario = (float) ($item->precio_unitario ?? 0);
@@ -1786,258 +1888,200 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center">
-                                    No hay ítems registrados para este equipo.
+                                <td colspan="5" style="text-align: center; padding: 20px;">
+                                    No hay ítems registrados en esta cotización.
                                 </td>
                             </tr>
                         @endforelse
 
-                        <tr class="unified-subtotal-row">
-                            <td colspan="4">
-                                Subtotal {{ $grupo['titulo'] }}
-                            </td>
+                    @endif
+                </tbody>
+            </table>
 
-                            <td>
-                                {{ $formatoMoneda($grupo['subtotal']) }}
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 20px;">
-                                No hay grupos registrados en esta cotización unificada.
-                            </td>
-                        </tr>
-                    @endforelse
-                @else
-                    @forelse($itemsCotizacion as $item)
-                        @php
-                            $precioTotal = (float) ($item->precio_total ?? 0);
-                            $precioUnitario = (float) ($item->precio_unitario ?? 0);
-                            $esDescuento = $precioTotal < 0;
-                        @endphp
-
-                        <tr>
-                            <td class="item-numero">
-                                {{ $loop->iteration }}
-                            </td>
-
-                            <td class="item-descripcion">
-                                <div class="item-nombre {{ $esDescuento ? 'item-descuento' : '' }}">
-                                    {{ $item->nombre }}
-                                </div>
-
-                                @if ($item->descripcion)
-                                    <div class="item-detalle">
-                                        {{ $item->descripcion }}
-                                    </div>
-                                @endif
-                            </td>
-
-                            <td class="item-cantidad">
-                                {{ number_format((float) $item->cantidad, 2) }}
-                            </td>
-
-                            <td class="item-precio {{ $esDescuento ? 'item-descuento' : '' }}">
-                                {{ $formatoMoneda($precioUnitario) }}
-                            </td>
-
-                            <td class="item-total {{ $esDescuento ? 'item-descuento' : '' }}">
-                                {{ $formatoMoneda($precioTotal) }}
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 20px;">
-                                No hay ítems registrados en esta cotización.
-                            </td>
-                        </tr>
-                    @endforelse
-
-                @endif
-            </tbody>
-        </table>
-
-        <div class="items-total-box">
-            <table class="items-total-table">
-                <tr class="items-grand-total">
-                    <td>
-                        {{ $esCotizacionUnificada ? 'Total general' : 'Total' }}
-                    </td>
-
-                    <td class="items-total-value">
-                        {{ $formatoMoneda($totalCotizacion) }}
-                    </td>
-                </tr>
-
-                @if ($mostrarConversionUsd)
-                    <tr>
-                        <td class="items-total-label">
-                            Tipo de cambio
+            <div class="items-total-box">
+                <table class="items-total-table">
+                    <tr class="items-grand-total">
+                        <td>
+                            {{ $esCotizacionUnificada ? 'Total general' : 'Total' }}
                         </td>
+
                         <td class="items-total-value">
-                            Q{{ number_format($tipoCambio, 4) }} x 1 USD
+                            {{ $formatoMoneda($totalCotizacion) }}
                         </td>
                     </tr>
 
-                    <tr>
-                        <td class="items-total-label">
-                            Total USD
-                        </td>
-                        <td class="items-total-value">
-                            ${{ number_format($totalCotizacion / $tipoCambio, 2) }}
-                        </td>
-                    </tr>
-                @endif
-            </table>
-        </div>
+                    @if ($mostrarConversionUsd)
+                        <tr>
+                            <td class="items-total-label">
+                                Tipo de cambio
+                            </td>
+                            <td class="items-total-value">
+                                Q{{ number_format($tipoCambio, 4) }} x 1 USD
+                            </td>
+                        </tr>
 
-
-    </div> {{-- cierre de page-items --}}
-    <div class="page-break"></div>
-
-    <div class="page-extra">
-
-        <div class="extra-header">
-            <table class="extra-logos-table">
-                <tr>
-                    <td class="extra-logo-cme-cell">
-                        @if (file_exists($logoPath))
-                            <img src="{{ $logoPath }}" class="extra-logo-cme" alt="CME">
-                        @endif
-
-                        <div class="extra-slogan-box">
-                            Soluciones Electromecánicas de alta confiabilidad
-                        </div>
-                    </td>
-
-                    <td class="extra-logo-certificaciones-cell">
-                        @if (file_exists($wegPath))
-                            <img src="{{ $wegPath }}" class="extra-logo-weg" alt="WEG">
-                        @endif
-
-                        @if (file_exists($easaPath))
-                            <img src="{{ $easaPath }}" class="extra-logo-easa" alt="EASA">
-                        @endif
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="pdf-extra-info">
-            <div class="pdf-extra-title">
-                Información adicional de la cotización
+                        <tr>
+                            <td class="items-total-label">
+                                Total USD
+                            </td>
+                            <td class="items-total-value">
+                                ${{ number_format($totalCotizacion / $tipoCambio, 2) }}
+                            </td>
+                        </tr>
+                    @endif
+                </table>
             </div>
 
-            <div class="pdf-extra-grid">
 
-                {{-- QUÉ NO INCLUYE --}}
-                <div class="pdf-extra-section">
-                    <div class="pdf-section-heading">
-                        Qué no incluye
-                    </div>
+        </div> {{-- cierre de page-items --}}
+        <div class="page-break"></div>
 
-                    @if (count($noIncluyeItems) > 0)
-                        <ul class="pdf-list">
-                            @foreach ($noIncluyeItems as $itemNoIncluye)
-                                <li>{{ $itemNoIncluye }}</li>
-                            @endforeach
-                        </ul>
-                    @else
-                        <div class="pdf-empty-text">
-                            No se especificaron exclusiones para esta cotización.
-                        </div>
-                    @endif
+        <div class="page-extra">
+
+            <div class="extra-header">
+                <table class="extra-logos-table">
+                    <tr>
+                        <td class="extra-logo-cme-cell">
+                            @if (file_exists($logoPath))
+                                <img src="{{ $logoPath }}" class="extra-logo-cme" alt="CME">
+                            @endif
+
+                            <div class="extra-slogan-box">
+                                Soluciones Electromecánicas de alta confiabilidad
+                            </div>
+                        </td>
+
+                        <td class="extra-logo-certificaciones-cell">
+                            @if (file_exists($wegPath))
+                                <img src="{{ $wegPath }}" class="extra-logo-weg" alt="WEG">
+                            @endif
+
+                            @if (file_exists($easaPath))
+                                <img src="{{ $easaPath }}" class="extra-logo-easa" alt="EASA">
+                            @endif
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="pdf-extra-info">
+                <div class="pdf-extra-title">
+                    Información adicional de la cotización
                 </div>
 
-                {{-- TIEMPO DE ENTREGA --}}
-                <div class="pdf-extra-section">
-                    <div class="pdf-section-heading">
-                        Tiempo de entrega
-                    </div>
+                <div class="pdf-extra-grid">
 
-                    <table class="pdf-info-table">
-                        <tr>
-                            <td class="label">Tiempo estimado</td>
-                            <td class="value">{{ $tiempoEntregaTexto }}</td>
-                        </tr>
-                    </table>
-                </div>
-
-                {{-- GARANTÍA --}}
-                <div class="pdf-extra-section">
-                    <div class="pdf-section-heading">
-                        Garantía
-                    </div>
-
-                    <table class="pdf-info-table">
-                        <tr>
-                            <td class="label">Condición</td>
-                            <td class="value">{{ $garantiaTexto }}</td>
-                        </tr>
-                    </table>
-                </div>
-
-                {{-- TÉRMINOS DE PAGO --}}
-                <div class="pdf-extra-section">
-                    <div class="pdf-section-heading">
-                        Términos de pago
-                    </div>
-
-                    <table class="pdf-info-table">
-                        <tr>
-                            <td class="label">Forma de pago</td>
-                            <td class="value">{{ $terminosPagoTexto }}</td>
-                        </tr>
-
-                        <tr>
-                            <td class="label">Orden de compra</td>
-                            <td class="value">
-                                @if ($cotizacion->cliente_debe_proveer_oc)
-                                    El cliente debe proveer orden de compra para iniciar trabajos.
-                                @else
-                                    No se indicó requerimiento de orden de compra para iniciar trabajos.
-                                @endif
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-
-                {{-- NOTAS ADICIONALES --}}
-                @if (!empty($notasAdicionales))
+                    {{-- QUÉ NO INCLUYE --}}
                     <div class="pdf-extra-section">
                         <div class="pdf-section-heading">
-                            Notas adicionales
+                            Qué no incluye
                         </div>
 
-                        <div class="pdf-notas">
-                            {!! $notasAdicionales !!}
-                        </div>
+                        @if (count($noIncluyeItems) > 0)
+                            <ul class="pdf-list">
+                                @foreach ($noIncluyeItems as $itemNoIncluye)
+                                    <li>{{ $itemNoIncluye }}</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <div class="pdf-empty-text">
+                                No se especificaron exclusiones para esta cotización.
+                            </div>
+                        @endif
                     </div>
-                @endif
 
+                    {{-- TIEMPO DE ENTREGA --}}
+                    <div class="pdf-extra-section">
+                        <div class="pdf-section-heading">
+                            Tiempo de entrega
+                        </div>
+
+                        <table class="pdf-info-table">
+                            <tr>
+                                <td class="label">Tiempo estimado</td>
+                                <td class="value">{{ $tiempoEntregaTexto }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    {{-- GARANTÍA --}}
+                    <div class="pdf-extra-section">
+                        <div class="pdf-section-heading">
+                            Garantía
+                        </div>
+
+                        <table class="pdf-info-table">
+                            <tr>
+                                <td class="label">Condición</td>
+                                <td class="value">{{ $garantiaTexto }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    {{-- TÉRMINOS DE PAGO --}}
+                    <div class="pdf-extra-section">
+                        <div class="pdf-section-heading">
+                            Términos de pago
+                        </div>
+
+                        <table class="pdf-info-table">
+                            <tr>
+                                <td class="label">Forma de pago</td>
+                                <td class="value">{{ $terminosPagoTexto }}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="label">Orden de compra</td>
+                                <td class="value">
+                                    @if ($cotizacion->cliente_debe_proveer_oc)
+                                        El cliente debe proveer orden de compra para iniciar trabajos.
+                                    @else
+                                        No se indicó requerimiento de orden de compra para iniciar trabajos.
+                                    @endif
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    {{-- NOTAS ADICIONALES --}}
+                    @if (!empty($notasAdicionales))
+                        <div class="pdf-extra-section">
+                            <div class="pdf-section-heading">
+                                Notas adicionales
+                            </div>
+
+                            <div class="pdf-notas">
+                                {!! $notasAdicionales !!}
+                            </div>
+                        </div>
+                    @endif
+
+                </div>
             </div>
         </div>
-    </div>
-    @if ($cotizacion->incluir_terminos_garantias)
-        <div class="page-break"></div>
+    @endif
+    @if (in_array($seccionPdf, ['completo', 'terminos']) && $cotizacion->incluir_terminos_garantias)
+        @if ($cotizacion->incluir_terminos_garantias)
+            <div class="page-break"></div>
 
-        <div class="page-terms">
-            @include('pdfs.cotizaciones.partials.terminos-header')
+            <div class="page-terms">
+                @include('pdfs.cotizaciones.partials.terminos-header')
 
-            <div class="terms-content">
-                @include('pdfs.cotizaciones.partials.terminos-cotizacion-parte1')
+                <div class="terms-content">
+                    @include('pdfs.cotizaciones.partials.terminos-cotizacion-parte1')
+                </div>
             </div>
-        </div>
 
-        <div class="page-break"></div>
+            <div class="page-break"></div>
 
-        <div class="page-terms">
-            @include('pdfs.cotizaciones.partials.terminos-header')
+            <div class="page-terms">
+                @include('pdfs.cotizaciones.partials.terminos-header')
 
-            <div class="terms-content">
-                @include('pdfs.cotizaciones.partials.terminos-cotizacion-parte2')
+                <div class="terms-content">
+                    @include('pdfs.cotizaciones.partials.terminos-cotizacion-parte2')
+                </div>
             </div>
-        </div>
+        @endif
     @endif
 </body>
 

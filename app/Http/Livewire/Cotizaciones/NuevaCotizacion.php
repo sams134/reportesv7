@@ -22,9 +22,16 @@ use App\Models\CotizacionRodamientoPrecio;
 use App\Models\CotizacionPruebaPrecio;
 use App\Models\CotizacionUnificadaDetalle;
 use Illuminate\Support\Facades\DB;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use App\Models\CotizacionPdfAdjunto;
+
 
 class NuevaCotizacion extends Component
 {
+    use WithFileUploads;
+
     public $clientes, $cotDate, $cotValid;
 
     public $cliente_id = null;
@@ -201,6 +208,17 @@ class NuevaCotizacion extends Component
     public $numeroAdicionalPreview = null;
 
     public $modoAdicionalUnificada = false;
+
+    public $fotoPortadaCotizacion = null;
+    public $fotoPortadaActual = null;
+
+    public $pdfsAntesItemsUpload = [];
+    public $pdfsDespuesItemsUpload = [];
+
+    public $pdfsAntesItems = [];
+    public $pdfsDespuesItems = [];
+
+    public $pdfsAdjuntosEliminarIds = [];
 
 
     protected $listeners = [
@@ -1748,6 +1766,7 @@ class NuevaCotizacion extends Component
             'clienteDebeProveerOc' => 'boolean',
 
             'notasAdicionales' => 'nullable|string',
+            'fotoPortadaCotizacion' => 'nullable|image|max:10240',
         ];
 
         if ($this->modoUnificacion) {
@@ -1889,6 +1908,11 @@ class NuevaCotizacion extends Component
             $fechaCotizacion = Carbon::createFromFormat('d-m-Y', $this->cotDate)->format('Y-m-d');
             $fechaValidaHasta = Carbon::createFromFormat('d-m-Y', $this->cotValid)->format('Y-m-d');
 
+            $fotoPortadaPath = $this->fotoPortadaActual;
+
+            if ($this->fotoPortadaCotizacion) {
+                $fotoPortadaPath = $this->fotoPortadaCotizacion->store('cotizaciones/portadas', 'public');
+            }
             $cotizacion = Cotizacion::create([
                 'numero' => $numeroData['numero'],
                 'titulo' => $this->tituloCotizacion,
@@ -1938,8 +1962,10 @@ class NuevaCotizacion extends Component
                 'cliente_debe_proveer_oc' => $this->clienteDebeProveerOc ? 1 : 0,
 
                 'notas_adicionales' => $this->notasAdicionales,
+                'foto_portada' => $fotoPortadaPath,
                 'creado_por' => auth()->id(),
             ]);
+
             $this->guardarContactosCotizacionSnapshot($cotizacion);
 
             foreach ($this->itemsCotizacion as $index => $item) {
@@ -1958,6 +1984,11 @@ class NuevaCotizacion extends Component
                     'orden' => $index + 1,
                 ]);
             }
+
+            /*
+ * PDFs adjuntos
+ */
+            $this->guardarPdfsAdjuntosCotizacion($cotizacion);
 
             return $cotizacion;
         });
@@ -3726,6 +3757,78 @@ class NuevaCotizacion extends Component
     }
 
 
+    private function cargarPdfsAdjuntosCotizacion($cotizacion)
+    {
+        $cotizacionFuente = $this->obtenerCotizacionFuentePdfsAdjuntos($cotizacion);
+
+        $cotizacionFuente->loadMissing(['pdfsAntesItems', 'pdfsDespuesItems']);
+
+        $this->pdfsAntesItems = $cotizacionFuente->pdfsAntesItems
+            ->map(function ($pdf) {
+                return [
+                    'uuid' => 'db-' . $pdf->id,
+                    'id' => $pdf->id,
+                    'cotizacion_id' => $pdf->cotizacion_id,
+                    'nombre_original' => $pdf->nombre_original,
+                    'path' => $pdf->path,
+                    'mime_type' => $pdf->mime_type,
+                    'size_bytes' => $pdf->size_bytes,
+                    'orden' => $pdf->orden,
+                    'nuevo' => false,
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        $this->pdfsDespuesItems = $cotizacionFuente->pdfsDespuesItems
+            ->map(function ($pdf) {
+                return [
+                    'uuid' => 'db-' . $pdf->id,
+                    'id' => $pdf->id,
+                    'cotizacion_id' => $pdf->cotizacion_id,
+                    'nombre_original' => $pdf->nombre_original,
+                    'path' => $pdf->path,
+                    'mime_type' => $pdf->mime_type,
+                    'size_bytes' => $pdf->size_bytes,
+                    'orden' => $pdf->orden,
+                    'nuevo' => false,
+                ];
+            })
+            ->values()
+            ->toArray();
+    }
+    private function obtenerCotizacionFuentePdfsAdjuntos(Cotizacion $cotizacion): Cotizacion
+    {
+        /*
+     * Si esta cotización ya tiene PDFs propios, usamos esta.
+     */
+        $tienePdfsPropios = CotizacionPdfAdjunto::where('cotizacion_id', $cotizacion->id)->exists();
+
+        if ($tienePdfsPropios) {
+            return $cotizacion;
+        }
+
+        /*
+     * Si no tiene PDFs propios, buscamos una versión anterior
+     * del mismo grupo cot_year + correlativo + letra que sí tenga PDFs.
+     */
+        $cotizacionFuenteId = CotizacionPdfAdjunto::query()
+            ->join('cotizaciones', 'cotizaciones.id', '=', 'cotizacion_pdfs_adjuntos.cotizacion_id')
+            ->where('cotizaciones.cot_year', $cotizacion->cot_year)
+            ->where('cotizaciones.correlativo', $cotizacion->correlativo)
+            ->where('cotizaciones.letra', $cotizacion->letra)
+            ->where('cotizaciones.id', '<>', $cotizacion->id)
+            ->orderByDesc('cotizaciones.version')
+            ->value('cotizaciones.id');
+
+        if ($cotizacionFuenteId) {
+            return Cotizacion::find($cotizacionFuenteId) ?: $cotizacion;
+        }
+
+        return $cotizacion;
+    }
+
+
     // editar
 
 
@@ -3733,6 +3836,7 @@ class NuevaCotizacion extends Component
     private function cargarCotizacionParaEditar($cotizacionId)
     {
         $cotizacion = Cotizacion::findOrFail($cotizacionId);
+        $this->cargarPdfsAdjuntosCotizacion($cotizacion);
 
         $this->modoEdicion = true;
         $this->cotizacionEditandoId = $cotizacion->id;
@@ -3752,6 +3856,9 @@ class NuevaCotizacion extends Component
      */
         $this->tituloCotizacion = $cotizacion->titulo;
         $this->subtituloCotizacion = $cotizacion->subtitulo;
+
+        $this->fotoPortadaActual = $cotizacion->foto_portada;
+        $this->fotoPortadaCotizacion = null;
 
         /*
      * Cliente.
@@ -3949,9 +4056,28 @@ class NuevaCotizacion extends Component
                 })
                 ->values()
                 ->toArray(),
+            'pdfsAntesItems' => $this->normalizarPdfsAdjuntosParaHash($this->pdfsAntesItems),
+            'pdfsDespuesItems' => $this->normalizarPdfsAdjuntosParaHash($this->pdfsDespuesItems),
+            'pdfsAdjuntosEliminarIds' => array_values($this->pdfsAdjuntosEliminarIds),
         ];
     }
 
+    private function normalizarPdfsAdjuntosParaHash(array $items): array
+    {
+        return collect($items)
+            ->map(function ($pdf) {
+                return [
+                    'id' => $pdf['id'] ?? null,
+                    'uuid' => $pdf['uuid'] ?? null,
+                    'nombre_original' => $pdf['nombre_original'] ?? '',
+                    'path' => $pdf['path'] ?? '',
+                    'orden' => (int) ($pdf['orden'] ?? 0),
+                    'nuevo' => (bool) ($pdf['nuevo'] ?? false),
+                ];
+            })
+            ->values()
+            ->toArray();
+    }
     private function generarHashEstadoCotizacion()
     {
         return md5(json_encode($this->obtenerEstadoComparableCotizacion()));
@@ -4640,6 +4766,11 @@ class NuevaCotizacion extends Component
 
             $fechaCotizacion = Carbon::createFromFormat('d-m-Y', $this->cotDate)->format('Y-m-d');
             $fechaValidaHasta = Carbon::createFromFormat('d-m-Y', $this->cotValid)->format('Y-m-d');
+            $fotoPortadaPath = $this->fotoPortadaActual;
+
+            if ($this->fotoPortadaCotizacion) {
+                $fotoPortadaPath = $this->fotoPortadaCotizacion->store('cotizaciones/portadas', 'public');
+            }
 
             $cotizacion = Cotizacion::create([
                 'numero' => $numeroData['numero'],
@@ -4696,6 +4827,7 @@ class NuevaCotizacion extends Component
                 'cliente_debe_proveer_oc' => $this->clienteDebeProveerOc ? 1 : 0,
 
                 'notas_adicionales' => $this->notasAdicionales,
+                'foto_portada' => $fotoPortadaPath,
 
                 'estado' => 'borrador',
                 'tipo_cotizacion' => 'unificada',
@@ -4703,6 +4835,7 @@ class NuevaCotizacion extends Component
 
                 'creado_por' => auth()->id(),
             ]);
+
 
             /*
          * Contactos:
@@ -4749,6 +4882,7 @@ class NuevaCotizacion extends Component
                 }
             }
 
+            $this->guardarPdfsAdjuntosCotizacion($cotizacion);
             return $cotizacion;
         });
 
@@ -5009,5 +5143,245 @@ class NuevaCotizacion extends Component
         $correlativo4 = str_pad((int) $correlativo, 4, '0', STR_PAD_LEFT);
 
         return 'COT' . $year2 . '-' . $correlativo4 . '-' . strtoupper($letra) . '-V' . (int) $version;
+    }
+    public function eliminarFotoPortadaCotizacion()
+    {
+        if ($this->fotoPortadaActual && Storage::disk('public')->exists($this->fotoPortadaActual)) {
+            Storage::disk('public')->delete($this->fotoPortadaActual);
+        }
+
+        $this->fotoPortadaActual = null;
+        $this->fotoPortadaCotizacion = null;
+    }
+    public function updatedPdfsAntesItemsUpload()
+    {
+        $this->procesarUploadsPdfsCotizacion('antes_items');
+    }
+
+    public function updatedPdfsDespuesItemsUpload()
+    {
+        $this->procesarUploadsPdfsCotizacion('despues_items');
+    }
+
+    private function procesarUploadsPdfsCotizacion($seccion)
+    {
+        $uploadProperty = $seccion === 'antes_items'
+            ? 'pdfsAntesItemsUpload'
+            : 'pdfsDespuesItemsUpload';
+
+        $listProperty = $seccion === 'antes_items'
+            ? 'pdfsAntesItems'
+            : 'pdfsDespuesItems';
+
+        $this->validate([
+            $uploadProperty . '.*' => 'file|mimes:pdf|max:25600',
+        ], [
+            $uploadProperty . '.*.mimes' => 'Solo puede cargar archivos PDF.',
+            $uploadProperty . '.*.max' => 'Cada PDF no debe superar 25 MB.',
+        ]);
+
+        foreach ($this->{$uploadProperty} as $file) {
+            $nombreOriginal = $file->getClientOriginalName();
+
+            $path = $file->storeAs(
+                'cotizaciones/pdf-adjuntos/tmp',
+                Str::uuid() . '.pdf',
+                'public'
+            );
+
+            $this->{$listProperty}[] = [
+                'uuid' => (string) Str::uuid(),
+                'id' => null,
+                'nombre_original' => $nombreOriginal,
+                'path' => $path,
+                'mime_type' => $file->getMimeType(),
+                'size_bytes' => $file->getSize(),
+                'orden' => count($this->{$listProperty}) + 1,
+                'nuevo' => true,
+            ];
+        }
+
+        $this->{$uploadProperty} = [];
+    }
+
+    public function actualizarOrdenPdfsAdjuntosCotizacion($seccion, $uuids)
+    {
+        $listProperty = $seccion === 'antes_items'
+            ? 'pdfsAntesItems'
+            : 'pdfsDespuesItems';
+
+        $actuales = collect($this->{$listProperty})->keyBy('uuid');
+
+        $ordenados = [];
+
+        foreach ($uuids as $uuid) {
+            if ($actuales->has($uuid)) {
+                $ordenados[] = $actuales->get($uuid);
+            }
+        }
+
+        foreach ($this->{$listProperty} as $item) {
+            if (!in_array($item['uuid'], $uuids)) {
+                $ordenados[] = $item;
+            }
+        }
+
+        foreach ($ordenados as $index => &$item) {
+            $item['orden'] = $index + 1;
+        }
+
+        $this->{$listProperty} = array_values($ordenados);
+    }
+
+    public function eliminarPdfAdjuntoCotizacion($seccion, $uuid)
+    {
+        $listProperty = $seccion === 'antes_items'
+            ? 'pdfsAntesItems'
+            : 'pdfsDespuesItems';
+
+        $nuevoListado = [];
+
+        foreach ($this->{$listProperty} as $item) {
+            if ($item['uuid'] !== $uuid) {
+                $nuevoListado[] = $item;
+                continue;
+            }
+
+            /*
+         * Si el PDF pertenece a la cotización actual, sí lo marcamos para borrar.
+         * Si pertenece a una versión anterior, solo lo quitamos del listado actual:
+         * no se copiará a la nueva versión, pero no destruimos el historial.
+         */
+            if (
+                !empty($item['id']) &&
+                !empty($item['cotizacion_id']) &&
+                (int) $item['cotizacion_id'] === (int) $this->cotizacionEditandoId
+            ) {
+                $this->pdfsAdjuntosEliminarIds[] = $item['id'];
+            } elseif (
+                empty($item['id']) &&
+                !empty($item['path']) &&
+                Storage::disk('public')->exists($item['path'])
+            ) {
+                Storage::disk('public')->delete($item['path']);
+            }
+        }
+
+        foreach ($nuevoListado as $index => &$item) {
+            $item['orden'] = $index + 1;
+        }
+
+        $this->{$listProperty} = array_values($nuevoListado);
+    }
+    private function guardarPdfsAdjuntosCotizacion($cotizacion)
+    {
+        /*
+     * Eliminar PDFs marcados.
+     */
+
+        if (!empty($this->pdfsAdjuntosEliminarIds)) {
+            $pdfsEliminar = CotizacionPdfAdjunto::whereIn('id', $this->pdfsAdjuntosEliminarIds)->get();
+
+            foreach ($pdfsEliminar as $pdf) {
+                if ($pdf->path && Storage::disk('public')->exists($pdf->path)) {
+                    Storage::disk('public')->delete($pdf->path);
+                }
+
+                $pdf->delete();
+            }
+
+            $this->pdfsAdjuntosEliminarIds = [];
+        }
+
+        $this->guardarPdfsAdjuntosPorSeccion($cotizacion, 'antes_items', $this->pdfsAntesItems);
+        $this->guardarPdfsAdjuntosPorSeccion($cotizacion, 'despues_items', $this->pdfsDespuesItems);
+    }
+
+    private function guardarPdfsAdjuntosPorSeccion($cotizacion, $seccion, array $items)
+    {
+        foreach ($items as $index => $item) {
+            $orden = $index + 1;
+
+            /*
+         * CASO 1:
+         * PDF existente de esta misma cotización.
+         * Solo actualizamos orden.
+         */
+            if (
+                !empty($item['id']) &&
+                !empty($item['cotizacion_id']) &&
+                (int) $item['cotizacion_id'] === (int) $cotizacion->id
+            ) {
+                CotizacionPdfAdjunto::where('id', $item['id'])
+                    ->where('cotizacion_id', $cotizacion->id)
+                    ->update([
+                        'orden' => $orden,
+                        'updated_at' => now(),
+                    ]);
+
+                continue;
+            }
+
+            /*
+         * CASO 2:
+         * PDF existente de una versión anterior.
+         * Lo registramos también para esta nueva versión.
+         */
+            if (
+                !empty($item['id']) &&
+                !empty($item['path']) &&
+                empty($item['nuevo'])
+            ) {
+                if (!Storage::disk('public')->exists($item['path'])) {
+                    continue;
+                }
+
+                CotizacionPdfAdjunto::create([
+                    'cotizacion_id' => $cotizacion->id,
+                    'seccion' => $seccion,
+                    'nombre_original' => $item['nombre_original'] ?? 'documento.pdf',
+                    'path' => $item['path'],
+                    'mime_type' => $item['mime_type'] ?? 'application/pdf',
+                    'size_bytes' => $item['size_bytes'] ?? null,
+                    'orden' => $orden,
+                    'uploaded_by' => auth()->id(),
+                ]);
+
+                continue;
+            }
+
+            /*
+         * CASO 3:
+         * PDF nuevo subido en tmp.
+         */
+            if (empty($item['path'])) {
+                continue;
+            }
+
+            $tmpPath = ltrim($item['path'], '/');
+
+            if (!Storage::disk('public')->exists($tmpPath)) {
+                continue;
+            }
+
+            $finalDir = 'cotizaciones/' . $cotizacion->id . '/pdf-adjuntos';
+            $finalPath = $finalDir . '/' . Str::uuid() . '.pdf';
+
+            Storage::disk('public')->makeDirectory($finalDir);
+
+            Storage::disk('public')->copy($tmpPath, $finalPath);
+            Storage::disk('public')->delete($tmpPath);
+
+            CotizacionPdfAdjunto::create([
+                'cotizacion_id' => $cotizacion->id,
+                'seccion' => $seccion,
+                'nombre_original' => $item['nombre_original'] ?? 'documento.pdf',
+                'path' => $finalPath,
+                'mime_type' => $item['mime_type'] ?? 'application/pdf',
+                'size_bytes' => $item['size_bytes'] ?? null,
+                'orden' => $orden,
+                'uploaded_by' => auth()->id(),
+            ]);
+        }
     }
 }

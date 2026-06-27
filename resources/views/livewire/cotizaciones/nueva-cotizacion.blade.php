@@ -328,6 +328,58 @@
                             @endif
 
                         </div>
+                        @if ($equipoNoIngresadoTaller)
+                            <div class="card border-primary shadow-sm mb-3">
+                                <div class="card-header bg-light">
+                                    <strong>Imagen para portada de cotización</strong>
+                                </div>
+
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            Subir imagen del equipo
+                                        </label>
+
+                                        <input type="file" class="form-control" wire:model="fotoPortadaCotizacion"
+                                            accept="image/*">
+
+                                        @error('fotoPortadaCotizacion')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+
+                                        <div wire:loading wire:target="fotoPortadaCotizacion"
+                                            class="small text-muted mt-2">
+                                            Cargando imagen...
+                                        </div>
+                                    </div>
+
+                                    @if ($fotoPortadaCotizacion)
+                                        <div class="mt-2">
+                                            <div class="small text-muted mb-1">Vista previa nueva:</div>
+                                            <img src="{{ $fotoPortadaCotizacion->temporaryUrl() }}"
+                                                class="img-thumbnail" style="max-width: 260px; max-height: 220px;">
+
+                                        </div>
+                                    @elseif($fotoPortadaActual)
+                                        <div class="mt-2">
+                                            <div class="small text-muted mb-1">Imagen actual:</div>
+                                            <img src="{{ asset('storage/' . $fotoPortadaActual) }}"
+                                                class="img-thumbnail" style="max-width: 260px; max-height: 220px;">
+                                        </div>
+                                    @else
+                                        <div class="alert alert-light border mb-0">
+                                            Si no sube una imagen, la portada usará la imagen predeterminada.
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                        @if ($fotoPortadaActual)
+                            <button type="button" class="btn btn-sm btn-outline-danger mt-2"
+                                wire:click="eliminarFotoPortadaCotizacion">
+                                Eliminar imagen actual
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -571,6 +623,79 @@
                 <span class="ms-2" :class="open ? 'rotate-180' : ''" style="transition: transform 0.2s;">
                     ▾
                 </span>
+            </div>
+
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>PDFs agregados - Parte 1</strong>
+                        <div class="small text-muted">
+                            Estos PDFs se insertarán después de la carta de presentación y antes de los items.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div id="dropzone-pdfs-antes" class="border rounded p-4 text-center bg-light"
+                        style="border-style: dashed !important; cursor: pointer;">
+
+                        <div class="mb-2">
+                            <i class="far fa-file-pdf fa-2x text-danger"></i>
+                        </div>
+
+                        <div class="fw-bold">
+                            Arrastre PDFs aquí o haga clic para seleccionar
+                        </div>
+
+                        <div class="small text-muted">
+                            Puede cargar varios PDFs y ordenarlos después.
+                        </div>
+
+                        <input id="input-pdfs-antes" type="file" class="d-none" multiple accept="application/pdf"
+                            wire:model="pdfsAntesItemsUpload">
+                    </div>
+
+                    <div wire:loading wire:target="pdfsAntesItemsUpload" class="small text-muted mt-2">
+                        Cargando PDFs...
+                    </div>
+
+                    @error('pdfsAntesItemsUpload.*')
+                        <div class="text-danger small mt-2">{{ $message }}</div>
+                    @enderror
+
+                    <div class="mt-3" data-pdf-sortable data-seccion="antes_items">
+                        @forelse($pdfsAntesItems as $pdf)
+                            <div class="list-group-item d-flex align-items-center justify-content-between mb-2 border rounded"
+                                data-uuid="{{ $pdf['uuid'] }}">
+
+                                <div class="d-flex align-items-center">
+                                    <span class="handle-pdf me-3 text-muted" style="cursor: move;">
+                                        <i class="fas fa-grip-vertical"></i>
+                                    </span>
+
+                                    <div>
+                                        <div class="fw-bold">
+                                            {{ $pdf['nombre_original'] }}
+                                        </div>
+
+                                        <div class="small text-muted">
+                                            {{ !empty($pdf['size_bytes']) ? number_format($pdf['size_bytes'] / 1024, 1) . ' KB' : '' }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                    wire:click="eliminarPdfAdjuntoCotizacion('antes_items', '{{ $pdf['uuid'] }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        @empty
+                            <div class="text-muted small mt-3">
+                                No hay PDFs agregados en esta sección.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
             </div>
 
             {{-- CONTENIDO --}}
@@ -879,6 +1004,80 @@
             </div>
         </div>
     @endif
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <div>
+                <strong>PDFs agregados - Parte 2</strong>
+                <div class="small text-muted">
+                    Estos PDFs se insertarán después de los items y antes de términos / garantía.
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div id="dropzone-pdfs-despues" class="border rounded p-4 text-center bg-light"
+                style="border-style: dashed !important; cursor: pointer;">
+
+                <div class="mb-2">
+                    <i class="far fa-file-pdf fa-2x text-danger"></i>
+                </div>
+
+                <div class="fw-bold">
+                    Arrastre PDFs aquí o haga clic para seleccionar
+                </div>
+
+                <div class="small text-muted">
+                    Ideal para planos, fichas técnicas o anexos finales.
+                </div>
+
+                <input id="input-pdfs-despues" type="file" class="d-none" multiple accept="application/pdf"
+                    wire:model="pdfsDespuesItemsUpload">
+            </div>
+
+            <div wire:loading wire:target="pdfsDespuesItemsUpload" class="small text-muted mt-2">
+                Cargando PDFs...
+            </div>
+
+            @error('pdfsDespuesItemsUpload.*')
+                <div class="text-danger small mt-2">{{ $message }}</div>
+            @enderror
+
+            <div class="mt-3" data-pdf-sortable data-seccion="despues_items">
+                @forelse($pdfsDespuesItems as $pdf)
+                    <div class="list-group-item d-flex align-items-center justify-content-between mb-2 border rounded"
+                        data-uuid="{{ $pdf['uuid'] }}">
+
+                        <div class="d-flex align-items-center">
+                            <span class="handle-pdf me-3 text-muted" style="cursor: move;">
+                                <i class="fas fa-grip-vertical"></i>
+                            </span>
+
+                            <div>
+                                <div class="fw-bold">
+                                    {{ $pdf['nombre_original'] }}
+                                </div>
+
+                                <div class="small text-muted">
+                                    {{ !empty($pdf['size_bytes']) ? number_format($pdf['size_bytes'] / 1024, 1) . ' KB' : '' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                            wire:click="eliminarPdfAdjuntoCotizacion('despues_items', '{{ $pdf['uuid'] }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                @empty
+                    <div class="text-muted small mt-3">
+                        No hay PDFs agregados en esta sección.
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
     <div class="card border-primary shadow-sm mb-3" x-data="{ open: true }">
         <div class="card-header bg-light d-flex justify-content-between align-items-center" @click="open = !open"
             style="cursor: pointer;">
@@ -1848,8 +2047,9 @@
                                     <div class="accordion-item">
                                         <h2 class="accordion-header" id="headingReferenciasPruebas">
                                             <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#collapseReferenciasPruebas"
-                                                aria-expanded="false" aria-controls="collapseReferenciasPruebas">
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#collapseReferenciasPruebas" aria-expanded="false"
+                                                aria-controls="collapseReferenciasPruebas">
                                                 Referencias de precios similares
                                             </button>
                                         </h2>
@@ -2929,5 +3129,93 @@
                 editor.setContent(event.detail.contenido || '');
             }
         });
+    </script>
+    <script>
+        document.addEventListener('livewire:load', function() {
+            initPdfDropZonesCotizacion();
+            initPdfSortablesCotizacion();
+
+            Livewire.hook('message.processed', () => {
+                initPdfDropZonesCotizacion();
+                initPdfSortablesCotizacion();
+            });
+        });
+
+        function initPdfDropZonesCotizacion() {
+            bindPdfDropZoneCotizacion('dropzone-pdfs-antes', 'input-pdfs-antes');
+            bindPdfDropZoneCotizacion('dropzone-pdfs-despues', 'input-pdfs-despues');
+        }
+
+        function bindPdfDropZoneCotizacion(zoneId, inputId) {
+            const zone = document.getElementById(zoneId);
+            const input = document.getElementById(inputId);
+
+            if (!zone || !input || zone.dataset.dropReady === '1') {
+                return;
+            }
+
+            zone.dataset.dropReady = '1';
+
+            zone.addEventListener('click', function() {
+                input.click();
+            });
+
+            zone.addEventListener('dragover', function(event) {
+                event.preventDefault();
+                zone.classList.add('border-primary');
+            });
+
+            zone.addEventListener('dragleave', function() {
+                zone.classList.remove('border-primary');
+            });
+
+            zone.addEventListener('drop', function(event) {
+                event.preventDefault();
+                zone.classList.remove('border-primary');
+
+                const dataTransfer = new DataTransfer();
+
+                Array.from(event.dataTransfer.files).forEach(file => {
+                    const isPdf = file.type === 'application/pdf' ||
+                        file.name.toLowerCase().endsWith('.pdf');
+
+                    if (isPdf) {
+                        dataTransfer.items.add(file);
+                    }
+                });
+
+                if (dataTransfer.files.length > 0) {
+                    input.files = dataTransfer.files;
+                    input.dispatchEvent(new Event('change', {
+                        bubbles: true
+                    }));
+                }
+            });
+        }
+
+        function initPdfSortablesCotizacion() {
+            document.querySelectorAll('[data-pdf-sortable]').forEach(function(el) {
+                if (el.dataset.sortableReady === '1') {
+                    return;
+                }
+
+                el.dataset.sortableReady = '1';
+
+                new Sortable(el, {
+                    animation: 150,
+                    handle: '.handle-pdf',
+                    ghostClass: 'bg-warning',
+
+                    onEnd: function() {
+                        const seccion = el.dataset.seccion;
+
+                        const orden = Array.from(el.querySelectorAll('[data-uuid]'))
+                            .map(item => item.dataset.uuid);
+
+                        @this.call('actualizarOrdenPdfsAdjuntosCotizacion', seccion, orden);
+                    }
+                });
+            });
+        }
     </script>
 </div>

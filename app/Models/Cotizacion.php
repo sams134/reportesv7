@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\CotizacionContacto;
 use App\Models\CotizacionItem;
 use App\Models\CotizacionUnificadaDetalle;
+use App\Models\CotizacionPdfAdjunto;
 
 class Cotizacion extends Model
 {
@@ -50,6 +51,7 @@ class Cotizacion extends Model
         'notas_adicionales',
         'tipo_cotizacion',
         'es_unificada',
+        'foto_portada',
     ];
 
     protected $casts = [
@@ -121,5 +123,25 @@ class Cotizacion extends Model
     public function perteneceAUnificadas()
     {
         return $this->hasMany(CotizacionUnificadaDetalle::class, 'cotizacion_origen_id', 'id');
+    }
+    public function pdfsAdjuntos()
+    {
+        return $this->hasMany(CotizacionPdfAdjunto::class, 'cotizacion_id', 'id')
+            ->orderBy('seccion')
+            ->orderBy('orden');
+    }
+
+    public function pdfsAntesItems()
+    {
+        return $this->hasMany(CotizacionPdfAdjunto::class, 'cotizacion_id', 'id')
+            ->where('seccion', 'antes_items')
+            ->orderBy('orden');
+    }
+
+    public function pdfsDespuesItems()
+    {
+        return $this->hasMany(CotizacionPdfAdjunto::class, 'cotizacion_id', 'id')
+            ->where('seccion', 'despues_items')
+            ->orderBy('orden');
     }
 }
