@@ -33,6 +33,16 @@
 
     $fotoMotorPath = public_path('img/default-avatar.png');
 
+    $logoUrl = $pdfFileUrl($logoPath);
+    $easaUrl = $pdfFileUrl($easaPath);
+    $wegUrl = $pdfFileUrl($wegPath);
+
+    $cover1BgPath = public_path('img/portada 1.3.png');
+    $cover2BgPath = public_path('img/portada 2.1.png');
+
+    $cover1BgUrl = $pdfFileUrl($cover1BgPath);
+    $cover2BgUrl = $pdfFileUrl($cover2BgPath);
+
     if ($motor && $motor->fotos && $motor->fotos->count() > 0) {
         $fotoType3 = $motor->fotos->where('type', 3)->first();
 
@@ -439,6 +449,30 @@
             ),
         );
     }
+@endphp
+@php
+    $cover1FotoUrl = $cover1FotoPath ? $pdfFileUrl($cover1FotoPath) : null;
+@endphp
+@php
+    $pdfFileUrl = function ($path) {
+        if (!$path) {
+            return '';
+        }
+
+        // Windows: C:\Apache24\... -> C:/Apache24/...
+        $path = str_replace('\\', '/', $path);
+
+        // Espacios en nombres como "portada 1.3.png"
+        $path = str_replace(' ', '%20', $path);
+
+        // Windows absolute path: C:/...
+        if (preg_match('/^[A-Za-z]:\//', $path)) {
+            return 'file:///' . $path;
+        }
+
+        // Linux absolute path: /var/www/...
+        return 'file://' . $path;
+    };
 @endphp
 
 <!DOCTYPE html>
@@ -1338,7 +1372,7 @@
         height: 1310px;
         z-index: 1;
 
-        background-image: url("{{ public_path('img/portada 1.3.png') }}");
+        background-image: url("{{ $cover1BgUrl }}");
         background-repeat: no-repeat;
         background-position: top left;
         background-size: 1020px 1310px;
@@ -1449,7 +1483,7 @@
         height: 1310px;
         z-index: 1;
 
-        background-image: url("{{ public_path('img/portada 2.1.png') }}");
+        background-image: url("{{ $cover2BgUrl }}");
         background-repeat: no-repeat;
         background-position: top left;
         background-size: 1020px 1310px;
@@ -1579,8 +1613,8 @@
                         </div>
                     @endif
 
-                    @if ($cover1FotoPath)
-                        <div class="cover1-foto-wrap" style="background-image: url('{{ $cover1FotoPath }}');">
+                    @if ($cover1FotoUrl)
+                        <div class="cover1-foto-wrap" style="background-image: url('{{ $cover1FotoUrl }}');">
                         </div>
                     @endif
                 </div>
@@ -1595,15 +1629,15 @@
         <div class="page-letter">
 
             @if (file_exists($logoPath))
-                <img src="{{ $logoPath }}" class="letter-logo" alt="CME">
+                <img src="{{ $logoUrl }}" class="letter-logo" alt="CME">
             @endif
 
             @if (file_exists($wegPath))
-                <img src="{{ $wegPath }}" class="letter-weg" alt="WEG">
+                <img src="{{ $wegUrl }}" class="letter-weg" alt="WEG">
             @endif
 
             @if (file_exists($easaPath))
-                <img src="{{ $easaPath }}" class="letter-easa" alt="EASA">
+                <img src="{{ $easaUrl }}" class="letter-easa" alt="EASA">
             @endif
 
             <div class="letter-slogan-box">
