@@ -1,39 +1,426 @@
 <div>
-    {{-- To attain knowledge, add things every day; To attain wisdom, subtract things every day. --}}
     <x-pretty-card>
-        <h2>Listado General de Cotizaciones
-        </h2>
-        Revisa todos las cotizaciones creadas en el sistema
+        <h2>Listado General de Cotizaciones</h2>
+        Revisa todas las cotizaciones creadas en el sistema.
     </x-pretty-card>
-     <x-pretty-card>
-        <div class="d-flex">
-            <a class="btn btn-outline-primary me-1 mb-1" type="button" href="{{ route('admin.cotizaciones.create') }}">
-                <span class="fas fa-plus me-1" data-fa-transform="shrink-3"></span>Nueva Cotización
-            </a>
+
+    @if (session()->has('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
         </div>
-     </x-pretty-card>
+    @endif
 
+    <x-pretty-card>
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <a class="btn btn-outline-primary" href="{{ route('admin.cotizaciones.create') }}">
+                <span class="fas fa-plus me-1"></span>
+                Nueva Cotización
+            </a>
 
-       <div class="card-body p-0">
-                <span wire:loading> Loading</span>
-                {{-- <div class="px-2"> {{ $motores->withQueryString()->links() }}</div> --}}
-                <div class="table-responsive scrollbar">
+            <button type="button" class="btn btn-outline-success" wire:click="unificarCotizaciones"
+                wire:loading.attr="disabled" wire:target="unificarCotizaciones">
 
-                    <table class="table table-hover table-striped overflow-hidden fs--1"
-       style="font-size: 0.5rem; "
-       wire:loading.remove>
+                <span wire:loading.remove wire:target="unificarCotizaciones">
+                    <i class="fas fa-object-group me-1"></i>
+                    Unificar cotizaciones
 
-                        <thead class="bg-300 text-dark">
-                            <tr class="text-800">
-                                <th style="width:5%;border:1px solid #000"><input type="checkbox" name="" id="" > </th>
-                                <th style="width:1%;"></th>
-                                <th class="sort" style="width:20%;cursor: pointer;"> Fecha </th>
-                                <th class="sort" style="width:40%;cursor: pointer;"> Cliente </th>
-                                <th class="sort" style="width:20%;cursor: pointer;"> Total </th>
-                            </tr>
-                        </thead>
-                    </table>
+                    @if (count($cotizacionesSeleccionadas) > 0)
+                        <span class="badge bg-success ms-1">
+                            {{ count($cotizacionesSeleccionadas) }}
+                        </span>
+                    @endif
+                </span>
+
+                <span wire:loading wire:target="unificarCotizaciones">
+                    Validando...
+                </span>
+            </button>
+        </div>
+    </x-pretty-card>
+
+    <x-pretty-card>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+
+                    <input type="search" class="form-control" placeholder="Buscar por cotización, cliente u OS..."
+                        wire:model.debounce.300ms="search">
+
+                    @if ($search)
+                        <button type="button" class="btn btn-outline-secondary" wire:click="$set('search', '')">
+                            Limpiar
+                        </button>
+                    @endif
                 </div>
-       </div>
 
+                <div class="form-text">
+                    Ejemplos: Cem, 30, 26-030, COT26-0030, 2M25-0030
+                </div>
+            </div>
+
+            <div class="col-md-6 text-end">
+                <div wire:loading.delay wire:target="search" class="small text-muted pt-2">
+                    Filtrando cotizaciones...
+                </div>
+            </div>
+        </div>
+    </x-pretty-card>
+
+    <div class="card mb-3">
+        <div class="card-body p-0">
+
+
+            <div class="px-3 pt-3">
+                {{ $cotizaciones->links() }}
+            </div>
+
+            <div class="table-responsive scrollbar">
+                <table class="table table-hover table-striped overflow-hidden fs--1 mb-0" style="font-size: 0.75rem;"
+                    wire:loading.remove>
+                    <thead class="bg-300 text-dark">
+                        <tr class="text-800">
+                            <th style="width:3%; border:1px solid #000">
+                                #
+                            </th>
+
+                            <th style="width:11%; cursor:pointer;" wire:click="sortBy('numero')">
+                                Número
+                            </th>
+
+                            <th style="width:9%; cursor:pointer;" wire:click="sortBy('fecha_cotizacion')">
+                                Fecha
+                            </th>
+
+                            <th style="width:18%;">
+                                Cliente
+                            </th>
+
+                            <th style="width:11%;">
+                                OS
+                            </th>
+
+                            <th style="width:8%;">
+                                Potencia
+                            </th>
+
+                            <th style="width:20%;">
+                                Título
+                            </th>
+
+                            <th style="width:8%;" class="text-center">
+                                Versión
+                            </th>
+
+                            <th style="width:9%;" class="text-end">
+                                Total
+                            </th>
+
+                            <th style="width:13%;" class="text-center">
+                                Herramientas
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @forelse ($cotizaciones as $cotizacion)
+                            @php
+                                $versiones = $this->versionesDe($cotizacion);
+                            @endphp
+
+                            <tr x-data="{ open: false }">
+                                <td>
+                                    <input type="checkbox" class="form-check-input" value="{{ $cotizacion->id }}"
+                                        wire:model="cotizacionesSeleccionadas">
+                                </td>
+
+                                <td class="fw-bold">
+                                    {{ $cotizacion->numero }}
+
+                                    @if ($versiones->count() > 0)
+                                        <button type="button" class="btn btn-link btn-sm p-0 ms-1"
+                                            wire:click="toggleVersiones({{ $cotizacion->id }})" title="Ver versiones">
+                                            <i class="fas fa-code-branch"></i>
+                                        </button>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if ($cotizacion->fecha_cotizacion)
+                                        {{ $cotizacion->fecha_cotizacion->format('d/m/Y') }}
+                                    @endif
+                                </td>
+
+                                <td>
+                                    {{ optional($cotizacion->cliente)->cliente }}
+                                </td>
+
+                                <td>
+                                    {{ $this->osCotizacion($cotizacion) }}
+                                </td>
+
+                                <td>
+                                    {{ $this->potenciaCotizacion($cotizacion) }}
+                                </td>
+
+                                <td>
+                                    <div class="fw-semibold">
+                                        {{ $cotizacion->titulo }}
+                                    </div>
+
+                                    @if ($cotizacion->subtitulo)
+                                        <div class="text-muted small">
+                                            {{ $cotizacion->subtitulo }}
+                                        </div>
+                                    @endif
+                                </td>
+
+                                <td class="text-center">
+                                    <span class="badge bg-primary">
+                                        V{{ $cotizacion->version }}
+                                    </span>
+                                </td>
+
+                                <td class="text-end fw-bold">
+                                    {{ $this->simboloMoneda($cotizacion->moneda) }}{{ number_format($cotizacion->total, 2) }}
+
+                                    @if ($cotizacion->moneda === 'GTQ_USD')
+                                        @php
+                                            $totalUsd = $this->totalUsd($cotizacion);
+                                        @endphp
+
+                                        @if ($totalUsd)
+                                            <div class="text-muted" style="font-size: 9px; line-height: 1;">
+                                                USD ${{ number_format($totalUsd, 2) }}
+                                            </div>
+                                        @endif
+                                    @endif
+                                </td>
+
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <a href="{{ route('admin.cotizaciones.downloadPdf', ['cotizacion' => $cotizacion->id]) }}"
+                                            class="btn btn-sm btn-outline-danger" target="_blank" title="Ver PDF">
+                                            <i class="far fa-file-pdf"></i>
+                                        </a>
+
+                                        <a href="{{ route('admin.cotizaciones.edit', ['cotizacion' => $cotizacion->id]) }}"
+                                            class="btn btn-sm btn-outline-primary" title="Editar cotización">
+                                            <i class="far fa-edit"></i>
+                                        </a>
+                                        @if (!($cotizacion->es_unificada ?? false))
+                                            <a href="{{ route('admin.cotizaciones.adicional', ['cotizacion' => $cotizacion->id]) }}"
+                                                class="btn btn-sm btn-outline-warning" title="Agregar otra cotización">
+                                                <i class="fas fa-plus-circle"></i>
+                                            </a>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            @php
+                                $adicionales = $this->adicionalesDeCotizacion($cotizacion);
+                            @endphp
+
+                            @foreach ($adicionales as $adicional)
+                                <tr class="table-warning">
+                                    <td></td>
+
+                                    <td colspan="2" style="padding-left: 45px;">
+                                        <div class="fw-bold text-warning">
+                                            <i class="fas fa-level-up-alt fa-rotate-90 me-1"></i>
+                                            {{ $adicional->numero }}
+                                        </div>
+
+                                        <div class="small text-muted">
+                                            Cotización adicional relacionada con {{ $cotizacion->numero }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        {{ optional($adicional->cliente)->cliente }}
+                                    </td>
+
+                                    <td>
+                                        @if ($adicional->motor)
+                                            {{ $adicional->motor->year }}-{{ $adicional->motor->os }}
+                                        @endif
+                                    </td>
+
+                                    <td class="text-end">
+                                        {{ number_format($adicional->total, 2) }}
+                                    </td>
+
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <a href="{{ route('admin.cotizaciones.downloadPdf', ['cotizacion' => $adicional->id]) }}"
+                                                class="btn btn-sm btn-outline-danger" target="_blank" title="Ver PDF">
+                                                <i class="far fa-file-pdf"></i>
+                                            </a>
+
+                                            <a href="{{ route('admin.cotizaciones.edit', ['cotizacion' => $adicional->id]) }}"
+                                                class="btn btn-sm btn-outline-primary" title="Editar adicional">
+                                                <i class="far fa-edit"></i>
+                                            </a>
+
+                                            <a href="{{ route('admin.cotizaciones.adicional', ['cotizacion' => $adicional->id]) }}"
+                                                class="btn btn-sm btn-outline-warning"
+                                                title="Agregar otra cotización adicional">
+                                                <i class="fas fa-plus-circle"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                            @if ($versiones->count() > 0)
+                                @if ($this->versionesEstanAbiertas($cotizacion->id))
+                                    <tr>
+                                        <td colspan="10" class="bg-light p-0">
+                                            <div class="p-3">
+                                                <div class="fw-bold mb-2">
+                                                    Versiones anteriores
+                                                </div>
+
+                                                <table class="table table-sm table-bordered mb-0 bg-white">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Número</th>
+                                                            <th>Fecha</th>
+                                                            <th>OS</th>
+                                                            <th>Potencia</th>
+                                                            <th>Título</th>
+                                                            <th class="text-center">Versión</th>
+                                                            <th class="text-end">Total</th>
+                                                            <th class="text-center">Herramientas</th>
+                                                        </tr>
+                                                    </thead>
+
+                                                    <tbody>
+                                                        @foreach ($versiones as $version)
+                                                            <tr>
+                                                                <td class="fw-bold">
+                                                                    {{ $version->numero }}
+                                                                </td>
+
+                                                                <td>
+                                                                    @if ($version->fecha_cotizacion)
+                                                                        {{ $version->fecha_cotizacion->format('d/m/Y') }}
+                                                                    @endif
+                                                                </td>
+
+                                                                <td>
+                                                                    {{ $this->osCotizacion($version) }}
+                                                                </td>
+
+                                                                <td>
+                                                                    {{ $this->potenciaCotizacion($version) }}
+                                                                </td>
+
+                                                                <td>
+                                                                    {{ $version->titulo }}
+
+                                                                    @if ($version->subtitulo)
+                                                                        <div class="text-muted small">
+                                                                            {{ $version->subtitulo }}
+                                                                        </div>
+                                                                    @endif
+                                                                </td>
+
+                                                                <td class="text-center">
+                                                                    <span class="badge bg-secondary">
+                                                                        V{{ $version->version }}
+                                                                    </span>
+                                                                </td>
+
+                                                                <td class="text-end">
+                                                                    {{ $this->simboloMoneda($version->moneda) }}{{ number_format($version->total, 2) }}
+                                                                </td>
+
+                                                                <td class="text-center">
+                                                                    <div class="btn-group">
+                                                                        <a href="{{ route('admin.cotizaciones.downloadPdf', ['cotizacion' => $version->id]) }}"
+                                                                            class="btn btn-sm btn-outline-danger"
+                                                                            target="_blank" title="Ver PDF">
+                                                                            <i class="far fa-file-pdf"></i>
+                                                                        </a>
+
+                                                                        <a href="{{ route('admin.cotizaciones.edit', ['cotizacion' => $version->id]) }}"
+                                                                            class="btn btn-sm btn-outline-primary"
+                                                                            title="Editar esta versión">
+                                                                            <i class="far fa-edit"></i>
+                                                                        </a>
+                                                                        <button type="button"
+                                                                            class="btn btn-sm btn-outline-danger"
+                                                                            wire:click="confirmarEliminarVersion({{ $version->id }})"
+                                                                            title="Eliminar esta versión">
+                                                                            <i class="far fa-trash-alt"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endif
+                            @endif
+                        @empty
+                            <tr>
+                                <td colspan="10" class="text-center text-muted py-4">
+                                    No hay cotizaciones registradas.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-3 py-3">
+                {{ $cotizaciones->links() }}
+            </div>
+        </div>
+    </div>
+    <script>
+        window.addEventListener('confirmar-eliminar-version-cotizacion', function(event) {
+            const cotizacionId = event.detail.cotizacion_id;
+            const numero = event.detail.numero;
+
+            Swal.fire({
+                title: '¿Eliminar versión?',
+                html: 'Está por eliminar la versión <strong>' + numero +
+                    '</strong>.<br>Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Livewire.emit('eliminarVersionCotizacionConfirmada', cotizacionId);
+                }
+            });
+        });
+
+        window.addEventListener('swal-success', function(event) {
+            Swal.fire({
+                title: event.detail.title || 'Correcto',
+                text: event.detail.text || '',
+                icon: 'success',
+                timer: 2200,
+                showConfirmButton: false,
+            });
+        });
+
+        window.addEventListener('swal-error', function(event) {
+            Swal.fire({
+                title: event.detail.title || 'Error',
+                text: event.detail.text || '',
+                icon: 'error',
+            });
+        });
+    </script>
 </div>

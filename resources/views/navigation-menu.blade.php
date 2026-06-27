@@ -52,12 +52,22 @@
                             <hr class="mb-0 navbar-vertical-divider" />
                         </div>
                     </div>
-                    <!-- parent pages--><a class="nav-link" href="{{ route('admin.cotizaciones.index') }}" role="button"
+                    @if (auth()->user()->canUse('cotizaciones.ver'))
+                   <a class="nav-link" href="{{ route('admin.cotizaciones.index') }}" role="button"
                         aria-expanded="false">
                         <div class="d-flex align-items-center"><span class="nav-link-icon"><span
-                                    class="fas fa-file-invoice-dollar"></span></span><span class="nav-link-text ps-1">Cotizaciones</span>
+                                    class="fas fa-file-invoice-dollar"></span></span><span class="nav-link-text ps-1"> Ver Cotizaciones</span>
                         </div>
                     </a>
+                    @endif
+                    @if (auth()->user()->canUse('cotizaciones.crear'))
+                     <a class="nav-link" href="{{ route('admin.cotizaciones.create') }}" role="button"
+                        aria-expanded="false">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
+                                    class="fas fa-plus"></span></span><span class="nav-link-text ps-1">Nueva Cotización</span>
+                        </div>
+                    </a>
+                    @endif
                     <!-- parent pages--><a class="nav-link" href="#" role="button" aria-expanded="false">
                         <div class="d-flex align-items-center"><span class="nav-link-icon"><span
                                     class="fas fa-file-invoice"></span></span><span class="nav-link-text ps-1">Facturacion</span>

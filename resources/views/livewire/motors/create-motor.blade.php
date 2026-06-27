@@ -92,7 +92,7 @@
 
                             <div class="mt-3">
                                 <label class="form-label" for="datepicker">Fecha de Ingreso</label>
-                                <input class="form-control datetimepicker"" type="text" wire:model="inDate" " data-options='{"disableMobile":true,"dateFormat": "d-m-Y"}' />
+                                <input class="form-control datetimepicker" type="text" wire:model="inDate"  data-options='{"disableMobile":true,"dateFormat": "d-m-Y"}' />
                              
                             </div>
                             <div class="mt-3">

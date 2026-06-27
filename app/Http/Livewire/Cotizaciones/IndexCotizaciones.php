@@ -2,35 +2,482 @@
 
 namespace App\Http\Livewire\Cotizaciones;
 
+use App\Models\Cotizacion;
 use App\Models\User;
 use Livewire\Component;
-use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
+use Livewire\WithPagination;
+use Illuminate\Support\Facades\DB;
 
 class IndexCotizaciones extends Component
 {
-    public $content = '';
+    use WithPagination;
 
-    protected $rules = [
-      'content' => 'required|min:10',
+    public $search = '';
+    public $sort = 'created_at';
+    public $direction = 'desc';
+    public $versionesAbiertas = [];
+    public $cotizacionesSeleccionadas = [];
+
+
+    protected $paginationTheme = 'bootstrap';
+    protected $listeners = [
+        'eliminarVersionCotizacionConfirmada' => 'eliminarVersionCotizacion',
     ];
+
     public function mount()
     {
         $user = auth()->user();
-        if (!in_array($user->userType, [User::DEVELOPER,User::GERENCIA,User::ADMINISTRACION,User::VENDEDORES ])) {
+
+        if (!in_array($user->userType, [
+            User::DEVELOPER,
+            User::GERENCIA,
+            User::ADMINISTRACION,
+            User::VENDEDORES,
+        ])) {
             return redirect()->route('dashboard');
         }
     }
+
     public function render()
     {
-        return view('livewire.cotizaciones.index-cotizaciones');
-    }
-    public function showCotizacion()
-    {
-        $this->validate();
+        $cotizaciones = Cotizacion::with([
+            'cliente',
+            'motor',
+            'motor.infoMotor',
+        ])
+            ->where('letra', 'A')
+            ->whereIn('id', function ($query) {
+                $query->selectRaw('MAX(id)')
+                    ->from('cotizaciones')
+                    ->groupBy('cot_year', 'correlativo', 'letra');
+            });
 
-       
-     
-        return redirect()->route('admin.cotizaciones.downloadPdf', ['cotID' => 1, 'data' => $this->content]);
-        //route('cotizaciones.show', $cotizacion);
+        $this->aplicarBusquedaInteligente($cotizaciones);
+
+        $cotizaciones = $cotizaciones
+            ->orderBy($this->sort, $this->direction)
+            ->paginate(15);
+
+        return view('livewire.cotizaciones.index-cotizaciones', [
+            'cotizaciones' => $cotizaciones,
+        ]);
+    }
+    public function updatedSearch()
+    {
+        $this->resetPage();
+        $this->cotizacionesSeleccionadas = [];
+    }
+    private function aplicarBusquedaInteligente($query)
+    {
+        $search = trim((string) $this->search);
+
+        if ($search === '') {
+            return $query;
+        }
+
+        $searchCompact = strtoupper(preg_replace('/\s+/', '', $search));
+
+        /*
+     * Caso 1:
+     * COT26-0030, COT-26-0030, cot26-30
+     * Buscar SOLO cotización.
+     */
+        if (preg_match('/^COT-?(\d{2})-?0*(\d{1,4})$/i', $searchCompact, $matches)) {
+            $year2 = $matches[1];
+            $correlativo = $this->normalizarCorrelativo4($matches[2]);
+
+            return $query->where(function ($q) use ($year2, $correlativo) {
+                $this->whereCotizacionExacta($q, $year2, $correlativo);
+            });
+        }
+
+        /*
+     * Caso 2:
+     * 2M25-0030, 2m25-30
+     * Buscar SOLO OS.
+     */
+        if (preg_match('/^2M(\d{2})-?0*(\d{1,4})$/i', $searchCompact, $matches)) {
+            $year2 = $matches[1];
+            $os = $this->normalizarCorrelativo4($matches[2]);
+
+            return $query->where(function ($q) use ($year2, $os) {
+                $this->whereOsExacta($q, $year2, $os);
+            });
+        }
+
+        /*
+     * Caso 3:
+     * 26-030, 26-30, 25-0030
+     * Buscar COT26-0030 y OS 2M26-0030.
+     */
+        if (preg_match('/^(\d{2})-0*(\d{1,4})$/', $searchCompact, $matches)) {
+            $year2 = $matches[1];
+            $correlativo = $this->normalizarCorrelativo4($matches[2]);
+
+            return $query->where(function ($q) use ($year2, $correlativo) {
+                $this->whereCotizacionExacta($q, $year2, $correlativo);
+                $this->orWhereOsExacta($q, $year2, $correlativo);
+            });
+        }
+
+        /*
+     * Caso 4:
+     * 30
+     * Buscar cualquier COTxx-0030 y cualquier OS 2Mxx-0030.
+     */
+        if (preg_match('/^\d{1,4}$/', $searchCompact)) {
+            $correlativo = $this->normalizarCorrelativo4($searchCompact);
+            $correlativoInt = (int) $correlativo;
+
+            return $query->where(function ($q) use ($correlativo, $correlativoInt) {
+                $q->where('correlativo', $correlativoInt)
+                    ->orWhere('numero', 'like', 'COT__-' . $correlativo . '%')
+                    ->orWhereHas('motor', function ($motor) use ($correlativo, $correlativoInt) {
+                        $motor->where(function ($m) use ($correlativo, $correlativoInt) {
+                            $m->where('os', $correlativo)
+                                ->orWhere('os', (string) $correlativoInt)
+                                ->orWhereRaw('LPAD(os, 4, "0") = ?', [$correlativo]);
+                        });
+                    });
+            });
+        }
+
+        /*
+     * Caso 5:
+     * Texto general: Cem, Progreso, Ultracem, etc.
+     */
+        return $query->where(function ($q) use ($search) {
+            $q->where('numero', 'like', '%' . $search . '%')
+                ->orWhere('titulo', 'like', '%' . $search . '%')
+                ->orWhere('subtitulo', 'like', '%' . $search . '%')
+
+                /*
+         * Cliente de la cotización.
+         * Aquí debe encontrar: Cementos San Gabriel, Cementos Progreso, Ultracem, etc.
+         */
+                ->orWhereHas('cliente', function ($cliente) use ($search) {
+                    $cliente->where('cliente', 'like', '%' . $search . '%');
+                })
+
+                /*
+         * OS / motor.
+         * No usamos potencia aquí porque esa columna no existe en la tabla del motor.
+         */
+                ->orWhereHas('motor', function ($motor) use ($search) {
+                    $motor->where('year', 'like', '%' . $search . '%')
+                        ->orWhere('os', 'like', '%' . $search . '%')
+                        ->orWhereRaw('CONCAT(year, "-", os) LIKE ?', ['%' . $search . '%'])
+                        ->orWhereRaw('CONCAT(year, "-", LPAD(os, 4, "0")) LIKE ?', ['%' . $search . '%']);
+                });
+        });
+    }
+    private function normalizarCorrelativo4($value)
+    {
+        return str_pad((int) $value, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function yearCompletoDesde2Digitos($year2)
+    {
+        return 2000 + (int) $year2;
+    }
+    private function whereCotizacionExacta($query, $year2, $correlativo4)
+    {
+        $yearCompleto = $this->yearCompletoDesde2Digitos($year2);
+        $correlativoInt = (int) $correlativo4;
+
+        $query->where(function ($q) use ($year2, $yearCompleto, $correlativo4, $correlativoInt) {
+            $q->where('numero', 'like', 'COT' . $year2 . '-' . $correlativo4 . '%')
+                ->orWhere('numero', 'like', 'COT-' . $year2 . '-' . $correlativo4 . '%')
+                ->orWhere(function ($sub) use ($yearCompleto, $year2, $correlativoInt) {
+                    $sub->where(function ($yearQuery) use ($yearCompleto, $year2) {
+                        $yearQuery->where('cot_year', $yearCompleto)
+                            ->orWhere('cot_year', $year2);
+                    })
+                        ->where('correlativo', $correlativoInt);
+                });
+        });
+    }
+
+    private function whereOsExacta($query, $year2, $os4)
+    {
+        $yearOs = '2M' . $year2;
+        $osInt = (int) $os4;
+
+        $query->whereHas('motor', function ($motor) use ($yearOs, $os4, $osInt) {
+            $motor->where(function ($m) use ($yearOs, $os4, $osInt) {
+                $m->where(function ($x) use ($yearOs, $os4, $osInt) {
+                    $x->where('year', $yearOs)
+                        ->where(function ($osQuery) use ($os4, $osInt) {
+                            $osQuery->where('os', $os4)
+                                ->orWhere('os', (string) $osInt)
+                                ->orWhereRaw('LPAD(os, 4, "0") = ?', [$os4]);
+                        });
+                })
+                    ->orWhereRaw('UPPER(CONCAT(year, "-", LPAD(os, 4, "0"))) = ?', [
+                        strtoupper($yearOs . '-' . $os4),
+                    ]);
+            });
+        });
+    }
+
+    private function orWhereOsExacta($query, $year2, $os4)
+    {
+        $yearOs = '2M' . $year2;
+        $osInt = (int) $os4;
+
+        $query->orWhereHas('motor', function ($motor) use ($yearOs, $os4, $osInt) {
+            $motor->where(function ($m) use ($yearOs, $os4, $osInt) {
+                $m->where(function ($x) use ($yearOs, $os4, $osInt) {
+                    $x->where('year', $yearOs)
+                        ->where(function ($osQuery) use ($os4, $osInt) {
+                            $osQuery->where('os', $os4)
+                                ->orWhere('os', (string) $osInt)
+                                ->orWhereRaw('LPAD(os, 4, "0") = ?', [$os4]);
+                        });
+                })
+                    ->orWhereRaw('UPPER(CONCAT(year, "-", LPAD(os, 4, "0"))) = ?', [
+                        strtoupper($yearOs . '-' . $os4),
+                    ]);
+            });
+        });
+    }
+    public function versionesDe($cotizacion)
+    {
+        return Cotizacion::with(['cliente', 'motor'])
+            ->where('cot_year', $cotizacion->cot_year)
+            ->where('correlativo', $cotizacion->correlativo)
+            ->where('letra', $cotizacion->letra)
+            ->where('id', '!=', $cotizacion->id)
+            ->orderByDesc('version')
+            ->get();
+    }
+    public function osCotizacion($cotizacion)
+    {
+        if (!$cotizacion->motor) {
+            return $cotizacion->equipo_no_ingresado_taller
+                ? 'Oferta presupuestaria'
+                : '-';
+        }
+
+        return $cotizacion->motor->fullos
+            ?? trim(($cotizacion->motor->year ?? '') . '-' . ($cotizacion->motor->os ?? ''), '-');
+    }
+
+    public function potenciaCotizacion($cotizacion)
+    {
+        if (!$cotizacion->motor) {
+            return '-';
+        }
+
+        return $cotizacion->motor->potencia ?: '-';
+    }
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sort === $field) {
+            $this->direction = $this->direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sort = $field;
+            $this->direction = 'asc';
+        }
+    }
+
+    public function simboloMoneda($moneda)
+    {
+        return $moneda === 'USD' ? '$' : 'Q';
+    }
+
+    public function totalUsd($cotizacion)
+    {
+        if ($cotizacion->moneda !== 'GTQ_USD') {
+            return null;
+        }
+
+        if (!$cotizacion->tipo_cambio || $cotizacion->tipo_cambio <= 0) {
+            return null;
+        }
+
+        return $cotizacion->total / $cotizacion->tipo_cambio;
+    }
+    public function toggleVersiones($cotizacionId)
+    {
+        if (in_array($cotizacionId, $this->versionesAbiertas)) {
+            $this->versionesAbiertas = array_values(array_diff($this->versionesAbiertas, [$cotizacionId]));
+            return;
+        }
+
+        $this->versionesAbiertas[] = $cotizacionId;
+    }
+
+    public function versionesEstanAbiertas($cotizacionId)
+    {
+        return in_array($cotizacionId, $this->versionesAbiertas);
+    }
+    public function confirmarEliminarVersion($cotizacionId)
+    {
+        $cotizacion = Cotizacion::find($cotizacionId);
+
+        if (!$cotizacion) {
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'No encontrada',
+                'text' => 'La versión de cotización no existe.',
+            ]);
+
+            return;
+        }
+
+        $this->dispatchBrowserEvent('confirmar-eliminar-version-cotizacion', [
+            'cotizacion_id' => $cotizacion->id,
+            'numero' => $cotizacion->numero,
+        ]);
+    }
+    public function eliminarVersionCotizacion($cotizacionId)
+    {
+        $cotizacion = Cotizacion::find($cotizacionId);
+
+        if (!$cotizacion) {
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'No encontrada',
+                'text' => 'La versión de cotización no existe.',
+            ]);
+
+            return;
+        }
+
+        /*
+     * Validar cuál es la versión más nueva del grupo.
+     * Grupo = cot_year + correlativo + letra
+     */
+        $ultimaVersion = Cotizacion::where('cot_year', $cotizacion->cot_year)
+            ->where('correlativo', $cotizacion->correlativo)
+            ->where('letra', $cotizacion->letra)
+            ->orderByDesc('version')
+            ->orderByDesc('id')
+            ->first();
+
+        if ($ultimaVersion && (int) $ultimaVersion->id === (int) $cotizacion->id) {
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'No permitido',
+                'text' => 'No se puede eliminar la versión más reciente de la cotización.',
+            ]);
+
+            return;
+        }
+
+        DB::transaction(function () use ($cotizacion) {
+            /*
+         * Si tienes FK con cascadeOnDelete, estas líneas no son necesarias.
+         * Pero las dejo para evitar errores si no hay cascada configurada.
+         */
+            DB::table('cotizacion_items')
+                ->where('cotizacion_id', $cotizacion->id)
+                ->delete();
+
+            DB::table('cotizacion_contactos')
+                ->where('cotizacion_id', $cotizacion->id)
+                ->delete();
+
+            $cotizacion->delete();
+        });
+
+        $this->dispatchBrowserEvent('swal-success', [
+            'title' => 'Versión eliminada',
+            'text' => 'La versión ' . $cotizacion->numero . ' fue eliminada correctamente.',
+        ]);
+    }
+    public function unificarCotizaciones()
+    {
+        $ids = collect($this->cotizacionesSeleccionadas)
+            ->map(fn($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($ids->count() < 2) {
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'Seleccione más de una cotización',
+                'text' => 'Debe seleccionar al menos dos cotizaciones para unificarlas.',
+            ]);
+
+            return;
+        }
+
+        $cotizaciones = Cotizacion::whereIn('id', $ids)
+            ->get();
+
+        if ($cotizaciones->count() !== $ids->count()) {
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'Cotizaciones no encontradas',
+                'text' => 'Una o más cotizaciones seleccionadas ya no existen.',
+            ]);
+
+            return;
+        }
+
+        /*
+     * Validar mismo cliente.
+     */
+        $clientes = $cotizaciones
+            ->pluck('id_cliente')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($clientes->count() !== 1) {
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'Clientes diferentes',
+                'text' => 'Solo puede unificar cotizaciones del mismo cliente.',
+            ]);
+
+            return;
+        }
+
+        /*
+     * Validar que todas sean la versión más reciente.
+     */
+        foreach ($cotizaciones as $cotizacion) {
+            $ultimaVersion = Cotizacion::where('cot_year', $cotizacion->cot_year)
+                ->where('correlativo', $cotizacion->correlativo)
+                ->where('letra', $cotizacion->letra)
+                ->orderByDesc('version')
+                ->orderByDesc('id')
+                ->first();
+
+            if (!$ultimaVersion || (int) $ultimaVersion->id !== (int) $cotizacion->id) {
+                $this->dispatchBrowserEvent('swal-error', [
+                    'title' => 'Versión no vigente',
+                    'text' => 'Solo puede unificar la versión más reciente de cada cotización.',
+                ]);
+
+                return;
+            }
+        }
+
+        return redirect()->route('admin.cotizaciones.unificar', [
+            'ids' => $ids->implode(','),
+        ]);
+    }
+    public function adicionalesDeCotizacion($cotizacion)
+    {
+        return Cotizacion::with([
+            'cliente',
+            'motor',
+            'motor.infoMotor',
+        ])
+            ->where('cot_year', $cotizacion->cot_year)
+            ->where('correlativo', $cotizacion->correlativo)
+            ->where('letra', '!=', 'A')
+            ->whereIn('id', function ($query) {
+                $query->selectRaw('MAX(id)')
+                    ->from('cotizaciones')
+                    ->groupBy('cot_year', 'correlativo', 'letra');
+            })
+            ->orderBy('letra')
+            ->get();
     }
 }

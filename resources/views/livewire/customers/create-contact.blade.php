@@ -37,35 +37,45 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cerrar</button>
-                    <button class="btn btn-primary close-modal"  type="button" onclick="guardar()">Guardar </button>
+                    <button 
+    class="btn btn-primary"  
+    type="button" 
+    wire:click="store"
+    wire:loading.attr="disabled"
+    wire:target="store"
+>
+    Guardar
+</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        guardar = function() {
-            console.log('guardar contacto');
-            // Llama al método de Livewire para guardar el contacto
-            @this.store();
-        }
-        // Asegúrate de que el listener exista siempre, tan pronto cargue Livewire
-        console.log('📣 close-new-contact');
-        document.addEventListener('livewire:load', () => {
-          window.addEventListener('close-new-contact', () => {
-            console.log('📣 close-new-contact capturado');
-            
-            // cierra el modal de Bootstrap 5
-            const modalEl = document.getElementById('newContact-modal');
-            if (modalEl) {
-              const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-              modal.hide();
-            }
-          });
+    window.addEventListener('contact-saved', () => {
+        const modalEl = document.getElementById('newContact-modal');
+
+        if (!modalEl) return;
+
+        const modal = bootstrap.Modal.getInstance(modalEl) 
+            || new bootstrap.Modal(modalEl);
+
+        modal.hide();
+
+        // Limpieza por si Bootstrap deja el backdrop pegado
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+        Swal.fire({
+            icon: 'success',
+            title: '¡Contacto agregado!',
+            text: 'El contacto fue guardado correctamente.',
+            timer: 1800,
+            showConfirmButton: false
         });
-        window.addEventListener('prueba', () => {
-            console.log('📣 Evento "prueba" capturado');
-        });
-          </script>
+    });
+</script>
+   
 
 </div>

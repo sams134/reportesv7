@@ -42,11 +42,15 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::authenticateUsing(function (LoginRequest $request) {
             $user = User::where('email', $request->identity)
                 ->orWhere('username', $request->identity)->first();
-  
+
             if (
                 $user &&
                 Hash::check($request->password, $user->password)
             ) {
+                $user->forceFill([
+                    'last_login_at' => now(),
+                ])->save();
+
                 return $user;
             }
         });
@@ -54,7 +58,7 @@ class FortifyServiceProvider extends ServiceProvider
         RateLimiter::for('login', function (Request $request) {
             $email = (string) $request->email;
 
-            return Limit::perMinute(5)->by($email.$request->ip());
+            return Limit::perMinute(5)->by($email . $request->ip());
         });
 
         RateLimiter::for('two-factor', function (Request $request) {

@@ -1,0 +1,128 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Cotizacion;
+use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
+
+class CotizacionPdfController extends Controller
+{
+    public function downloadPdf(Request $request, Cotizacion $cotizacion)
+    {
+        $cotizacion->load([
+            'cliente.info_cliente',
+            'motor.infoMotor',
+            'motor.fotos',
+            'contactosCotizacion',
+            'itemsCotizacion',
+
+            // Para cotizaciones unificadas
+            'unificadaDetalles.items',
+            'unificadaDetalles.cotizacionOrigen.motor.infoMotor',
+        ]);
+
+        $usarPortada = $request->boolean('portada');
+
+        $firmante = $this->resolverFirmante();
+        $filename = $this->nombreArchivoCotizacionPdf($cotizacion);
+
+        return PDF::loadView('pdfs.cotizaciones.portada1', [
+            'cotizacion' => $cotizacion,
+            'cliente' => $cotizacion->cliente,
+            'motor' => $cotizacion->motor,
+            'usarPortada' => $usarPortada,
+            'firmante' => $firmante,
+        ])
+            ->setPaper('letter')
+            ->setOption('encoding', 'UTF-8')
+            ->setOption('enable-local-file-access', true)
+            ->setOption('margin-top', 0)
+            ->setOption('margin-bottom', 0)
+            ->setOption('margin-left', 0)
+            ->setOption('margin-right', 0)
+            ->inline($filename);
+    }
+    private function resolverFirmante(): array
+    {
+        $user = auth()->user();
+
+        /*
+     * Aquí puedes ajustar luego a campos reales de tu tabla users:
+     * nombre_firma, puesto_firma, email_firma, celular_firma, etc.
+     */
+
+        $firmaDefault = [
+            'nombre' => 'Ing. Samuel Mayorga, MAE, MBA',
+            'puesto' => 'Gerente de Producción',
+            'email' => 'samuel.mayorga@cmeamir.com',
+            'celular' => '(502) 5207-6235',
+            'oficina' => '(502) 2331-1596',
+            'fax' => '(502) 2335-6638',
+            'direccion' => '23 ave 28-46 Zona 5 Guatemala, Guatemala C.A',
+        ];
+
+        if (!$user) {
+            return $firmaDefault;
+        }
+
+        /*
+     * Ajusta estos campos a tu modelo real.
+     * Si no existen, se usa la firma por defecto.
+     */
+        return [
+            'nombre' => $user->firma_nombre ?: $firmaDefault['nombre'],
+            'puesto' => $user->firma_puesto ?: $firmaDefault['puesto'],
+            'email' => $user->firma_email ?: ($user->email ?: $firmaDefault['email']),
+            'celular' => $user->firma_celular ?: $firmaDefault['celular'],
+            'oficina' => $user->firma_oficina ?: $firmaDefault['oficina'],
+            'fax' => $user->firma_fax ?: $firmaDefault['fax'],
+            'direccion' => $user->firma_direccion ?: $firmaDefault['direccion'],
+        ];
+    }
+    private function nombreArchivoCotizacionPdf(Cotizacion $cotizacion): string
+    {
+        $numero = trim((string) $cotizacion->numero);
+
+        $cliente = optional($cotizacion->cliente)->cliente
+            ? trim((string) $cotizacion->cliente->cliente)
+            : 'CLIENTE';
+
+        $subtitulo = $cotizacion->subtitulo
+            ? trim((string) $cotizacion->subtitulo)
+            : '';
+
+        /*
+     * Nombre base:
+     * COT26-0004-A-V10 CEMENTOS PROGRESO PLANTA SAN GABRIEL Rebobinado Motor 3.45 KW
+     */
+        $nombre = trim($numero . ' ' . mb_strtoupper($cliente) . ' ' . $subtitulo);
+
+        /*
+     * Limpieza para evitar caracteres inválidos en nombres de archivo.
+     */
+        $nombre = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $nombre);
+
+        /*
+     * Limpia saltos de línea, tabs y espacios dobles.
+     */
+        $nombre = preg_replace('/\s+/', ' ', $nombre);
+
+        /*
+     * Opcional: quitar acentos/caracteres raros.
+     * Si prefieres conservar acentos, comenta esta línea.
+     */
+        $nombre = Str::ascii($nombre);
+
+        /*
+     * Evitar nombres demasiado largos.
+     */
+        $nombre = Str::limit($nombre, 160, '');
+
+        return trim($nombre) . '.pdf';
+    }
+}

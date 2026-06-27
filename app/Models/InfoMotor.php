@@ -9,7 +9,7 @@ class InfoMotor extends Model
 {
     use HasFactory;
 
-    use HasFactory;
+    
 
     // Tabla asociada
     protected $table = 'info_motors';

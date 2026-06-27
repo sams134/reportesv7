@@ -7,7 +7,7 @@ use Livewire\Component;
 
 class CreateContact extends Component
 {
-    public $name,$telefono,$puesto,$email,$id_cliente;
+    public $name, $telefono, $puesto, $email, $id_cliente;
 
     public function mount($id_cliente)
     {
@@ -20,15 +20,23 @@ class CreateContact extends Component
 
     public function store()
     {
-       /*  $contacto = Contacto::create([
+        Contacto::create([
             'contacto' => $this->name,
             'telefono' => $this->telefono,
             'puesto' => $this->puesto,
             'email' => $this->email,
             'id_cliente' => $this->id_cliente
-        ]); 
-        $this->emit('render'); */
-       // $this->dispatchBrowserEvent('contact-saved');
-       $this->emit('prueba');
+        ]);
+
+        $this->reset([
+            'name',
+            'telefono',
+            'puesto',
+            'email',
+        ]);
+
+        $this->emit('render');
+
+        $this->dispatchBrowserEvent('contact-saved');
     }
 }

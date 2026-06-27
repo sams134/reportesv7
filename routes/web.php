@@ -31,6 +31,8 @@ use App\Http\Livewire\Motors\ShowJob;
 use App\Http\Livewire\Motors\ShowMotor;
 use App\Http\Livewire\Pruebas\PruebasIndex;
 use App\Models\BalanceoArt;
+
+use App\Http\Controllers\Admin\CotizacionPdfController;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 /*
@@ -106,9 +108,33 @@ Route::middleware([
     Route::get('/admin/produccionPDF/{fecha}', [MotorController::class, 'downloadPdfProduccion'])->name('admin.produccionPDF.fecha');
 
     //Cotizaciones
-    Route::get('/admin/cotizaciones', IndexCotizaciones::class)->name('admin.cotizaciones.index');
-    Route::get('/admin/cotizaciones/create', NuevaCotizacion::class)->name('admin.cotizaciones.create');
-    Route::get('/admin/VerCotizacion/{cotID}/{data}', [MotorController::class, 'downloadPdfCotizacion'])->name('admin.cotizaciones.downloadPdf');
+    Route::prefix('admin')
+        ->name('admin.')
+        ->middleware(['auth'])
+        ->group(function () {
+
+            Route::get('cotizaciones', IndexCotizaciones::class)
+                ->name('cotizaciones.index');
+
+            /*
+         * IMPORTANTE:
+         * create debe ir ANTES de cualquier ruta con {cotizacion}
+         */
+            Route::get('cotizaciones/create', NuevaCotizacion::class)
+                ->name('cotizaciones.create');
+
+            Route::get('cotizaciones/unificar', \App\Http\Livewire\Cotizaciones\NuevaCotizacion::class)
+                ->name('cotizaciones.unificar');
+
+            Route::get('cotizaciones/{cotizacion}/adicional', \App\Http\Livewire\Cotizaciones\NuevaCotizacion::class)
+                ->name('cotizaciones.adicional');
+
+            Route::get('cotizaciones/{cotizacion}/edit', NuevaCotizacion::class)
+                ->name('cotizaciones.edit');
+
+            Route::get('cotizaciones/{cotizacion}/pdf', [CotizacionPdfController::class, 'downloadPdf'])
+                ->name('cotizaciones.downloadPdf');
+        });
 
 
     //boards
@@ -127,6 +153,6 @@ Route::middleware([
     // routes/web.php
     Route::middleware('auth')->post('/api/save-no-load-chart', [Graficas::class, 'saveNoLoadChart'])
         ->name('graphs.no_load.save');
- 
+
     Route::get('/api/temperature-chart/{motor_id}', [Graficas::class, 'getTemperatureChart']);
 });

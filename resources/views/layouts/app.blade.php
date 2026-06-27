@@ -22,6 +22,8 @@
     <link href="{{ asset('vendors/overlayscrollbars/OverlayScrollbars.min.css') }}" rel="stylesheet">
     <link href=" {{ asset('vendors/dropzone/dropzone.min.css') }}" rel="stylesheet">
     <link href="{{ asset('vendors/flatpickr/flatpickr.min.css') }}" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('vendors/choices/choices.min.css') }}">
+    
 
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('css/theme.css') }}">
@@ -179,6 +181,7 @@
     <script src="{{ asset('vendors/dropzone/dropzone.min.js') }}"></script>
     <script src="{{ asset('vendors/list.js/list.min.js') }}"></script>
     <script src="{{ asset('vendors/tinymce/tinymce.min.js') }}"></script>
+    <script src="{{ asset('vendors/choices/choices.min.js') }}"></script>
 
     <script src="{{ asset('js/flatpickr.js') }}"></script>
     <script src="{{ asset('js/theme.js') }}"></script>
