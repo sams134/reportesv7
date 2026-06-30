@@ -190,4 +190,13 @@ class Motor extends Model
     {
         return $this->hasOne(\App\Models\NoLoadTest::class, 'id_motor', 'id_motor');
     }
+    public function adminStatus()
+    {
+        return $this->hasOne(\App\Models\MotorAdminStatus::class, 'id_motor', 'id_motor');
+    }
+
+    public function cotizaciones()
+    {
+        return $this->hasMany(\App\Models\Cotizacion::class, 'id_motor', 'id_motor');
+    }
 }

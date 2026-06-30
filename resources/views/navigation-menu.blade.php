@@ -68,6 +68,20 @@
                         </div>
                     </a>
                     @endif
+                    <a class="nav-link" href="{{ route('admin.tableroAdministrativo') }}" role="button"
+                        aria-expanded="false">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
+                                    class="fas fa-tachometer-alt"></span></span><span class="nav-link-text ps-1">Tablero Administrativo</span>
+                        </div>
+                    </a>
+                    @if(in_array($user->userType, [\App\Models\User::DEVELOPER, \App\Models\User::GERENCIA, \App\Models\User::ADMINISTRACION, \App\Models\User::VENDEDORES]))
+                     <a class="nav-link" href="{{ route('admin.cotizaciones.listado-precios') }}" role="button"
+                        aria-expanded="false">
+                        <div class="d-flex align-items-center"><span class="nav-link-icon"><span
+                                    class="fas fa-tag"></span></span><span class="nav-link-text ps-1">Listado de Precios</span>
+                        </div>
+                    </a>
+                    @endif
                     <!-- parent pages--><a class="nav-link" href="#" role="button" aria-expanded="false">
                         <div class="d-flex align-items-center"><span class="nav-link-icon"><span
                                     class="fas fa-file-invoice"></span></span><span class="nav-link-text ps-1">Facturacion</span>

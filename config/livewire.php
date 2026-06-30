@@ -98,7 +98,7 @@ return [
     'temporary_file_upload' => [
         'disk' => null,
 
-        'rules' => 'file|mimes:pdf|max:102400',
+        'rules' => 'file|max:102400',
 
         'directory' => null,
 

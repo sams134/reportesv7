@@ -33,6 +33,7 @@ use App\Http\Livewire\Pruebas\PruebasIndex;
 use App\Models\BalanceoArt;
 
 use App\Http\Controllers\Admin\CotizacionPdfController;
+use App\Http\Livewire\Administracion\TableroAdministrativo;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 /*
@@ -113,6 +114,9 @@ Route::middleware([
         ->middleware(['auth'])
         ->group(function () {
 
+            Route::get('cotizaciones/listado-precios', \App\Http\Livewire\Cotizaciones\ListadoPrecios::class)
+                ->name('cotizaciones.listado-precios');
+
             Route::get('cotizaciones', IndexCotizaciones::class)
                 ->name('cotizaciones.index');
 
@@ -136,6 +140,9 @@ Route::middleware([
                 ->name('cotizaciones.downloadPdf');
         });
 
+//tableros administrativos
+Route::get('/admin/tablero-administrativo', TableroAdministrativo::class)
+    ->name('admin.tableroAdministrativo');
 
     //boards
     Route::get('/boards/{board}', IndexBoard::class)->name('boards.index');
