@@ -1370,7 +1370,7 @@
                     </table>
 
                     @if ($noLoadGraphPath)
-                        <img src="{{ $noLoadGraphPath }}" style="width:80%; max-height:360px; object-fit:contain;">
+                        <img src="{{ $noLoadGraphPath }}" style="width:70%; max-height:360px; object-fit:contain;">
                     @else
                         <div style="border:1px solid #999;padding:20px;text-align:center;color:#777;">
                             Gráfica de % carga no guardada.
