@@ -80,52 +80,64 @@ class Graficas extends Controller
     {
         $request->validate([
             'image'    => 'required|string',
-            'motor_id' => 'required',
+            'motor_id' => 'required|exists:motors,id_motor',
         ]);
 
-        $motor = Motor::with('noLoadTest')->where('id_motor', $request->motor_id)->firstOrFail();
+        $motor = Motor::with('noLoadTest')
+            ->where('id_motor', $request->motor_id)
+            ->firstOrFail();
 
         if (!$motor->noLoadTest) {
-            return response()->json(['message' => 'No Load Test no encontrado para este motor.'], 404);
+            return response()->json([
+                'ok' => false,
+                'message' => 'No Load Test no encontrado para este motor.',
+            ], 404);
         }
 
-        // Limpia data URL
         $base64 = preg_replace('#^data:image/\w+;base64,#i', '', $request->input('image'));
         $imageData = base64_decode($base64);
 
         if ($imageData === false) {
-            return response()->json(['message' => 'Base64 inválido.'], 422);
+            return response()->json([
+                'ok' => false,
+                'message' => 'Base64 inválido.',
+            ], 422);
         }
 
-        // 🔥 TU RUTA ESPERADA
         $folder = "uploads/{$motor->year}-{$motor->os}/no_load";
         $relativePath = "{$folder}/no_load.png";
 
-        // Crear carpeta y sobrescribir
-        Storage::disk('public')->makeDirectory($folder);
-        Storage::disk('public')->put($relativePath, $imageData);
+        \Storage::disk('public')->makeDirectory($folder);
+        \Storage::disk('public')->put($relativePath, $imageData);
 
-        // Guardar ruta en DB (graph_fl VARCHAR)
         $motor->noLoadTest->graph_fl = $relativePath;
         $motor->noLoadTest->last_graph_saved_by = auth()->id();
         $motor->noLoadTest->save();
 
         return response()->json([
-            'message' => 'Gráfica guardada.',
+            'ok' => true,
+            'message' => 'Gráfica No Load guardada con éxito.',
             'path' => $relativePath,
+            'url' => asset('storage/' . $relativePath),
         ]);
     }
 
 
     public function getTemperatureChart($motor_id)
     {
-        $motor = Motor::findOrFail($motor_id);
+        $motor = Motor::where('id_motor', $motor_id)->firstOrFail();
 
-        if (!$motor->temperaturas) {
+        if (!$motor->temperaturas_path) {
             return response('', 404);
         }
 
-        return response($motor->temperaturas, 200, [
+        $relativePath = ltrim($motor->temperaturas_path, '/');
+
+        if (!Storage::disk('public')->exists($relativePath)) {
+            return response('', 404);
+        }
+
+        return response(Storage::disk('public')->get($relativePath), 200, [
             'Content-Type' => 'image/png',
             'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
         ]);

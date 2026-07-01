@@ -114,7 +114,16 @@ class ShowMotor extends Component
 
     public function removeDoc($id): void
     {
-        $this->motor->documentos()->find($id)?->delete();
+        $doc = $this->motor->documentos()->find($id);
+
+        if ($doc) {
+            if ($doc->documento) {
+                Storage::disk('public')->delete(ltrim($doc->documento, '/'));
+            }
+
+            $doc->delete();
+        }
+
         $this->motor->refresh();
     }
 

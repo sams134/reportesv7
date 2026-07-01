@@ -34,6 +34,7 @@ class Temperaturas extends Component
     {
         $this->motor = Motor::find($motor->id_motor);
         $this->cliente = $this->motor->cliente;
+        $this->temp_comment = $this->motor->temperaturas_comentario;
     }
     public function updateTime($time)
     {
@@ -75,7 +76,7 @@ class Temperaturas extends Component
         $thermo71 = $this->motor->fotos()->where('type', 71)->latest()->first();
         $thermo72 = $this->motor->fotos()->where('type', 72)->latest()->first();
         $thermo73 = $this->motor->fotos()->where('type', 73)->latest()->first();
-        $this->temp_comment = $this->motor->temperaturas_comentario;
+
 
 
         return view('livewire.pruebas.temperaturas', compact('thermo71', 'thermo72', 'thermo73'));
@@ -96,14 +97,25 @@ class Temperaturas extends Component
     }
     public function getTemperatures($id_motor)
     {
-        $temperatures = Temperatura::where('id_motor', $id_motor)->get();
+        $data = [
+            'time' => [],
+            'carga' => [],
+            'opuesto' => [],
+            'estator' => [],
+        ];
+
+        $temperatures = Temperatura::where('id_motor', $id_motor)
+            ->orderBy('id')
+            ->get();
+
         foreach ($temperatures as $temperature) {
-            $this->temperatures['time'][] = $temperature->time;
-            $this->temperatures['carga'][] = $temperature->carga;
-            $this->temperatures['opuesto'][] = $temperature->opuesto;
-            $this->temperatures['estator'][] = $temperature->estator;
+            $data['time'][] = $temperature->time;
+            $data['carga'][] = $temperature->carga;
+            $data['opuesto'][] = $temperature->opuesto;
+            $data['estator'][] = $temperature->estator;
         }
-        return response()->json($this->temperatures);
+
+        return response()->json($data);
     }
     public function saveThermography(): void
     {
@@ -216,7 +228,6 @@ class Temperaturas extends Component
         $this->reset(['manual_seconds', 'carga_t', 'opuesto_t', 'estator_t']);
         $this->emit('updateGraph');
         $this->dispatchBrowserEvent('temps:updated');
-
     }
     public function saveTempComment()
     {

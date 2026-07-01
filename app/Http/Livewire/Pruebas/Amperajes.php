@@ -394,7 +394,6 @@ class Amperajes extends Component
             return;
         }
 
-        // Si quieres seguir marcando recorded/finished, mantenlo (opcional)
         $this->noLoadTest->update([
             'recorded' => 1,
             'finished' => now(),
@@ -403,10 +402,29 @@ class Amperajes extends Component
 
         $this->recorded = true;
 
-        // Dispara al JS
+        $promA = ($this->amperaje_1 + $this->amperaje_2 + $this->amperaje_3) / 3;
+
+        $polos = null;
+        for ($i = 2; $i < 36; $i += 2) {
+            $synchronusRpm = 2 * ($this->hz_placa * 60) / $i;
+
+            if ($this->rpm_placa > $synchronusRpm) {
+                $polos = $i - 2;
+                break;
+            }
+        }
+
+        $limitMax = NoLoadAmp::where('poles', $polos)->value('maxA') ?? 90;
+        $limitMin = NoLoadAmp::where('poles', $polos)->value('minA') ?? 10;
+
+        $valor = round(($promA / $this->amperaje_placa) * 100 * $this->fct * $this->fpt, 1);
+
         $this->dispatchBrowserEvent('no-load-export', [
-        'motor_id' => $this->motor->id_motor,
-    ]);
+            'motor_id' => $this->motor->id_motor,
+            'valor' => $valor,
+            'min' => $limitMin,
+            'max' => $limitMax,
+        ]);
     }
     public function saveAmpsComment()
     {
@@ -420,5 +438,4 @@ class Amperajes extends Component
             'icon'  => 'success',
         ]);
     }
-    
 }

@@ -448,26 +448,26 @@
                         {{ $isVoltageBalanced ? ' Usando data ' : 'Usar data' }} balanceada
                     </button>
 
-                        <button type="button" class="btn btn-{{ $recorded ? 'success' : 'primary' }}"
-                            wire:click="exportResults">
-                            {{ $recorded ? 'Actualizar Resultados' : 'Exportar Resultados' }}
-                        </button>
-                   
-                </div>
-                 <div class="card mb-3">
-                <div class="card-body">
-                    <label class="form-label"><strong>Comentario (Amperajes)</strong></label>
-                    <textarea class="form-control" rows="3"
-                        placeholder="Ej: El consumo de amperaje se encuentra dentro de los rangos aceptables"
-                        wire:model.defer="amps_comment"></textarea>
+                    <button type="button" class="btn btn-{{ $recorded ? 'success' : 'primary' }}"
+                        wire:click="exportResults">
+                        {{ $recorded ? 'Actualizar Resultados' : 'Exportar Resultados' }}
+                    </button>
 
-                    <div class="mt-2">
-                        <button class="btn btn-secondary" type="button" wire:click="saveAmpsComment">
-                            Guardar comentario
-                        </button>
+                </div>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <label class="form-label"><strong>Comentario (Amperajes)</strong></label>
+                        <textarea class="form-control" rows="3"
+                            placeholder="Ej: El consumo de amperaje se encuentra dentro de los rangos aceptables"
+                            wire:model.defer="amps_comment"></textarea>
+
+                        <div class="mt-2">
+                            <button class="btn btn-secondary" type="button" wire:click="saveAmpsComment">
+                                Guardar comentario
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
 
                 <h3>Tabla Referencia Consumo Amperajes en vacio</h3>
@@ -990,41 +990,84 @@
 
 
 
-            function waitForSVGThenExport() {
-                const container = document.getElementById('chartDiv2');
-                if (!container) return;
+            
 
-                const observer = new MutationObserver((mutations, obs) => {
-                    const svgEl = container.querySelector('div[id^="JSCharting_"] svg');
-                    if (svgEl) {
-                        obs.disconnect();
-                        saveGraphNoLoadViaSVG();
-                    }
-                });
-
-                observer.observe(container, {
-                    childList: true,
-                    subtree: true
-                });
-            }
-
-            Livewire.on('testExported', function() {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Éxito!',
-                    text: 'La prueba fue exportada al informe.',
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-                waitForSVGThenExport();
-            });
+           
             document.addEventListener('DOMContentLoaded', () => {
                 initGaugeFromDom();
             });
+            document.addEventListener('shown.bs.tab', function(event) {
+                if (event.target && event.target.id === 'current-tab') {
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            initGaugeFromDom();
+                        });
+                    });
+                }
+            });
         </script>
         <script>
-            window.addEventListener('no-load-export', (e) => {
-                saveGraphNoLoadViaSVG(e.detail.motor_id);
+            function waitForNoLoadSvg(maxTries = 120) {
+                return new Promise((resolve, reject) => {
+                    let tries = 0;
+
+                    function check() {
+                        const container = document.getElementById('chartDiv2');
+                        const svgEl = container?.querySelector('div[id^="JSCharting_"] svg') ||
+                            container?.querySelector('svg');
+
+                        if (svgEl) {
+                            resolve(svgEl);
+                            return;
+                        }
+
+                        tries++;
+
+                        if (tries >= maxTries) {
+                            reject(new Error('La gráfica no generó SVG a tiempo.'));
+                            return;
+                        }
+
+                        requestAnimationFrame(check);
+                    }
+
+                    check();
+                });
+            }
+            window.addEventListener('no-load-export', async (e) => {
+                const detail = e.detail || {};
+                const motorId = detail.motor_id;
+
+                const valor = detail.valor ?? document.getElementById('chartDiv2')?.dataset.valor;
+                const min = detail.min ?? document.getElementById('chartDiv2')?.dataset.min;
+                const max = detail.max ?? document.getElementById('chartDiv2')?.dataset.max;
+
+                const wrap = document.getElementById('wrapResultados');
+                if (wrap) wrap.classList.remove('d-none');
+
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+                drawGaugeWhenReady(valor, min, max);
+
+                await waitForNoLoadSvg();
+
+                const result = await saveGraphNoLoadViaSVG(motorId);
+
+                if (result.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Gráfica guardada',
+                        text: 'La gráfica de % de carga fue guardada para el informe.',
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'No se guardó la gráfica',
+                        text: result.message || 'No se pudo exportar la gráfica de % de carga.',
+                    });
+                }
             });
         </script>
     @endpush
