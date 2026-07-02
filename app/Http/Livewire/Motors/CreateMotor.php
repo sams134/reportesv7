@@ -9,6 +9,7 @@ use App\Models\Foto;
 use App\Models\InfoMotor;
 use App\Models\Inventario;
 use App\Models\Motor;
+use App\Models\MotorAdminStatus;
 use App\Models\TipoEquipo;
 use Carbon\Carbon;
 use DateTime;
@@ -28,7 +29,7 @@ class CreateMotor extends Component
     public $photosMotor = ['', '', '', ''];
     public $step = 0;
     //placa de datos
-    public $equipmentName, $equipmentType = null, $selectedEquipmentTypeName, $potencia, $aproximado = false, $powerUnit = 0, $rpm, $marca, $serie, $modelo, $voltaje, $amperaje, $frame, $hz, $inverter, $pf, $eff,$phases;
+    public $equipmentName, $equipmentType = null, $selectedEquipmentTypeName, $potencia, $aproximado = false, $powerUnit = 0, $rpm, $marca, $serie, $modelo, $voltaje, $amperaje, $frame, $hz, $inverter, $pf, $eff, $phases;
 
     public $listeners = ['next', 'prev', 'newCustomerAdded', 'render', 'store'];
     protected $rules = [
@@ -100,7 +101,7 @@ class CreateMotor extends Component
     {
         unset($this->nameplates[$key]);
     }
-   
+
     public function next()
     {
         if ($this->step == 4) {
@@ -202,7 +203,7 @@ class CreateMotor extends Component
 
     public function store()
     {
-       
+
         try {
             $this->validate();
 
@@ -250,7 +251,11 @@ class CreateMotor extends Component
                 'inverter_duty' => $this->inverter,
                 'fecha_ingreso' => date('Y-m-d', strtotime($this->inDate)),
             ]);
-
+            MotorAdminStatus::firstOrCreate([
+                'id_motor' => $motor->id_motor,
+            ], [
+                'cotizacion_estado' => 'pendiente',
+            ]);
             // Verificar que el motor fue creado correctamente
             if (!$motor) {
                 throw new \Exception('No se pudo crear el motor');
