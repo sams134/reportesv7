@@ -1,0 +1,134 @@
+CREATE TABLE `motor_admin_statuses` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_motor` int unsigned NOT NULL,
+
+  `cotizacion_estado` enum('pendiente','cotizado','no_aplica') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pendiente',
+  `cotizacion_id` bigint unsigned DEFAULT NULL,
+  `cotizacion_fecha` datetime DEFAULT NULL,
+
+  `requerimiento_estado` enum('pendiente','recibido','no_aplica') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pendiente',
+  `requerimiento_numero` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `requerimiento_fecha` datetime DEFAULT NULL,
+
+  `oc_estado` enum('pendiente','recibida','no_aplica') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pendiente',
+  `oc_numero` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `oc_archivo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `oc_fecha` datetime DEFAULT NULL,
+
+  `autorizacion_estado` enum('pendiente','verbal','previa','confianza','recibida','no_aplica') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pendiente',
+  `autorizacion_comentario` text COLLATE utf8mb4_unicode_ci,
+  `autorizacion_fecha` datetime DEFAULT NULL,
+
+  `anticipo_estado` enum('pendiente','solicitado','recibido','no_aplica') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'no_aplica',
+  `anticipo_monto` decimal(12,2) DEFAULT NULL,
+  `anticipo_fecha` datetime DEFAULT NULL,
+
+  `aceptacion_estado` enum('pendiente','recibida','no_aplica') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pendiente',
+  `aceptacion_numero` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `aceptacion_fecha` datetime DEFAULT NULL,
+
+  `factura_estado` enum('pendiente','emitida','enviada','no_aplica') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pendiente',
+  `factura_numero` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `factura_fecha` datetime DEFAULT NULL,
+
+  `contrasena_pago_estado` enum('pendiente','recibida','no_aplica') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pendiente',
+  `contrasena_pago_numero` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `contrasena_pago_fecha` datetime DEFAULT NULL,
+
+  `pago_estado` enum('pendiente','pagado','no_aplica') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pendiente',
+  `pago_fecha` datetime DEFAULT NULL,
+
+  `comentarios` text COLLATE utf8mb4_unicode_ci,
+  `updated_by` int unsigned DEFAULT NULL,
+
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `motor_admin_statuses_id_motor_unique` (`id_motor`),
+  KEY `motor_admin_statuses_cotizacion_id_index` (`cotizacion_id`),
+  KEY `motor_admin_statuses_updated_by_index` (`updated_by`),
+
+  CONSTRAINT `motor_admin_statuses_id_motor_foreign`
+    FOREIGN KEY (`id_motor`) REFERENCES `motors` (`id_motor`)
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE `motor_admin_status_documents` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `motor_admin_status_id` bigint unsigned NOT NULL,
+
+  `tipo` enum(
+    'oc',
+    'factura',
+    'contrasena_pago',
+    'pago',
+    'requerimiento',
+    'aceptacion',
+    'anticipo'
+  ) COLLATE utf8mb4_unicode_ci NOT NULL,
+
+  `archivo_path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `archivo_original` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `mime_type` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `size_bytes` bigint unsigned DEFAULT NULL,
+
+  `comentario` text COLLATE utf8mb4_unicode_ci,
+  `uploaded_by` int unsigned DEFAULT NULL,
+
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+
+  PRIMARY KEY (`id`),
+  KEY `idx_motor_admin_status_documents_status` (`motor_admin_status_id`),
+  KEY `idx_motor_admin_status_documents_tipo` (`tipo`),
+  KEY `idx_motor_admin_status_documents_uploaded_by` (`uploaded_by`),
+
+  CONSTRAINT `motor_admin_status_documents_status_foreign`
+    FOREIGN KEY (`motor_admin_status_id`)
+    REFERENCES `motor_admin_statuses` (`id`)
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+INSERT INTO `motor_admin_statuses` (
+    `id_motor`,
+    `cotizacion_estado`,
+    `cotizacion_id`,
+    `cotizacion_fecha`,
+    `created_at`,
+    `updated_at`
+)
+SELECT
+    m.`id_motor`,
+    CASE
+        WHEN c.`id` IS NULL THEN 'pendiente'
+        ELSE 'cotizado'
+    END AS `cotizacion_estado`,
+    c.`id` AS `cotizacion_id`,
+    c.`fecha_cotizacion` AS `cotizacion_fecha`,
+    NOW(),
+    NOW()
+FROM `motors` m
+LEFT JOIN (
+    SELECT
+        c1.`id_motor`,
+        c1.`id`,
+        c1.`fecha_cotizacion`
+    FROM `cotizaciones` c1
+    INNER JOIN (
+        SELECT
+            `id_motor`,
+            MAX(`id`) AS `max_id`
+        FROM `cotizaciones`
+        WHERE `id_motor` IS NOT NULL
+        GROUP BY `id_motor`
+    ) latest ON latest.`max_id` = c1.`id`
+) c ON c.`id_motor` = m.`id_motor`
+WHERE m.`year` LIKE '2M%'
+ON DUPLICATE KEY UPDATE
+    `cotizacion_estado` = VALUES(`cotizacion_estado`),
+    `cotizacion_id` = VALUES(`cotizacion_id`),
+    `cotizacion_fecha` = VALUES(`cotizacion_fecha`),
+    `updated_at` = NOW();

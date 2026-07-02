@@ -7,16 +7,63 @@ use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
+use App\Models\MotorAdminStatus;
+use App\Models\MotorAdminStatusDocument;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Livewire\WithFileUploads;
+use App\Http\Livewire\Traits\HandlesMotorAdminStatus;
+
 
 class IndexCotizaciones extends Component
 {
     use WithPagination;
+    use WithFileUploads;
+    use HandlesMotorAdminStatus;
 
     public $search = '';
     public $sort = 'created_at';
     public $direction = 'desc';
     public $versionesAbiertas = [];
     public $cotizacionesSeleccionadas = [];
+
+    public $selectedCotizacionId;
+    public $selectedMotorId;
+    public $adminStatusId;
+
+    public $requerimiento_estado;
+    public $requerimiento_numero;
+
+    public $oc_estado;
+    public $oc_numero;
+
+    public $autorizacion_estado;
+    public $autorizacion_comentario;
+
+    public $anticipo_estado;
+    public $anticipo_monto;
+
+    public $aceptacion_estado;
+    public $aceptacion_numero;
+
+    public $factura_estado;
+    public $factura_numero;
+
+    public $contrasena_pago_estado;
+    public $contrasena_pago_numero;
+
+    public $pago_estado;
+
+    public $comentarios;
+
+    public $infoTipo;
+    public $infoTitulo;
+    public $infoFile;
+    public $infoPastedImageData;
+    public $infoComentario;
+    public $infoDocumentos = [];
+
+    public $adminDocumentosResumen = [];
 
 
     protected $paginationTheme = 'bootstrap';
@@ -44,6 +91,7 @@ class IndexCotizaciones extends Component
             'cliente',
             'motor',
             'motor.infoMotor',
+            'motor.adminStatus.documentos.uploadedBy',
         ])
             ->where('letra', 'A')
             ->whereIn('id', function ($query) {
@@ -479,5 +527,128 @@ class IndexCotizaciones extends Component
             })
             ->orderBy('letra')
             ->get();
+    }
+    public function abrirModalAdminCotizacion($cotizacionId)
+    {
+        $this->resetValidation();
+
+        $cotizacion = Cotizacion::with([
+            'motor.adminStatus.documentos.uploadedBy',
+        ])->findOrFail($cotizacionId);
+
+        if (! $cotizacion->id_motor || ! $cotizacion->motor) {
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'Cotización sin orden',
+                'text' => 'Esta cotización no tiene motor ingresado al taller. Esta parte la manejaremos después como lead.',
+            ]);
+
+            return;
+        }
+
+        $admin = $cotizacion->motor->adminStatus;
+
+        if (! $admin) {
+            $admin = MotorAdminStatus::create([
+                'id_motor' => $cotizacion->id_motor,
+                'cotizacion_estado' => 'cotizado',
+                'cotizacion_id' => $cotizacion->id,
+                'cotizacion_fecha' => $cotizacion->fecha_cotizacion,
+            ]);
+        }
+
+        if (! $admin->cotizacion_id) {
+            $admin->cotizacion_estado = 'cotizado';
+            $admin->cotizacion_id = $cotizacion->id;
+            $admin->cotizacion_fecha = $cotizacion->fecha_cotizacion;
+            $admin->save();
+        }
+
+        $this->selectedCotizacionId = $cotizacion->id;
+        $this->selectedMotorId = $cotizacion->id_motor;
+        $this->adminStatusId = $admin->id;
+
+        $this->requerimiento_estado = $admin->requerimiento_estado;
+        $this->requerimiento_numero = $admin->requerimiento_numero;
+
+        $this->oc_estado = $admin->oc_estado;
+        $this->oc_numero = $admin->oc_numero;
+
+        $this->autorizacion_estado = $admin->autorizacion_estado;
+        $this->autorizacion_comentario = $admin->autorizacion_comentario;
+
+        $this->anticipo_estado = $admin->anticipo_estado;
+        $this->anticipo_monto = $admin->anticipo_monto;
+
+        $this->aceptacion_estado = $admin->aceptacion_estado;
+        $this->aceptacion_numero = $admin->aceptacion_numero;
+
+        $this->factura_estado = $admin->factura_estado;
+        $this->factura_numero = $admin->factura_numero;
+
+        $this->contrasena_pago_estado = $admin->contrasena_pago_estado;
+        $this->contrasena_pago_numero = $admin->contrasena_pago_numero;
+
+        $this->pago_estado = $admin->pago_estado;
+
+        $this->comentarios = $admin->comentarios;
+
+        $this->cargarResumenDocumentosAdmin();
+
+        $this->dispatchBrowserEvent('abrir-modal-admin-status');
+    }
+    private function cargarResumenDocumentosAdmin()
+    {
+        if (! $this->adminStatusId) {
+            $this->adminDocumentosResumen = [];
+            return;
+        }
+
+        $documentos = MotorAdminStatusDocument::where('motor_admin_status_id', $this->adminStatusId)
+            ->latest()
+            ->get()
+            ->groupBy('tipo');
+
+        $this->adminDocumentosResumen = $documentos
+            ->map(function ($docs) {
+                return $docs->map(function ($doc) {
+                    return [
+                        'id' => $doc->id,
+                        'tipo' => $doc->tipo,
+                        'url' => $doc->url,
+                        'archivo_original' => $doc->archivo_original,
+                        'mime_type' => $doc->mime_type,
+                        'es_pdf' => $doc->es_pdf,
+                        'es_imagen' => $doc->es_imagen,
+                        'nombre' => $this->documentoNombreVisible($doc),
+                    ];
+                })->values()->toArray();
+            })
+            ->toArray();
+    }
+    public function documentoNombreVisible($documento)
+    {
+        $tipo = $this->documentoTipoLabel($documento->tipo);
+
+        if ($documento->archivo_original && str_contains($documento->archivo_original, 'captura_portapapeles')) {
+            return 'Screenshot ' . $tipo;
+        }
+
+        if ($documento->comentario) {
+            return $tipo . ': ' . $documento->comentario;
+        }
+
+        return $tipo;
+    }
+    public function documentoTipoLabel($tipo)
+    {
+        return [
+            'oc' => 'OC',
+            'factura' => 'Factura',
+            'contrasena_pago' => 'Contraseña',
+            'pago' => 'Pago',
+            'requerimiento' => 'Requerimiento',
+            'aceptacion' => 'Aceptación',
+            'anticipo' => 'Anticipo',
+        ][$tipo] ?? ucfirst((string) $tipo);
     }
 }

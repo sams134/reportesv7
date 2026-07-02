@@ -216,9 +216,47 @@
                                                 <i class="fas fa-plus-circle"></i>
                                             </a>
                                         @endif
+                                        <button type="button" class="btn btn-sm btn-outline-success"
+                                            wire:click.prevent="abrirModalAdminCotizacion({{ $cotizacion->id }})"
+                                            wire:loading.attr="disabled"
+                                            wire:target="abrirModalAdminCotizacion({{ $cotizacion->id }})"
+                                            title="Administrativo">
+                                            <i class="fas fa-clipboard-check"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
+                            @if ($cotizacion->motor && $cotizacion->motor->adminStatus && $cotizacion->motor->adminStatus->documentos->count() > 0)
+                                <tr class="bg-light">
+                                    <td></td>
+                                    <td colspan="9" class="py-2">
+                                        <div class="ms-4 ps-3 border-start border-3 border-success">
+                                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                                <span class="text-muted small me-2">
+                                                    <i class="fas fa-paperclip me-1"></i>
+                                                    Evidencias administrativas:
+                                                </span>
+
+                                                @foreach ($cotizacion->motor->adminStatus->documentos as $documento)
+                                                    <a href="{{ $documento->url }}" target="_blank"
+                                                        class="badge rounded-pill border bg-white text-decoration-none px-3 py-2"
+                                                        title="{{ $documento->archivo_original }}">
+                                                        @if ($documento->es_pdf)
+                                                            <i class="far fa-file-pdf text-danger me-1"></i>
+                                                        @elseif ($documento->es_imagen)
+                                                            <i class="far fa-image text-primary me-1"></i>
+                                                        @else
+                                                            <i class="far fa-file-alt text-secondary me-1"></i>
+                                                        @endif
+
+                                                        {{ ucfirst(str_replace('_', ' ', $documento->tipo)) }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endif
                             @php
                                 $adicionales = $this->adicionalesDeCotizacion($cotizacion);
                             @endphp
@@ -255,7 +293,8 @@
                                     <td class="text-center">
                                         <div class="btn-group">
                                             <a href="{{ route('admin.cotizaciones.downloadPdf', ['cotizacion' => $adicional->id]) }}"
-                                                class="btn btn-sm btn-outline-danger" target="_blank" title="Ver PDF">
+                                                class="btn btn-sm btn-outline-danger" target="_blank"
+                                                title="Ver PDF">
                                                 <i class="far fa-file-pdf"></i>
                                             </a>
 
@@ -269,6 +308,7 @@
                                                 title="Agregar otra cotización adicional">
                                                 <i class="fas fa-plus-circle"></i>
                                             </a>
+
                                         </div>
                                     </td>
                                 </tr>
@@ -383,6 +423,8 @@
             </div>
         </div>
     </div>
+    @include('livewire.administracion.partials.admin-status-modal')
+@include('livewire.administracion.partials.admin-info-modal')
     <script>
         window.addEventListener('confirmar-eliminar-version-cotizacion', function(event) {
             const cotizacionId = event.detail.cotizacion_id;
@@ -422,5 +464,65 @@
                 icon: 'error',
             });
         });
+     
+        window.addEventListener('abrir-modal-admin-status', function () {
+            var modalEl = document.getElementById('adminStatusModal');
+
+            if (!modalEl) {
+                console.error('No existe #adminStatusModal en esta vista.');
+                return;
+            }
+
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        });
+
+        window.addEventListener('cerrar-modal-admin-status', function () {
+            var modalEl = document.getElementById('adminStatusModal');
+
+            if (!modalEl) {
+                return;
+            }
+
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.hide();
+        });
+
+        window.addEventListener('abrir-modal-admin-info', function () {
+            var modalEl = document.getElementById('adminInfoModal');
+
+            if (!modalEl) {
+                console.error('No existe #adminInfoModal en esta vista.');
+                return;
+            }
+
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        });
+
+        window.addEventListener('admin-status-actualizado', function () {
+            Swal.fire({
+                title: 'Estado actualizado',
+                text: 'El estado administrativo fue actualizado correctamente.',
+                icon: 'success'
+            });
+        });
+
+        window.addEventListener('admin-info-guardada', function () {
+            Swal.fire({
+                title: 'Evidencia guardada',
+                text: 'La información fue guardada correctamente.',
+                icon: 'success'
+            });
+        });
+
+        window.addEventListener('swal-error', function (event) {
+            Swal.fire({
+                title: event.detail.title || 'Error',
+                text: event.detail.text || 'No se pudo completar la acción.',
+                icon: 'error'
+            });
+        });
+   
     </script>
 </div>
