@@ -174,6 +174,14 @@
 
     $totalCotizacion = (float) ($cotizacion->total ?? $itemsCotizacion->sum('precio_total'));
 
+    /*
+     * El total de la cotización ya incluye IVA.
+     * Precio sin IVA = Total / 1.12
+     * IVA = Total - Precio sin IVA
+     */
+    $precioSinIva = round($totalCotizacion / 1.12, 2);
+    $valorIva = round($totalCotizacion - $precioSinIva, 2);
+
     $formatoMoneda = function ($valor, $simbolo = null) use ($simboloMoneda) {
         return ($simbolo ?: $simboloMoneda) . number_format((float) $valor, 2);
     };
@@ -1020,6 +1028,43 @@
         color: #ffffff;
         font-size: 15px;
         font-weight: bold;
+    }
+
+    .items-iva-table {
+        width: 340px;
+        margin-left: auto;
+        margin-top: 8px;
+        border-collapse: collapse;
+        font-size: 12px;
+        color: #1d2f4f;
+    }
+
+    .items-iva-table td {
+        border: 1px solid #cfd8e3;
+        padding: 7px 8px;
+    }
+
+    .items-iva-title td {
+        background: #eef3f8;
+        color: #234a9b;
+        font-size: 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        text-align: center;
+    }
+
+    .items-iva-label {
+        background: #f7f9fc;
+        font-weight: bold;
+        color: #44556e;
+    }
+
+    .items-iva-value {
+        text-align: right;
+        font-weight: bold;
+        color: #1d2f4f;
+        white-space: nowrap;
     }
 
     /* =========================================================
@@ -1957,15 +2002,45 @@
                 <table class="items-total-table">
                     <tr class="items-grand-total">
                         <td>
-                            {{ $esCotizacionUnificada ? 'Total general' : 'Total' }}
+                            {{ $esCotizacionUnificada ? 'Total general (IVA incluido)' : 'Total (IVA incluido)' }}
                         </td>
 
                         <td class="items-total-value">
                             {{ $formatoMoneda($totalCotizacion) }}
                         </td>
                     </tr>
+                </table>
 
-                    @if ($mostrarConversionUsd)
+                <table class="items-iva-table">
+                    <tr class="items-iva-title">
+                        <td colspan="2">
+                            Desglose de IVA
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="items-iva-label">
+                            Precio sin IVA
+                        </td>
+
+                        <td class="items-iva-value">
+                            {{ $formatoMoneda($precioSinIva) }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="items-iva-label">
+                            IVA 12%
+                        </td>
+
+                        <td class="items-iva-value">
+                            {{ $formatoMoneda($valorIva) }}
+                        </td>
+                    </tr>
+                </table>
+
+                @if ($mostrarConversionUsd)
+                    <table class="items-total-table" style="margin-top: 8px;">
                         <tr>
                             <td class="items-total-label">
                                 Tipo de cambio
@@ -1983,8 +2058,8 @@
                                 ${{ number_format($totalCotizacion / $tipoCambio, 2) }}
                             </td>
                         </tr>
-                    @endif
-                </table>
+                    </table>
+                @endif
             </div>
 
 

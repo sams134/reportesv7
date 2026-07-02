@@ -224,6 +224,7 @@ class NuevaCotizacion extends Component
     protected $listeners = [
         'osCotizacionSeleccionada' => 'seleccionarOsCotizacion',
         'catalogoItemCotizacionSeleccionado' => 'manejarCatalogoItemSeleccionado',
+        'eliminarItemCotizacionConfirmado' => 'eliminarItemCotizacionConfirmado',
     ];
 
     public function mount($cotizacion = null)
@@ -1545,13 +1546,45 @@ class NuevaCotizacion extends Component
         $this->dispatchBrowserEvent('item-cotizacion-agregado');
     }
 
+    public function confirmarEliminarItemCotizacion($uid)
+    {
+        $this->dispatchBrowserEvent('confirmar-eliminar-item-cotizacion', [
+            'uid' => $uid,
+        ]);
+    }
+
+    public function eliminarItemCotizacionConfirmado($uid)
+    {
+        $uid = (string) $uid;
+
+        $this->itemsCotizacion = collect($this->itemsCotizacion)
+            ->reject(function ($item) use ($uid) {
+                return (string) ($item['uid'] ?? '') === $uid;
+            })
+            ->values()
+            ->toArray();
+
+        $this->recalcularTotalesItems();
+
+        $this->dispatchBrowserEvent('item-cotizacion-eliminado');
+    }
+
+    /*
+ * Mantén este método por compatibilidad si algún botón viejo todavía lo llama.
+ */
     public function eliminarItemCotizacion($index)
     {
+        if (isset($this->itemsCotizacion[$index]['uid'])) {
+            return $this->eliminarItemCotizacionConfirmado($this->itemsCotizacion[$index]['uid']);
+        }
+
         unset($this->itemsCotizacion[$index]);
 
         $this->itemsCotizacion = array_values($this->itemsCotizacion);
 
         $this->recalcularTotalesItems();
+
+        $this->dispatchBrowserEvent('item-cotizacion-eliminado');
     }
 
     public function updated($propertyName)
@@ -3972,24 +4005,32 @@ class NuevaCotizacion extends Component
     
      * Items snapshot.
      */
-        $this->itemsCotizacion = CotizacionItem::where('cotizacion_id', $cotizacion->id)
-            ->orderBy('orden')
-            ->get()
+        $this->itemsCotizacion = $cotizacion->itemsCotizacion
+            ->sortBy('orden')
+            ->values()
             ->map(function ($item) {
-                $precioTotal = (float) $item->precio_total;
-
                 return [
-                    'uid' => uniqid('item_', true),
+                    'uid' => 'db_item_' . $item->id . '_' . Str::uuid(),
+
+                    'cotizacion_item_id' => $item->id,
                     'catalogo_item_id' => $item->catalogo_item_id,
-                    'tipo_item' => $precioTotal < 0 ? 'descuento' : 'general',
-                    'nombre' => $item->nombre,
-                    'descripcion' => $item->descripcion,
-                    'cantidad' => (float) $item->cantidad,
-                    'precio_unitario' => (float) $item->precio_unitario,
-                    'precio_total' => $precioTotal,
+                    'tipo_item' => $item->tipo_item ?? null,
+
+                    'nombre' => $this->limpiarTextoParaLivewire($item->nombre),
+                    'descripcion' => $this->limpiarTextoParaLivewire($item->descripcion),
+
+                    'cantidad' => (float) ($item->cantidad ?? 1),
+                    'precio_unitario' => (float) ($item->precio_unitario ?? 0),
+                    'precio_total' => (float) ($item->precio_total ?? 0),
+
+                    'descuento_porcentaje' => isset($item->descuento_porcentaje)
+                        ? (float) $item->descuento_porcentaje
+                        : null,
+
+                    'descuento_alcance' => $item->descuento_alcance ?? null,
+                    'descuento_item_principal_uid' => null,
                 ];
             })
-            ->values()
             ->toArray();
 
         $this->recalcularTotalesItems();
@@ -4390,6 +4431,20 @@ class NuevaCotizacion extends Component
             ->values();
 
         return 'Intervención de ' . $partes->implode(', ');
+    }
+    private function limpiarTextoParaLivewire($value)
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = (string) $value;
+
+        if (!mb_check_encoding($value, 'UTF-8')) {
+            $value = mb_convert_encoding($value, 'UTF-8', 'UTF-8, ISO-8859-1, Windows-1252');
+        }
+
+        return preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $value);
     }
     private function cargarGruposUnificados($cotizaciones)
     {

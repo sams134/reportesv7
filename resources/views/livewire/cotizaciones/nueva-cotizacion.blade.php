@@ -714,7 +714,8 @@
 
                         <tbody id="itemsCotizacionSortable">
                             @foreach ($itemsCotizacion as $index => $item)
-                                <tr wire:key="item-cotizacion-{{ $item['uid'] }}" data-uid="{{ $item['uid'] }}">
+                                <tr wire:key="item-cotizacion-{{ $item['uid'] ?? 'sin-uid-' . $index }}"
+                                    data-uid="{{ $item['uid'] ?? $index }}">
                                     <td>
                                         <div class="d-flex align-items-start mb-2">
                                             {{-- HANDLE PARA ARRASTRAR --}}
@@ -728,10 +729,10 @@
                                                 wire:model.defer="itemsCotizacion.{{ $index }}.nombre">
 
                                             {{-- ELIMINAR ITEM --}}
-                                            <button type="button" class="btn btn-link text-danger ms-2"
-                                                wire:click="eliminarItemCotizacion({{ $index }})"
-                                                title="Eliminar item">
-                                                <i class="far fa-trash-alt"></i>
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                                title="Eliminar item"
+                                                wire:click="confirmarEliminarItemCotizacion('{{ $item['uid'] }}')">
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         </div>
 
@@ -742,7 +743,7 @@
                                     <td class="align-top">
                                         <input type="number" step="1" min="0"
                                             class="form-control text-center"
-                                            wire:model.lazy="itemsCotizacion.{{ $index }}.cantidad">
+                                            wire:model.debounce.500ms="itemsCotizacion.{{ $index }}.cantidad">
                                     </td>
 
                                     <td class="align-top">
@@ -752,7 +753,7 @@
                                             </span>
 
                                             <input type="number" step="0.01" class="form-control text-end"
-                                                wire:model.lazy="itemsCotizacion.{{ $index }}.precio_unitario"
+                                                wire:model.debounce.500ms="itemsCotizacion.{{ $index }}.precio_unitario"
                                                 {{ ($item['tipo_item'] ?? null) === 'descuento' ? 'readonly' : '' }}>
                                         </div>
 
@@ -3218,4 +3219,35 @@
             });
         }
     </script>
+    @once
+        @push('scripts')
+            <script>
+                window.addEventListener('confirmar-eliminar-item-cotizacion', event => {
+                    Swal.fire({
+                        title: '¿Eliminar item?',
+                        text: 'Esta acción quitará el item de la cotización actual.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#6c757d',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Livewire.emit('eliminarItemCotizacionConfirmado', event.detail.uid);
+                        }
+                    });
+                });
+
+                window.addEventListener('item-cotizacion-eliminado', () => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Item eliminado',
+                        timer: 1200,
+                        showConfirmButton: false,
+                    });
+                });
+            </script>
+        @endpush
+    @endonce
 </div>
