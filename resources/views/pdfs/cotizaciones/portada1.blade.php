@@ -1615,6 +1615,67 @@
         text-transform: uppercase;
     }
 
+    /* SIGNATURE */
+    .firma-cotizacion {
+        margin-top: 34px;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #222222;
+    }
+
+    .firma-nombre {
+        font-size: 22px;
+        line-height: 22px;
+        font-weight: 800;
+        color: #222222;
+        margin: 0 0 8px 0;
+        padding: 0;
+    }
+
+    .firma-cargo {
+        font-size: 16px;
+        line-height: 18px;
+        font-weight: 800;
+        font-style: italic;
+        color: #222222;
+        margin: 0 0 10px 0;
+        padding: 0;
+    }
+
+    .firma-linea {
+        font-size: 14px;
+        line-height: 14px;
+        color: #222222;
+        margin: 0 0 6px 0;
+        padding: 0;
+    }
+
+    .firma-label {
+        display: inline-block;
+        width: 74px;
+        font-weight: 800;
+        color: #222222;
+    }
+
+    .firma-valor {
+        font-weight: 400;
+        color: #222222;
+    }
+
+    .firma-email {
+        font-weight: 400;
+        color: #005fd1;
+        text-decoration: underline;
+    }
+
+    .firma-direccion {
+        margin-top: 10px;
+        font-size: 16px;
+        line-height: 20px;
+        font-style: italic;
+        font-weight: 400;
+        color: #000b7a;
+    }
+
     .page-break {
         page-break-after: always;
     }
@@ -1761,23 +1822,61 @@
                     Muy atentamente,
                 </div>
 
-                <div class="nombre">
-                    {{ $firmante['nombre'] }}
-                </div>
+                <div class="firma-cotizacion">
+                    <div class="firma-nombre">
+                        {{ $firmante['nombre'] ?? '' }}
+                    </div>
 
-                <div class="puesto">
-                    {{ $firmante['puesto'] }}
-                </div>
+                    <div class="firma-cargo">
+                        {{ $firmante['cargo'] ?? '' }}
+                    </div>
 
-                <div class="datos">
-                    <strong>E-mail:</strong> {{ $firmante['email'] }}<br>
-                    <strong>Celular:</strong> {{ $firmante['celular'] }}<br>
-                    <strong>Oficina:</strong> {{ $firmante['oficina'] }}<br>
-                    <strong>Fax:</strong> {{ $firmante['fax'] }}
-                </div>
+                    @if (!empty($firmante['email']))
+                        <div class="firma-linea">
+                            <span class="firma-label">E-mail:</span>
+                            <a class="firma-email" href="mailto:{{ trim($firmante['email']) }}">
+                                {{ trim($firmante['email']) }}
+                            </a>
+                        </div>
+                    @endif
 
-                <div class="direccion">
-                    {{ $firmante['direccion'] }}
+                    @if (!empty($firmante['celular']))
+                        <div class="firma-linea">
+                            <span class="firma-label">Celular:</span>
+                            <span class="firma-valor">{{ $firmante['celular'] }}</span>
+                        </div>
+                    @endif
+
+                    @if (!empty($firmante['oficina']))
+                        <div class="firma-linea">
+                            <span class="firma-label">Oficina:</span>
+                            <span class="firma-valor">{{ $firmante['oficina'] }}</span>
+                        </div>
+                    @endif
+
+                    @if (!empty($firmante['fax']))
+                        <div class="firma-linea">
+                            <span class="firma-label">Fax:</span>
+                            <span class="firma-valor">{{ $firmante['fax'] }}</span>
+                        </div>
+                    @endif
+
+                    @if (!empty($firmante['web']))
+                        <div class="firma-linea">
+                            <span class="firma-label">Web:</span>
+                            <span class="firma-valor">{{ $firmante['web'] }}</span>
+                        </div>
+                    @endif
+
+                    <div class="firma-direccion">
+                        @if (!empty($firmante['direccion_linea_1']))
+                            <div>{{ $firmante['direccion_linea_1'] }}</div>
+                        @endif
+
+                        @if (!empty($firmante['direccion_linea_2']))
+                            <div>{{ $firmante['direccion_linea_2'] }}</div>
+                        @endif
+                    </div>
                 </div>
             </div>
 

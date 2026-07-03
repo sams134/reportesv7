@@ -105,6 +105,10 @@ class Cotizacion extends Model
     {
         return $this->belongsTo(User::class, 'creado_por');
     }
+    public function creadoPor()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'creado_por', 'id');
+    }
     public function contactosCotizacion()
     {
         return $this->hasMany(CotizacionContacto::class, 'cotizacion_id', 'id');
