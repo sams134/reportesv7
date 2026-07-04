@@ -7,6 +7,7 @@ use App\Models\MotorAdminStatusDocument;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+
 trait HandlesMotorAdminStatus
 {
     public function abrirModalInfo($tipo)
@@ -23,15 +24,23 @@ trait HandlesMotorAdminStatus
             $this->addError('infoFile', 'Primero debe abrir una orden administrativa.');
             return;
         }
+        $this->resetValidation([
+            'infoFile',
+            'infoPastedImageData',
+            'infoComentario',
+            'infoTipo',
+        ]);
 
         $this->cargarDocumentosInfo();
 
+        $this->dispatchBrowserEvent('limpiar-admin-info-file-input');
         $this->dispatchBrowserEvent('abrir-modal-admin-info');
     }
 
     private function tituloTipoInfo($tipo)
     {
         return [
+            'cotizacion_externa' => 'Cotización externa',
             'oc' => 'Orden de Compra',
             'factura' => 'Factura',
             'contrasena_pago' => 'Contraseña de pago',
@@ -75,7 +84,7 @@ trait HandlesMotorAdminStatus
     {
         $this->validate([
             'adminStatusId' => 'required|exists:motor_admin_statuses,id',
-            'infoTipo' => 'required|in:oc,factura,contrasena_pago,pago,requerimiento,aceptacion,anticipo',
+            'infoTipo' => 'required|in:cotizacion_externa,oc,factura,contrasena_pago,pago,requerimiento,aceptacion,anticipo',
             'infoFile' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
             'infoPastedImageData' => 'nullable|string',
             'infoComentario' => 'nullable|string|max:1000',
@@ -102,9 +111,17 @@ trait HandlesMotorAdminStatus
             $this->infoPastedImageData = null;
             $this->infoComentario = '';
 
+            $this->resetValidation([
+                'infoFile',
+                'infoPastedImageData',
+                'infoComentario',
+                'infoTipo',
+            ]);
+
             $this->cargarDocumentosInfo();
             $this->cargarResumenDocumentosAdmin();
 
+            $this->dispatchBrowserEvent('limpiar-admin-info-file-input');
             $this->dispatchBrowserEvent('admin-info-guardada');
         } catch (\Exception $e) {
             report($e);
@@ -181,6 +198,19 @@ trait HandlesMotorAdminStatus
         ];
 
         switch ($tipo) {
+            case 'cotizacion_externa':
+                $updates['cotizacion_estado'] = 'cotizado';
+                $updates['cotizacion_fecha'] = $admin->cotizacion_fecha ?: now();
+
+                /*
+     * No tocamos cotizacion_id.
+     * Si ya existe una cotización del sistema, la respetamos.
+     * Si no existe, queda NULL porque esta cotización es externa.
+     */
+                if (property_exists($this, 'cotizacion_estado')) {
+                    $this->cotizacion_estado = 'cotizado';
+                }
+                break;
             case 'requerimiento':
                 $updates['requerimiento_estado'] = 'recibido';
                 $updates['requerimiento_fecha'] = $admin->requerimiento_fecha ?: now();
@@ -229,22 +259,150 @@ trait HandlesMotorAdminStatus
 
     public function eliminarInfoDocumento($documentoId)
     {
-        $documento = MotorAdminStatusDocument::findOrFail($documentoId);
-
-        if ((int) $documento->motor_admin_status_id !== (int) $this->adminStatusId) {
-            abort(403);
+        if (! $this->adminStatusId) {
+            return;
         }
 
-        if (Storage::disk('public')->exists($documento->archivo_path)) {
+        $documento = MotorAdminStatusDocument::where('id', $documentoId)
+            ->where('motor_admin_status_id', $this->adminStatusId)
+            ->firstOrFail();
+
+        $tipo = $documento->tipo;
+
+        if ($documento->archivo_path) {
             Storage::disk('public')->delete($documento->archivo_path);
         }
 
         $documento->delete();
 
+        $this->revertirEstadoSiNoHayEvidencia($tipo);
+
         $this->cargarDocumentosInfo();
         $this->cargarResumenDocumentosAdmin();
 
-        $this->dispatchBrowserEvent('admin-info-eliminada');
+        $this->dispatchBrowserEvent('admin-info-eliminada', [
+            'message' => 'Documento eliminado correctamente.',
+        ]);
+    }
+    private function revertirEstadoSiNoHayEvidencia($tipo)
+    {
+        if (! $this->adminStatusId) {
+            return;
+        }
+
+        $admin = MotorAdminStatus::find($this->adminStatusId);
+
+        if (! $admin) {
+            return;
+        }
+
+        $quedanDocumentos = MotorAdminStatusDocument::where('motor_admin_status_id', $admin->id)
+            ->where('tipo', $tipo)
+            ->exists();
+
+        if ($quedanDocumentos) {
+            return;
+        }
+
+        $updates = [];
+
+        switch ($tipo) {
+            case 'cotizacion_externa':
+                /*
+             * Solo vuelve a pendiente si no hay cotización interna del sistema.
+             * Si existe cotizacion_id, se mantiene como cotizado.
+             */
+                if (blank($admin->cotizacion_id)) {
+                    $updates['cotizacion_estado'] = 'pendiente';
+                    $updates['cotizacion_fecha'] = null;
+
+                    if (property_exists($this, 'cotizacion_estado')) {
+                        $this->cotizacion_estado = 'pendiente';
+                    }
+                }
+                break;
+
+            case 'requerimiento':
+                if (blank($admin->requerimiento_numero)) {
+                    $updates['requerimiento_estado'] = 'pendiente';
+                    $updates['requerimiento_fecha'] = null;
+
+                    if (property_exists($this, 'requerimiento_estado')) {
+                        $this->requerimiento_estado = 'pendiente';
+                    }
+                }
+                break;
+
+            case 'oc':
+                if (blank($admin->oc_numero)) {
+                    $updates['oc_estado'] = 'pendiente';
+                    $updates['oc_fecha'] = null;
+
+                    if (property_exists($this, 'oc_estado')) {
+                        $this->oc_estado = 'pendiente';
+                    }
+                }
+                break;
+
+            case 'aceptacion':
+                if (blank($admin->aceptacion_numero)) {
+                    $updates['aceptacion_estado'] = 'pendiente';
+                    $updates['aceptacion_fecha'] = null;
+
+                    if (property_exists($this, 'aceptacion_estado')) {
+                        $this->aceptacion_estado = 'pendiente';
+                    }
+                }
+                break;
+
+            case 'factura':
+                if (blank($admin->factura_numero)) {
+                    $updates['factura_estado'] = 'pendiente';
+                    $updates['factura_fecha'] = null;
+
+                    if (property_exists($this, 'factura_estado')) {
+                        $this->factura_estado = 'pendiente';
+                    }
+                }
+                break;
+
+            case 'contrasena_pago':
+                if (blank($admin->contrasena_pago_numero)) {
+                    $updates['contrasena_pago_estado'] = 'pendiente';
+                    $updates['contrasena_pago_fecha'] = null;
+
+                    if (property_exists($this, 'contrasena_pago_estado')) {
+                        $this->contrasena_pago_estado = 'pendiente';
+                    }
+                }
+                break;
+
+            case 'pago':
+                $updates['pago_estado'] = 'pendiente';
+                $updates['pago_fecha'] = null;
+
+                if (property_exists($this, 'pago_estado')) {
+                    $this->pago_estado = 'pendiente';
+                }
+                break;
+
+            case 'anticipo':
+                if (blank($admin->anticipo_monto)) {
+                    $updates['anticipo_estado'] = 'pendiente';
+                    $updates['anticipo_fecha'] = null;
+
+                    if (property_exists($this, 'anticipo_estado')) {
+                        $this->anticipo_estado = 'pendiente';
+                    }
+                }
+                break;
+        }
+
+        if (! empty($updates)) {
+            $updates['updated_by'] = auth()->id();
+
+            $admin->update($updates);
+        }
     }
 
     public function guardarAdminStatus()
@@ -399,6 +557,7 @@ trait HandlesMotorAdminStatus
     public function documentoTipoLabel($tipo)
     {
         return [
+            'cotizacion_externa' => 'Cotización',
             'oc' => 'OC',
             'factura' => 'Factura',
             'contrasena_pago' => 'Contraseña',
@@ -470,5 +629,11 @@ trait HandlesMotorAdminStatus
     public function badgeLabel($estado)
     {
         return str_replace('_', ' ', ucfirst($estado ?? 'pendiente'));
+    }
+    public function confirmarEliminarInfoDocumento($documentoId)
+    {
+        $this->dispatchBrowserEvent('confirmar-eliminar-admin-documento', [
+            'documento_id' => $documentoId,
+        ]);
     }
 }

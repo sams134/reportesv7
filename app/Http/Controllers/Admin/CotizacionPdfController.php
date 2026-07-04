@@ -32,6 +32,14 @@ class CotizacionPdfController extends Controller
             'pdfsDespuesItems',
 
         ]);
+        $usarPortada = filter_var(
+            $request->query('portada', 1),
+            FILTER_VALIDATE_BOOLEAN
+        );
+        $usarCartaPresentacion = filter_var(
+            $request->query('carta', 1),
+            FILTER_VALIDATE_BOOLEAN
+        );
 
         $filename = $this->nombreArchivoCotizacionPdf($cotizacion);
 
@@ -43,16 +51,18 @@ class CotizacionPdfController extends Controller
         $terminosPath = $tmpDir . '/05_terminos.pdf';
         $finalPath = $tmpDir . '/cotizacion_final.pdf';
 
-        $data = $this->dataPdfCotizacion($cotizacion);
+        $data = $this->dataPdfCotizacion($cotizacion, $usarPortada, $usarCartaPresentacion);
 
         /*
      * 1. Portada + carta
      */
-        PDF::loadView('pdfs.cotizaciones.portada1', array_merge($data, [
-            'seccionPdf' => 'inicio',
-        ]))
-            ->setPaper('letter')
-            ->save($inicioPath);
+        if ($usarPortada || $usarCartaPresentacion) {
+            PDF::loadView('pdfs.cotizaciones.portada1', array_merge($data, [
+                'seccionPdf' => 'inicio',
+            ]))
+                ->setPaper('letter')
+                ->save($inicioPath);
+        }
 
         /*
      * 2. Items + totales + información adicional
@@ -79,7 +89,10 @@ class CotizacionPdfController extends Controller
      */
         $paths = [];
 
-        $paths[] = $inicioPath;
+        if (($usarPortada || $usarCartaPresentacion) && file_exists($inicioPath)) {
+            $paths[] = $inicioPath;
+        }
+
 
         foreach ($this->pathsPdfsAdjuntosCotizacion($cotizacion, 'antes_items') as $path) {
             $paths[] = $path;
@@ -104,16 +117,18 @@ class CotizacionPdfController extends Controller
             ])
             ->deleteFileAfterSend(true);
     }
-    private function dataPdfCotizacion(Cotizacion $cotizacion): array
-    {
+    private function dataPdfCotizacion(
+        Cotizacion $cotizacion,
+        bool $usarPortada,
+        bool $usarCartaPresentacion
+    ): array {
         return [
             'cotizacion' => $cotizacion,
             'cliente' => $cotizacion->cliente,
             'motor' => $cotizacion->motor,
             'firmante' => $this->firmanteCotizacion($cotizacion),
-            'usarPortada' => true,
-
-
+            'usarPortada' => $usarPortada,
+            'usarCartaPresentacion' => $usarCartaPresentacion,
         ];
     }
 

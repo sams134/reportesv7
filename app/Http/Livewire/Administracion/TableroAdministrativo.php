@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\WithFileUploads;
 
+
 class TableroAdministrativo extends Component
 {
     use WithPagination;
@@ -60,6 +61,7 @@ class TableroAdministrativo extends Component
     public $infoComentario;
     public $infoDocumentos = [];
     public $adminDocumentosResumen = [];
+    public $cotizacion_estado;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -102,42 +104,73 @@ class TableroAdministrativo extends Component
             return;
         }
 
-        if (strpos($search, '-') !== false) {
-            $parts = explode('-', $search, 2);
+        $query->where(function ($q) use ($search) {
+            /*
+         * 1. Buscar formato tipo 2M26-0045
+         */
+            if (strpos($search, '-') !== false) {
+                $parts = explode('-', $search, 2);
 
-            if (count($parts) === 2) {
-                $yearSearch = trim($parts[0]);
-                $osSearch = str_pad(trim($parts[1]), 4, '0', STR_PAD_LEFT);
+                if (count($parts) === 2) {
+                    $yearSearch = trim($parts[0]);
+                    $osSearch = trim($parts[1]);
+                    $osPadded = str_pad($osSearch, 4, '0', STR_PAD_LEFT);
 
-                $query->where('year', 'like', "%{$yearSearch}")
-                    ->where(function ($q) use ($osSearch) {
-                        $q->where('os', 'like', "{$osSearch}%")
-                            ->orWhereRaw('LPAD(os, 4, "0") LIKE ?', ["{$osSearch}%"]);
+                    $q->orWhere(function ($osQuery) use ($yearSearch, $osSearch, $osPadded) {
+                        $osQuery->where('year', 'like', "%{$yearSearch}%")
+                            ->where(function ($sub) use ($osSearch, $osPadded) {
+                                $sub->where('os', 'like', "%{$osSearch}%")
+                                    ->orWhere('os', 'like', "%{$osPadded}%")
+                                    ->orWhereRaw('LPAD(os, 4, "0") LIKE ?', ["%{$osPadded}%"]);
+                            });
                     });
-
-                return;
+                }
             }
-        }
 
-        if (is_numeric($search)) {
-            $os = str_pad($search, 4, '0', STR_PAD_LEFT);
+            /*
+         * 2. Buscar por OS numérica.
+         * Ejemplo: 45675 puede ser OS, OC, factura, aceptación, requerimiento, etc.
+         */
+            if (is_numeric($search)) {
+                $osPadded = str_pad($search, 4, '0', STR_PAD_LEFT);
 
-            $query->where(function ($q) use ($os, $search) {
-                $q->where('os', 'like', "{$os}%")
-                    ->orWhere('os', 'like', "{$search}%")
-                    ->orWhereRaw('LPAD(os, 4, "0") LIKE ?', ["{$os}%"]);
+                $q->orWhere(function ($osQuery) use ($search, $osPadded) {
+                    $osQuery->where('os', 'like', "%{$search}%")
+                        ->orWhere('os', 'like', "%{$osPadded}%")
+                        ->orWhereRaw('LPAD(os, 4, "0") LIKE ?', ["%{$osPadded}%"]);
+                });
+            } else {
+                /*
+             * 3. Buscar texto normal en OS/year también.
+             */
+                $q->orWhere('year', 'like', "%{$search}%")
+                    ->orWhere('os', 'like', "%{$search}%");
+            }
+
+            /*
+         * 4. Buscar por cliente.
+         */
+            $q->orWhereHas('cliente', function ($cliente) use ($search) {
+                $cliente->where('cliente', 'like', "%{$search}%");
             });
 
-            return;
-        }
+            /*
+         * 5. Buscar por técnico asignado.
+         */
+            $q->orWhereHas('tecnicos', function ($tecnico) use ($search) {
+                $tecnico->where('name', 'like', "%{$search}%");
+            });
 
-        $query->where(function ($q) use ($search) {
-            $q->whereHas('cliente', function ($cliente) use ($search) {
-                $cliente->where('cliente', 'like', "%{$search}%");
-            })
-                ->orWhereHas('tecnicos', function ($tecnico) use ($search) {
-                    $tecnico->where('name', 'like', "%{$search}%");
-                });
+            /*
+         * 6. Buscar por campos administrativos.
+         */
+            $q->orWhereHas('adminStatus', function ($admin) use ($search) {
+                $admin->where('requerimiento_numero', 'like', "%{$search}%")
+                    ->orWhere('oc_numero', 'like', "%{$search}%")
+                    ->orWhere('aceptacion_numero', 'like', "%{$search}%")
+                    ->orWhere('factura_numero', 'like', "%{$search}%")
+                    ->orWhere('contrasena_pago_numero', 'like', "%{$search}%");
+            });
         });
     }
 
@@ -201,6 +234,7 @@ class TableroAdministrativo extends Component
 
         $this->selectedMotorId = $motor->id_motor;
         $this->adminStatusId = $admin->id;
+        $this->cotizacion_estado = $admin->cotizacion_estado;
 
         $this->requerimiento_estado = $admin->requerimiento_estado;
         $this->requerimiento_numero = $admin->requerimiento_numero;
@@ -352,14 +386,24 @@ class TableroAdministrativo extends Component
             return;
         }
 
+        $this->resetValidation([
+            'infoFile',
+            'infoPastedImageData',
+            'infoComentario',
+            'infoTipo',
+        ]);
+
         $this->cargarDocumentosInfo();
 
+        $this->dispatchBrowserEvent('limpiar-admin-info-file-input');
         $this->dispatchBrowserEvent('abrir-modal-admin-info');
     }
+
 
     private function tituloTipoInfo($tipo)
     {
         return [
+            'cotizacion_externa' => 'Cotización externa',
             'oc' => 'Orden de Compra',
             'factura' => 'Factura',
             'contrasena_pago' => 'Contraseña de pago',
@@ -403,7 +447,7 @@ class TableroAdministrativo extends Component
     {
         $this->validate([
             'adminStatusId' => 'required|exists:motor_admin_statuses,id',
-            'infoTipo' => 'required|in:oc,factura,contrasena_pago,pago,requerimiento,aceptacion,anticipo',
+            'infoTipo' => 'required|in:cotizacion_externa,oc,factura,contrasena_pago,pago,requerimiento,aceptacion,anticipo',
             'infoFile' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
             'infoPastedImageData' => 'nullable|string',
             'infoComentario' => 'nullable|string|max:1000',
@@ -433,9 +477,17 @@ class TableroAdministrativo extends Component
             $this->infoPastedImageData = null;
             $this->infoComentario = '';
 
+            $this->resetValidation([
+                'infoFile',
+                'infoPastedImageData',
+                'infoComentario',
+                'infoTipo',
+            ]);
+
             $this->cargarDocumentosInfo();
             $this->cargarResumenDocumentosAdmin();
 
+            $this->dispatchBrowserEvent('limpiar-admin-info-file-input');
             $this->dispatchBrowserEvent('admin-info-guardada');
         } catch (\Exception $e) {
             report($e);
@@ -506,26 +558,155 @@ class TableroAdministrativo extends Component
 
     public function eliminarInfoDocumento($documentoId)
     {
-        $documento = MotorAdminStatusDocument::findOrFail($documentoId);
-
-        if ((int) $documento->motor_admin_status_id !== (int) $this->adminStatusId) {
-            abort(403);
+        if (! $this->adminStatusId) {
+            return;
         }
 
-        if (Storage::disk('public')->exists($documento->archivo_path)) {
+        $documento = MotorAdminStatusDocument::where('id', $documentoId)
+            ->where('motor_admin_status_id', $this->adminStatusId)
+            ->firstOrFail();
+
+        $tipo = $documento->tipo;
+
+        if ($documento->archivo_path) {
             Storage::disk('public')->delete($documento->archivo_path);
         }
 
         $documento->delete();
 
+        $this->revertirEstadoSiNoHayEvidencia($tipo);
+
         $this->cargarDocumentosInfo();
         $this->cargarResumenDocumentosAdmin();
 
-        $this->dispatchBrowserEvent('admin-info-eliminada');
+        $this->dispatchBrowserEvent('admin-info-eliminada', [
+            'message' => 'Documento eliminado correctamente.',
+        ]);
+    }
+    private function revertirEstadoSiNoHayEvidencia($tipo)
+    {
+        if (! $this->adminStatusId) {
+            return;
+        }
+
+        $admin = MotorAdminStatus::find($this->adminStatusId);
+
+        if (! $admin) {
+            return;
+        }
+
+        $quedanDocumentos = MotorAdminStatusDocument::where('motor_admin_status_id', $admin->id)
+            ->where('tipo', $tipo)
+            ->exists();
+
+        if ($quedanDocumentos) {
+            return;
+        }
+
+        $updates = [];
+
+        switch ($tipo) {
+            case 'cotizacion_externa':
+                /*
+             * Solo vuelve a pendiente si no hay cotización interna del sistema.
+             * Si existe cotizacion_id, se mantiene como cotizado.
+             */
+                if (blank($admin->cotizacion_id)) {
+                    $updates['cotizacion_estado'] = 'pendiente';
+                    $updates['cotizacion_fecha'] = null;
+
+                    if (property_exists($this, 'cotizacion_estado')) {
+                        $this->cotizacion_estado = 'pendiente';
+                    }
+                }
+                break;
+
+            case 'requerimiento':
+                if (blank($admin->requerimiento_numero)) {
+                    $updates['requerimiento_estado'] = 'pendiente';
+                    $updates['requerimiento_fecha'] = null;
+
+                    if (property_exists($this, 'requerimiento_estado')) {
+                        $this->requerimiento_estado = 'pendiente';
+                    }
+                }
+                break;
+
+            case 'oc':
+                if (blank($admin->oc_numero)) {
+                    $updates['oc_estado'] = 'pendiente';
+                    $updates['oc_fecha'] = null;
+
+                    if (property_exists($this, 'oc_estado')) {
+                        $this->oc_estado = 'pendiente';
+                    }
+                }
+                break;
+
+            case 'aceptacion':
+                if (blank($admin->aceptacion_numero)) {
+                    $updates['aceptacion_estado'] = 'pendiente';
+                    $updates['aceptacion_fecha'] = null;
+
+                    if (property_exists($this, 'aceptacion_estado')) {
+                        $this->aceptacion_estado = 'pendiente';
+                    }
+                }
+                break;
+
+            case 'factura':
+                if (blank($admin->factura_numero)) {
+                    $updates['factura_estado'] = 'pendiente';
+                    $updates['factura_fecha'] = null;
+
+                    if (property_exists($this, 'factura_estado')) {
+                        $this->factura_estado = 'pendiente';
+                    }
+                }
+                break;
+
+            case 'contrasena_pago':
+                if (blank($admin->contrasena_pago_numero)) {
+                    $updates['contrasena_pago_estado'] = 'pendiente';
+                    $updates['contrasena_pago_fecha'] = null;
+
+                    if (property_exists($this, 'contrasena_pago_estado')) {
+                        $this->contrasena_pago_estado = 'pendiente';
+                    }
+                }
+                break;
+
+            case 'pago':
+                $updates['pago_estado'] = 'pendiente';
+                $updates['pago_fecha'] = null;
+
+                if (property_exists($this, 'pago_estado')) {
+                    $this->pago_estado = 'pendiente';
+                }
+                break;
+
+            case 'anticipo':
+                if (blank($admin->anticipo_monto)) {
+                    $updates['anticipo_estado'] = 'pendiente';
+                    $updates['anticipo_fecha'] = null;
+
+                    if (property_exists($this, 'anticipo_estado')) {
+                        $this->anticipo_estado = 'pendiente';
+                    }
+                }
+                break;
+        }
+
+        if (! empty($updates)) {
+            $updates['updated_by'] = auth()->id();
+
+            $admin->update($updates);
+        }
     }
     public function documentoTipoLabel($tipo)
     {
         return [
+            'cotizacion_externa' => 'Cotización',
             'oc' => 'OC',
             'factura' => 'Factura',
             'contrasena_pago' => 'Contraseña',
@@ -615,6 +796,19 @@ class TableroAdministrativo extends Component
         ];
 
         switch ($tipo) {
+            case 'cotizacion_externa':
+                $updates['cotizacion_estado'] = 'cotizado';
+                $updates['cotizacion_fecha'] = $admin->cotizacion_fecha ?: now();
+
+                if (property_exists($this, 'cotizacion_estado')) {
+                    $this->cotizacion_estado = 'cotizado';
+                }
+
+                break;
+            case 'requerimiento':
+                $updates['requerimiento_estado'] = 'recibido';
+                $updates['requerimiento_fecha'] = now();
+                break;
             case 'oc':
                 $updates['oc_estado'] = 'recibida';
                 $updates['oc_fecha'] = $admin->oc_fecha ?: now();
@@ -687,5 +881,11 @@ class TableroAdministrativo extends Component
                 })->values()->toArray();
             })
             ->toArray();
+    }
+    public function confirmarEliminarInfoDocumento($documentoId)
+    {
+        $this->dispatchBrowserEvent('confirmar-eliminar-admin-documento', [
+            'documento_id' => $documentoId,
+        ]);
     }
 }

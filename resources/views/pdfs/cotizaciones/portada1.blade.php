@@ -1677,13 +1677,13 @@
     }
 
     .page-break {
-        page-break-after: always;
+        page-break-before: always;
     }
 </style>
 
 <body>
-    @if (in_array($seccionPdf, ['completo', 'inicio']))
-        @if ($usarPortada)
+   
+        @if(($usarPortada ?? true) && in_array($seccionPdf ?? 'completo', ['completo', 'inicio']))
 
             @if ($esCotizacionUnificada)
                 <div class="cover2-page">
@@ -1713,7 +1713,7 @@
                     </div>
                 </div>
 
-                <div class="page-break"></div>
+                {{-- <div class="page-break"></div> --}}
             @else
                 <div class="cover1-page">
                     <div class="cover1-bg"></div>
@@ -1746,13 +1746,14 @@
                     @endif
                 </div>
 
-                <div class="page-break"></div>
+              {{--   <div class="page-break"></div> --}}
             @endif
 
         @endif
 
-        <div class="page-break"></div>
+        
 
+        @if(($usarCartaPresentacion ?? true) && in_array($seccionPdf ?? 'completo', ['completo', 'inicio']))
         <div class="page-letter">
 
             @if (file_exists($logoPath))
@@ -1881,9 +1882,10 @@
             </div>
 
         </div>
-        <div class="page-break"></div>
+        
+        @endif
 
-    @endif
+   
     @if (in_array($seccionPdf, ['completo', 'items']))
         <div class="page-items">
 

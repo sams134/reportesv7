@@ -2415,10 +2415,18 @@
 
                         <div class="form-check form-switch mb-3">
                             <input class="form-check-input" type="checkbox" id="pdfUsarPortadaSwitch"
-                                wire:model.defer="pdfUsarPortada">
+                                wire:model="pdfUsarPortada">
 
                             <label class="form-check-label" for="pdfUsarPortadaSwitch">
                                 Agregar portada a la cotización
+                            </label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="pdfUsarCartaPresentacionSwitch"
+                                wire:model="pdfUsarCartaPresentacion">
+
+                            <label class="form-check-label" for="pdfUsarCartaPresentacionSwitch">
+                                Agregar carta de presentación
                             </label>
                         </div>
 
@@ -2464,8 +2472,11 @@
             window.cotizacionPdfWindow.document.close();
         }
 
-        $wire.guardarCotizacion(true);
-    "
+        const usarPortada = document.getElementById('pdfUsarPortadaSwitch')?.checked ? 1 : 0;
+        const usarCartaPresentacion = document.getElementById('pdfUsarCartaPresentacionSwitch')?.checked ? 1 : 0;
+
+        $wire.guardarCotizacionDesdeModalPdf(usarPortada, usarCartaPresentacion);
+        "
                         x-bind:disabled="generandoPdf" x-on:cotizacion-pdf-finalizado.window="generandoPdf = false">
 
                         <span x-show="!generandoPdf">

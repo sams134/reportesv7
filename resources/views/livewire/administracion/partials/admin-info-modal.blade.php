@@ -1,4 +1,5 @@
-<div wire:ignore.self class="modal fade" id="adminInfoModal" tabindex="-1" aria-labelledby="adminInfoModalLabel" aria-hidden="true">
+<div wire:ignore.self class="modal fade" id="adminInfoModal" tabindex="-1" aria-labelledby="adminInfoModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-info text-white">
@@ -6,7 +7,8 @@
                     Agregar info: {{ $infoTitulo }}
                 </h5>
 
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Cerrar"></button>
             </div>
 
             <div class="modal-body">
@@ -16,12 +18,8 @@
                     </div>
                 @enderror
 
-                <div
-                    id="adminInfoPasteZone"
-                    tabindex="0"
-                    class="border rounded-3 p-3 text-center bg-light mb-3"
-                    style="border-style: dashed !important;"
-                >
+                <div id="adminInfoPasteZone" tabindex="0" class="border rounded-3 p-3 text-center bg-light mb-3"
+                    style="border-style: dashed !important;">
                     <div class="mb-2">
                         <i class="fas fa-paste fa-2x text-info"></i>
                     </div>
@@ -35,11 +33,8 @@
                     @if ($infoPastedImageData)
                         <div class="mt-3 d-flex align-items-center justify-content-center">
                             <div class="d-flex align-items-center gap-2 border rounded p-2 bg-white shadow-sm">
-                                <img
-                                    src="{{ $infoPastedImageData }}"
-                                    class="rounded border"
-                                    style="width:64px; height:64px; object-fit:cover;"
-                                >
+                                <img src="{{ $infoPastedImageData }}" class="rounded border"
+                                    style="width:64px; height:64px; object-fit:cover;">
 
                                 <div class="small text-start">
                                     <div class="fw-semibold">
@@ -58,12 +53,8 @@
                 <div class="mb-3">
                     <label class="form-label">O cargar archivo desde disco</label>
 
-                    <input
-                        type="file"
-                        class="form-control"
-                        wire:model="infoFile"
-                        accept="image/*,.pdf,application/pdf"
-                    >
+                    <input type="file" id="adminInfoFileInput" class="form-control" wire:model="infoFile"
+                        accept="image/*,.pdf,application/pdf">
 
                     <div wire:loading wire:target="infoFile" class="text-primary small mt-2">
                         Cargando archivo...
@@ -82,11 +73,8 @@
 
                             @if (str_starts_with($mimePreview, 'image/'))
                                 <div class="d-flex align-items-center gap-2 border rounded p-2 bg-light">
-                                    <img
-                                        src="{{ $infoFile->temporaryUrl() }}"
-                                        class="rounded border"
-                                        style="width:52px; height:52px; object-fit:cover;"
-                                    >
+                                    <img src="{{ $infoFile->temporaryUrl() }}" class="rounded border"
+                                        style="width:52px; height:52px; object-fit:cover;">
 
                                     <div class="small">
                                         <div class="fw-semibold">
@@ -122,21 +110,12 @@
 
                 <div class="mb-3">
                     <label class="form-label">Comentario</label>
-                    <textarea
-                        class="form-control"
-                        rows="2"
-                        wire:model.defer="infoComentario"
-                        placeholder="Ejemplo: OC enviada por compras, captura de correo, comprobante de depósito, etc."
-                    ></textarea>
+                    <textarea class="form-control" rows="2" wire:model.defer="infoComentario"
+                        placeholder="Ejemplo: OC enviada por compras, captura de correo, comprobante de depósito, etc."></textarea>
                 </div>
 
-                <button
-                    type="button"
-                    class="btn btn-info text-white"
-                    wire:click="guardarInfoDocumento"
-                    wire:loading.attr="disabled"
-                    wire:target="guardarInfoDocumento"
-                >
+                <button type="button" class="btn btn-info text-white" wire:click="guardarInfoDocumento"
+                    wire:loading.attr="disabled" wire:target="guardarInfoDocumento">
                     <span wire:loading.remove wire:target="guardarInfoDocumento">
                         Guardar evidencia
                     </span>
@@ -151,59 +130,55 @@
                 <h6 class="mb-3">Evidencias guardadas</h6>
 
                 @if (!empty($infoDocumentos))
-                    <div class="list-group">
-                        @foreach ($infoDocumentos as $doc)
-                            <div class="list-group-item">
-                                <div class="d-flex justify-content-between gap-2">
-                                    <div>
-                                        <div class="fw-bold">
-                                            @if ($doc['es_pdf'])
-                                                <i class="far fa-file-pdf text-danger me-1"></i>
-                                            @else
-                                                <i class="far fa-image text-primary me-1"></i>
-                                            @endif
+                    <div class="mt-3">
+                        <label class="form-label">Documentos cargados</label>
 
-                                            {{ $doc['archivo_original'] }}
-                                        </div>
-
-                                        <div class="small text-muted">
-                                            Subido por {{ $doc['uploaded_by'] ?? 'N/A' }}
-                                            · {{ $doc['created_at'] }}
-                                        </div>
-
-                                        @if ($doc['comentario'])
-                                            <div class="small mt-1">
-                                                {{ $doc['comentario'] }}
-                                            </div>
+                        <div class="d-flex flex-column gap-2">
+                            @foreach ($infoDocumentos as $doc)
+                                <div
+                                    class="d-flex align-items-center justify-content-between border rounded p-2 bg-light">
+                                    <a href="{{ $doc['url'] }}" target="_blank"
+                                        class="d-flex align-items-center text-decoration-none text-dark flex-grow-1"
+                                        title="{{ $doc['archivo_original'] }}">
+                                        @if ($doc['es_imagen'])
+                                            <img src="{{ $doc['url'] }}" class="rounded border me-2"
+                                                style="width:35px; height:35px; object-fit:cover;">
+                                        @elseif ($doc['es_pdf'])
+                                            <span
+                                                class="d-inline-flex align-items-center justify-content-center bg-danger text-white rounded me-2"
+                                                style="width:35px; height:35px;">
+                                                <i class="far fa-file-pdf"></i>
+                                            </span>
+                                        @else
+                                            <span
+                                                class="d-inline-flex align-items-center justify-content-center bg-secondary text-white rounded me-2"
+                                                style="width:35px; height:35px;">
+                                                <i class="far fa-file"></i>
+                                            </span>
                                         @endif
-                                    </div>
 
-                                    <div class="text-end text-nowrap">
-                                        <a href="{{ $doc['url'] }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                            Ver
-                                        </a>
+                                        <div class="text-truncate">
+                                            <div class="small fw-bold text-truncate">
+                                                {{ $doc['archivo_original'] ?? ($doc['nombre'] ?? 'Documento') }}
+                                            </div>
 
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-danger"
-                                            wire:click="eliminarInfoDocumento({{ $doc['id'] }})"
-                                        >
-                                            Eliminar
-                                        </button>
-                                    </div>
+                                            @if (!empty($doc['comentario']))
+                                                <div class="small text-muted text-truncate">
+                                                    {{ $doc['comentario'] }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </a>
+
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-danger ms-2 admin-doc-delete-btn"
+                                        wire:click="confirmarEliminarInfoDocumento({{ $doc['id'] }})"
+                                        title="Eliminar documento">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </div>
-
-                                @if ($doc['es_imagen'])
-                                    <div class="mt-3">
-                                        <img
-                                            src="{{ $doc['url'] }}"
-                                            class="img-fluid rounded border"
-                                            style="max-height:180px;"
-                                        >
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     </div>
                 @else
                     <div class="text-muted">
@@ -222,9 +197,25 @@
 </div>
 
 @once
+    @push('styles')
+        <style>
+            .admin-doc-delete-btn {
+                transition: transform 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+            }
+
+            .admin-doc-delete-btn:hover {
+                transform: scale(1.4);
+                color: #8b0000 !important;
+            }
+
+            .admin-doc-delete-btn:hover i {
+                color: #8b0000 !important;
+            }
+        </style>
+    @endpush
     @push('livescripts')
         <script>
-            window.addEventListener('abrir-modal-admin-status', function () {
+            window.addEventListener('abrir-modal-admin-status', function() {
                 var modalEl = document.getElementById('adminStatusModal');
 
                 if (!modalEl) {
@@ -236,7 +227,7 @@
                 modal.show();
             });
 
-            window.addEventListener('cerrar-modal-admin-status', function () {
+            window.addEventListener('cerrar-modal-admin-status', function() {
                 var modalEl = document.getElementById('adminStatusModal');
 
                 if (!modalEl) {
@@ -247,7 +238,7 @@
                 modal.hide();
             });
 
-            window.addEventListener('abrir-modal-admin-info', function () {
+            window.addEventListener('abrir-modal-admin-info', function() {
                 var modalEl = document.getElementById('adminInfoModal');
 
                 if (!modalEl) {
@@ -258,7 +249,7 @@
                 var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                 modal.show();
 
-                setTimeout(function () {
+                setTimeout(function() {
                     var zone = document.getElementById('adminInfoPasteZone');
                     if (zone) {
                         zone.focus();
@@ -266,7 +257,7 @@
                 }, 300);
             });
 
-            window.addEventListener('admin-status-actualizado', function () {
+            window.addEventListener('admin-status-actualizado', function() {
                 Swal.fire({
                     title: 'Estado actualizado',
                     text: 'El estado administrativo fue actualizado correctamente.',
@@ -274,7 +265,7 @@
                 });
             });
 
-            window.addEventListener('admin-info-guardada', function () {
+            window.addEventListener('admin-info-guardada', function() {
                 Swal.fire({
                     title: 'Evidencia guardada',
                     text: 'La información fue guardada correctamente.',
@@ -282,7 +273,7 @@
                 });
             });
 
-            window.addEventListener('admin-info-eliminada', function () {
+            window.addEventListener('admin-info-eliminada', function() {
                 Swal.fire({
                     title: 'Evidencia eliminada',
                     text: 'El archivo fue eliminado correctamente.',
@@ -290,7 +281,7 @@
                 });
             });
 
-            window.addEventListener('swal-error', function (event) {
+            window.addEventListener('swal-error', function(event) {
                 Swal.fire({
                     title: event.detail.title || 'Error',
                     text: event.detail.text || 'No se pudo completar la acción.',
@@ -298,7 +289,7 @@
                 });
             });
 
-            document.addEventListener('paste', function (event) {
+            document.addEventListener('paste', function(event) {
                 var modalEl = document.getElementById('adminInfoModal');
 
                 if (!modalEl || !modalEl.classList.contains('show')) {
@@ -318,7 +309,7 @@
                         var file = item.getAsFile();
                         var reader = new FileReader();
 
-                        reader.onload = function (e) {
+                        reader.onload = function(e) {
                             @this.set('infoPastedImageData', e.target.result);
                         };
 
@@ -327,6 +318,28 @@
                         event.preventDefault();
                         break;
                     }
+                }
+            });
+            window.addEventListener('confirmar-eliminar-admin-documento', function(event) {
+                Swal.fire({
+                    title: '¿Eliminar documento?',
+                    text: 'Esta acción eliminará el archivo cargado. Si no queda respaldo ni número asociado, el estado volverá a pendiente.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#d33',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        @this.call('eliminarInfoDocumento', event.detail.documento_id);
+                    }
+                });
+            });
+            window.addEventListener('limpiar-admin-info-file-input', function() {
+                const input = document.getElementById('adminInfoFileInput');
+
+                if (input) {
+                    input.value = '';
                 }
             });
         </script>

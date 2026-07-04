@@ -20,7 +20,8 @@
         <div class="row g-3 align-items-end">
             <div class="col-md-5">
                 <label class="form-label">Buscar</label>
-                <input type="search" class="form-control" placeholder="Buscar por OS, cliente o técnico..."
+                <input type="search" class="form-control"
+                    placeholder="Buscar por OS, cliente, técnico, OC, factura, aceptación o requerimiento..."
                     wire:model.debounce.500ms="search">
             </div>
 
@@ -146,16 +147,31 @@
                                 </td>
 
                                 <td class="text-center">
-                                    <span class="badge {{ $this->badgeClass($cotEstado) }}">
-                                        {{ $cotEstado === 'cotizado' ? 'Cotizado' : $this->badgeLabel($cotEstado) }}
-                                    </span>
+                                    @php
+                                        $admin = $motor->adminStatus;
+                                        $tieneCotizacionExterna =
+                                            $admin && $admin->documentos
+                                                ? $admin->documentos->where('tipo', 'cotizacion_externa')->count() > 0
+                                                : false;
+                                    @endphp
 
-                                    @if ($admin && $admin->cotizacion)
-                                        <div class="small mt-1">
-                                            <a href="{{ route('admin.cotizaciones.edit', $admin->cotizacion_id) }}">
+                                    @if ($admin && $admin->cotizacion_id && $admin->cotizacion)
+                                        <span class="badge bg-success">Cotizado</span>
+
+                                        <div>
+                                            <a href="{{ route('admin.cotizaciones.edit', ['cotizacion' => $admin->cotizacion_id]) }}"
+                                                target="_blank">
                                                 {{ $admin->cotizacion->numero }}
                                             </a>
                                         </div>
+                                    @elseif ($tieneCotizacionExterna || optional($admin)->cotizacion_estado === 'cotizado')
+                                        <span class="badge bg-success">Cotizado</span>
+
+                                        <div class="small text-muted">
+                                            Cotización externa
+                                        </div>
+                                    @else
+                                        <span class="badge bg-danger">Pendiente</span>
                                     @endif
                                 </td>
 
@@ -246,7 +262,7 @@
                                             <div class="d-flex align-items-center flex-wrap gap-2">
                                                 <span class="text-muted small me-2">
                                                     <i class="fas fa-paperclip me-1"></i>
-                                                    Evidencias:
+                                                    Documentos administrativos ({{ $admin->documentos->count() }}):
                                                 </span>
 
                                                 @foreach ($admin->documentos as $documento)
@@ -280,10 +296,10 @@
     </div>
 
     {{-- Modal administrativo --}}
-   @include('livewire.administracion.partials.admin-status-modal')
-@include('livewire.administracion.partials.admin-info-modal')
+    @include('livewire.administracion.partials.admin-status-modal')
+    @include('livewire.administracion.partials.admin-info-modal')
 
-    
 
-   
+
+
 </div>

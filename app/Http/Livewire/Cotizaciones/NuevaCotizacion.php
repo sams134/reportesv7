@@ -26,6 +26,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\CotizacionPdfAdjunto;
+use App\Models\MotorAdminStatus;
 
 
 class NuevaCotizacion extends Component
@@ -73,6 +74,7 @@ class NuevaCotizacion extends Component
     public $tituloCotizacion = 'Oferta Presupuestaria';
     public $subtituloCotizacion = '';
     public $pdfUsarPortada = false;
+    public $pdfUsarCartaPresentacion = true;
 
     public $numeroCotizacion = '';
     public $cotYear;
@@ -1919,6 +1921,7 @@ class NuevaCotizacion extends Component
                 $urlPdf = route('admin.cotizaciones.downloadPdf', [
                     'cotizacion' => $this->cotizacionEditandoId,
                     'portada' => $this->pdfUsarPortada ? 1 : 0,
+                    'carta' => $this->pdfUsarCartaPresentacion ? 1 : 0,
                 ]);
 
                 $this->dispatchBrowserEvent('cotizacion-pdf-listo', [
@@ -2027,6 +2030,7 @@ class NuevaCotizacion extends Component
         });
 
         $this->cotizacionGuardadaId = $cotizacion->id;
+        $this->sincronizarCotizacionConTableroAdministrativo($cotizacion);
 
         session()->flash('success', 'Cotización guardada correctamente.');
 
@@ -2034,6 +2038,7 @@ class NuevaCotizacion extends Component
             $urlPdf = route('admin.cotizaciones.downloadPdf', [
                 'cotizacion' => $cotizacion->id,
                 'portada' => $this->pdfUsarPortada ? 1 : 0,
+                'carta' => $this->pdfUsarCartaPresentacion ? 1 : 0,
             ]);
 
             $this->dispatchBrowserEvent('cotizacion-pdf-listo', [
@@ -4949,6 +4954,7 @@ class NuevaCotizacion extends Component
             $urlPdf = route('admin.cotizaciones.downloadPdf', [
                 'cotizacion' => $cotizacion->id,
                 'portada' => $this->pdfUsarPortada ? 1 : 0,
+                'carta' => $this->pdfUsarCartaPresentacion ? 1 : 0,
             ]);
 
             $this->dispatchBrowserEvent('cotizacion-pdf-listo', [
@@ -5438,5 +5444,31 @@ class NuevaCotizacion extends Component
                 'uploaded_by' => auth()->id(),
             ]);
         }
+    }
+    private function sincronizarCotizacionConTableroAdministrativo(Cotizacion $cotizacion): void
+    {
+        if (! $cotizacion->id_motor) {
+            return;
+        }
+
+        MotorAdminStatus::updateOrCreate(
+            [
+                'id_motor' => $cotizacion->id_motor,
+            ],
+            [
+                'cotizacion_estado' => 'cotizado',
+                'cotizacion_id' => $cotizacion->id,
+                'cotizacion_fecha' => $cotizacion->fecha_cotizacion ?: now(),
+                'updated_by' => auth()->id(),
+            ]
+        );
+    }
+
+    public function guardarCotizacionDesdeModalPdf($usarPortada = false, $usarCartaPresentacion = true)
+    {
+        $this->pdfUsarPortada = (bool) $usarPortada;
+        $this->pdfUsarCartaPresentacion = (bool) $usarCartaPresentacion;
+
+        return $this->guardarCotizacion(true);
     }
 }

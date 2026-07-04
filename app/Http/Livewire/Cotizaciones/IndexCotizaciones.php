@@ -62,6 +62,7 @@ class IndexCotizaciones extends Component
     public $infoPastedImageData;
     public $infoComentario;
     public $infoDocumentos = [];
+    public $cotizacion_estado;
 
     public $adminDocumentosResumen = [];
 
@@ -566,6 +567,7 @@ class IndexCotizaciones extends Component
         $this->selectedCotizacionId = $cotizacion->id;
         $this->selectedMotorId = $cotizacion->id_motor;
         $this->adminStatusId = $admin->id;
+        $this->cotizacion_estado = $admin->cotizacion_estado;
 
         $this->requerimiento_estado = $admin->requerimiento_estado;
         $this->requerimiento_numero = $admin->requerimiento_numero;

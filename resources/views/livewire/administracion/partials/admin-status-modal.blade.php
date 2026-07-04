@@ -1,4 +1,5 @@
-<div wire:ignore.self class="modal fade" id="adminStatusModal" tabindex="-1" aria-labelledby="adminStatusModalLabel" aria-hidden="true">
+<div wire:ignore.self class="modal fade" id="adminStatusModal" tabindex="-1" aria-labelledby="adminStatusModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-primary text-white">
@@ -6,7 +7,8 @@
                     Actualizar estado administrativo
                 </h5>
 
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Cerrar"></button>
             </div>
 
             <div class="modal-body">
@@ -15,6 +17,32 @@
                 @enderror
 
                 <div class="row g-3">
+                    {{-- Cotización externa --}}
+                    <div class="col-md-4">
+                        <label class="form-label">Cotización</label>
+
+                        <div>
+                            @if (($adminDocumentosResumen['cotizacion_externa'] ?? []) || ($cotizacion_estado ?? null) === 'cotizado')
+                                <span class="badge bg-success">Cotizado</span>
+                            @else
+                                <span class="badge bg-danger">Pendiente</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label">Cotización externa o respaldo</label>
+
+                        <button type="button" class="btn btn-outline-primary w-100"
+                            wire:click="abrirModalInfo('cotizacion_externa')">
+                            <i class="fas fa-paperclip me-1"></i>
+                            Agregar cotización externa
+                        </button>
+
+                        @include('livewire.administracion.partials.admin-docs-mini', [
+                            'docs' => $adminDocumentosResumen['cotizacion_externa'] ?? [],
+                        ])
+                    </div>
                     {{-- Requerimiento --}}
                     <div class="col-md-4">
                         <label class="form-label">Requerimiento</label>
@@ -31,14 +59,15 @@
                         <div class="input-group">
                             <input type="text" class="form-control" wire:model.defer="requerimiento_numero">
 
-                            <button type="button" class="btn btn-outline-primary" wire:click="abrirModalInfo('requerimiento')">
+                            <button type="button" class="btn btn-outline-primary"
+                                wire:click="abrirModalInfo('requerimiento')">
                                 <i class="fas fa-paperclip me-1"></i>
                                 Agregar info
                             </button>
                         </div>
 
                         @include('livewire.administracion.partials.admin-docs-mini', [
-                            'docs' => $adminDocumentosResumen['requerimiento'] ?? []
+                            'docs' => $adminDocumentosResumen['requerimiento'] ?? [],
                         ])
                     </div>
 
@@ -65,7 +94,7 @@
                         </div>
 
                         @include('livewire.administracion.partials.admin-docs-mini', [
-                            'docs' => $adminDocumentosResumen['oc'] ?? []
+                            'docs' => $adminDocumentosResumen['oc'] ?? [],
                         ])
                     </div>
 
@@ -84,12 +113,8 @@
 
                     <div class="col-md-8">
                         <label class="form-label">Comentario de autorización</label>
-                        <input
-                            type="text"
-                            class="form-control"
-                            wire:model.defer="autorizacion_comentario"
-                            placeholder="Ejemplo: Ing. Pérez autorizó al Ing. Samuel Mayorga iniciar el trabajo."
-                        >
+                        <input type="text" class="form-control" wire:model.defer="autorizacion_comentario"
+                            placeholder="Ejemplo: Ing. Pérez autorizó al Ing. Samuel Mayorga iniciar el trabajo.">
                     </div>
 
                     {{-- Anticipo --}}
@@ -109,14 +134,15 @@
                         <div class="input-group">
                             <input type="number" step="0.01" class="form-control" wire:model.defer="anticipo_monto">
 
-                            <button type="button" class="btn btn-outline-primary" wire:click="abrirModalInfo('anticipo')">
+                            <button type="button" class="btn btn-outline-primary"
+                                wire:click="abrirModalInfo('anticipo')">
                                 <i class="fas fa-paperclip me-1"></i>
                                 Agregar info
                             </button>
                         </div>
 
                         @include('livewire.administracion.partials.admin-docs-mini', [
-                            'docs' => $adminDocumentosResumen['anticipo'] ?? []
+                            'docs' => $adminDocumentosResumen['anticipo'] ?? [],
                         ])
                     </div>
 
@@ -136,14 +162,15 @@
                         <div class="input-group">
                             <input type="text" class="form-control" wire:model.defer="aceptacion_numero">
 
-                            <button type="button" class="btn btn-outline-primary" wire:click="abrirModalInfo('aceptacion')">
+                            <button type="button" class="btn btn-outline-primary"
+                                wire:click="abrirModalInfo('aceptacion')">
                                 <i class="fas fa-paperclip me-1"></i>
                                 Agregar info
                             </button>
                         </div>
 
                         @include('livewire.administracion.partials.admin-docs-mini', [
-                            'docs' => $adminDocumentosResumen['aceptacion'] ?? []
+                            'docs' => $adminDocumentosResumen['aceptacion'] ?? [],
                         ])
                     </div>
 
@@ -164,14 +191,15 @@
                         <div class="input-group">
                             <input type="text" class="form-control" wire:model.defer="factura_numero">
 
-                            <button type="button" class="btn btn-outline-primary" wire:click="abrirModalInfo('factura')">
+                            <button type="button" class="btn btn-outline-primary"
+                                wire:click="abrirModalInfo('factura')">
                                 <i class="fas fa-paperclip me-1"></i>
                                 Agregar info
                             </button>
                         </div>
 
                         @include('livewire.administracion.partials.admin-docs-mini', [
-                            'docs' => $adminDocumentosResumen['factura'] ?? []
+                            'docs' => $adminDocumentosResumen['factura'] ?? [],
                         ])
                     </div>
 
@@ -191,14 +219,15 @@
                         <div class="input-group">
                             <input type="text" class="form-control" wire:model.defer="contrasena_pago_numero">
 
-                            <button type="button" class="btn btn-outline-primary" wire:click="abrirModalInfo('contrasena_pago')">
+                            <button type="button" class="btn btn-outline-primary"
+                                wire:click="abrirModalInfo('contrasena_pago')">
                                 <i class="fas fa-paperclip me-1"></i>
                                 Agregar info
                             </button>
                         </div>
 
                         @include('livewire.administracion.partials.admin-docs-mini', [
-                            'docs' => $adminDocumentosResumen['contrasena_pago'] ?? []
+                            'docs' => $adminDocumentosResumen['contrasena_pago'] ?? [],
                         ])
                     </div>
 
@@ -215,13 +244,14 @@
                     <div class="col-md-8">
                         <label class="form-label">Comprobante de pago</label>
 
-                        <button type="button" class="btn btn-outline-primary w-100" wire:click="abrirModalInfo('pago')">
+                        <button type="button" class="btn btn-outline-primary w-100"
+                            wire:click="abrirModalInfo('pago')">
                             <i class="fas fa-paperclip me-1"></i>
                             Agregar info de pago
                         </button>
 
                         @include('livewire.administracion.partials.admin-docs-mini', [
-                            'docs' => $adminDocumentosResumen['pago'] ?? []
+                            'docs' => $adminDocumentosResumen['pago'] ?? [],
                         ])
                     </div>
 
@@ -238,13 +268,8 @@
                     Cancelar
                 </button>
 
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    wire:click="guardarAdminStatus"
-                    wire:loading.attr="disabled"
-                    wire:target="guardarAdminStatus"
-                >
+                <button type="button" class="btn btn-primary" wire:click="guardarAdminStatus"
+                    wire:loading.attr="disabled" wire:target="guardarAdminStatus">
                     <span wire:loading.remove wire:target="guardarAdminStatus">
                         Guardar estado
                     </span>
