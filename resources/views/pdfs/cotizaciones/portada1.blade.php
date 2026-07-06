@@ -728,7 +728,7 @@
 
     .letter-body {
         position: absolute;
-        top: 600px;
+        top: 520px;
         left: 60px;
         width: 900px;
         font-size: 17px;
