@@ -89,7 +89,7 @@ class TableroAdministrativo extends Component
         $motores = $motores
             ->orderBy('year', 'desc')
             ->orderBy('os', 'desc')
-            ->paginate(100);
+            ->paginate(50);
 
         return view('livewire.administracion.tablero-administrativo', [
             'motores' => $motores,
