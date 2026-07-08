@@ -685,7 +685,8 @@
                                 </div>
 
                                 <button type="button" class="btn btn-sm btn-outline-danger"
-                                    wire:click="confirmarEliminarPdfAdjuntoCotizacion('{{ $seccion }}', '{{ $pdf['uuid'] }}')">
+                                    wire:click="confirmarEliminarPdfAdjuntoCotizacion('antes_items', '{{ $pdf['uuid'] }}')"
+                                    wire:loading.attr="disabled" title="Eliminar PDF">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -1066,7 +1067,8 @@
                         </div>
 
                         <button type="button" class="btn btn-sm btn-outline-danger"
-                            wire:click="confirmarEliminarPdfAdjuntoCotizacion('{{ $seccion }}', '{{ $pdf['uuid'] }}')">
+                            wire:click="confirmarEliminarPdfAdjuntoCotizacion('antes_items', '{{ $pdf['uuid'] }}')"
+                            wire:loading.attr="disabled" title="Eliminar PDF">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
