@@ -1603,9 +1603,11 @@ class NuevaCotizacion extends Component
     {
         /*
      * Primero recalculamos todos los items normales.
+     * Los descuentos se saltan porque se calculan después.
      */
         foreach ($this->itemsCotizacion as $index => $item) {
-            if (($item['tipo_item'] ?? null) === 'descuento') {
+            if ($this->esItemDescuento($item)) {
+                $this->itemsCotizacion[$index]['tipo_item'] = 'descuento';
                 continue;
             }
 
@@ -1616,10 +1618,17 @@ class NuevaCotizacion extends Component
         }
 
         /*
-     * Luego recalculamos los descuentos, con base en los items ya actualizados.
+     * Luego recalculamos los descuentos.
+     * Si es un descuento viejo sin porcentaje, lo respetamos tal como está.
      */
         foreach ($this->itemsCotizacion as $index => $item) {
-            if (($item['tipo_item'] ?? null) !== 'descuento') {
+            if (! $this->esItemDescuento($item)) {
+                continue;
+            }
+
+            $this->itemsCotizacion[$index]['tipo_item'] = 'descuento';
+
+            if (empty($item['descuento_porcentaje'])) {
                 continue;
             }
 
@@ -1652,6 +1661,24 @@ class NuevaCotizacion extends Component
             ->sum(function ($item) {
                 return (float) ($item['precio_total'] ?? 0);
             });
+    }
+    private function esItemDescuento($item): bool
+    {
+        $tipo = strtolower((string) ($item['tipo_item'] ?? ''));
+
+        if ($tipo === 'descuento') {
+            return true;
+        }
+
+        if (array_key_exists('descuento_porcentaje', $item) || array_key_exists('descuento_alcance', $item)) {
+            return true;
+        }
+
+        $nombre = strtolower((string) ($item['nombre'] ?? ''));
+        $precioUnitario = (float) ($item['precio_unitario'] ?? 0);
+        $precioTotal = (float) ($item['precio_total'] ?? 0);
+
+        return strpos($nombre, 'descuento') !== false && ($precioUnitario < 0 || $precioTotal < 0);
     }
     public function updatedMonedaCotizacion($value)
     {
@@ -1869,7 +1896,7 @@ class NuevaCotizacion extends Component
         if ($this->modoUnificacion) {
             foreach ($this->gruposUnificados as $grupoIndex => $grupo) {
                 foreach (($grupo['items'] ?? []) as $itemIndex => $item) {
-                    if (($item['tipo_item'] ?? null) === 'descuento') {
+                    if ($this->esItemDescuento($item)) {
                         continue;
                     }
 
@@ -1885,7 +1912,8 @@ class NuevaCotizacion extends Component
             }
         } else {
             foreach ($this->itemsCotizacion as $index => $item) {
-                if (($item['tipo_item'] ?? null) === 'descuento') {
+                if ($this->esItemDescuento($item)) {
+                    $this->itemsCotizacion[$index]['tipo_item'] = 'descuento';
                     continue;
                 }
 
@@ -1905,20 +1933,7 @@ class NuevaCotizacion extends Component
             return false;
         }
 
-        foreach ($this->itemsCotizacion as $index => $item) {
-            if (($item['tipo_item'] ?? null) === 'descuento') {
-                continue;
-            }
-
-            if ((float) ($item['precio_unitario'] ?? 0) < 0) {
-                $this->addError(
-                    "itemsCotizacion.$index.precio_unitario",
-                    'El precio unitario no puede ser negativo.'
-                );
-
-                return false;
-            }
-        }
+        
 
         if ($this->monedaCotizacion === 'GTQ_USD' && (!$this->tipoCambio || $this->tipoCambio <= 0)) {
             $this->addError('tipoCambio', 'Debe ingresar un tipo de cambio válido.');
@@ -2055,11 +2070,21 @@ class NuevaCotizacion extends Component
                     CotizacionItem::create([
                         'cotizacion_id' => $cotizacion->id,
                         'catalogo_item_id' => $item['catalogo_item_id'] ?? null,
+
+                        'tipo_item' => $this->esItemDescuento($item)
+                            ? 'descuento'
+                            : ($item['tipo_item'] ?? 'general'),
+
                         'nombre' => $item['nombre'],
                         'descripcion' => $item['descripcion'] ?? null,
                         'cantidad' => $item['cantidad'] ?? 1,
                         'precio_unitario' => $item['precio_unitario'] ?? 0,
                         'precio_total' => $item['precio_total'] ?? 0,
+
+                        'descuento_porcentaje' => $item['descuento_porcentaje'] ?? null,
+                        'descuento_alcance' => $item['descuento_alcance'] ?? null,
+                        'descuento_item_principal_uid' => $item['descuento_item_principal_uid'] ?? null,
+
                         'orden' => $index + 1,
                     ]);
                 }

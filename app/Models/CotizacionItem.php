@@ -19,6 +19,10 @@ class CotizacionItem extends Model
         'orden',
         'cotizacion_unificada_detalle_id',
         'cotizacion_origen_item_id',
+        'tipo_item',
+        'descuento_porcentaje',
+        'descuento_alcance',
+        'descuento_item_principal_uid',
     ];
 
     protected $casts = [
