@@ -221,6 +221,8 @@ class NuevaCotizacion extends Component
     public $pdfsDespuesItems = [];
 
     public $pdfsAdjuntosEliminarIds = [];
+    public $procesandoPdfsAdjuntos = false;
+    public $guardandoCotizacion = false;
 
 
     protected $listeners = [
@@ -1906,20 +1908,156 @@ class NuevaCotizacion extends Component
     }
     public function guardarCotizacion($generarPdf = false)
     {
-        if (!$this->validarCotizacionAntesDeContinuar()) {
+        if ($this->guardandoCotizacion) {
             return;
         }
 
-        if ($this->modoUnificacion) {
-            return $this->guardarCotizacionUnificada($generarPdf);
-        }
+        $this->guardandoCotizacion = true;
 
-        if ($this->modoEdicion && !$this->hayCambiosEnCotizacion()) {
-            session()->flash('success', 'No hubo cambios en la cotización.');
+        try {
+            if (!$this->validarCotizacionAntesDeContinuar()) {
+                return;
+            }
+
+
+            if ($this->modoUnificacion) {
+                return $this->guardarCotizacionUnificada($generarPdf);
+            }
+
+            if ($this->modoEdicion && !$this->hayCambiosEnCotizacion()) {
+                /*
+     * Aunque no haya cambios en texto/items, aseguramos PDFs visibles.
+     * Esto cubre PDFs heredados de versión anterior.
+     */
+                if ($this->cotizacionEditandoId) {
+                    $cotizacionActual = Cotizacion::find($this->cotizacionEditandoId);
+
+                    if ($cotizacionActual) {
+                        $this->guardarPdfsAdjuntosCotizacion($cotizacionActual);
+                    }
+                }
+
+                session()->flash('success', 'No hubo cambios en la cotización.');
+
+                if ($generarPdf) {
+                    $urlPdf = route('admin.cotizaciones.downloadPdf', [
+                        'cotizacion' => $this->cotizacionEditandoId,
+                        'portada' => $this->pdfUsarPortada ? 1 : 0,
+                    ]);
+
+                    $this->dispatchBrowserEvent('cotizacion-pdf-listo', [
+                        'url' => $urlPdf,
+                    ]);
+
+                    return;
+                }
+
+                return redirect()->route('admin.cotizaciones.index');
+            }
+
+            $cotizacion = null;
+
+            $cotizacion = DB::transaction(function () {
+                $numeroData = $this->modoAdicional
+                    ? $this->prepararNumeroCotizacionAdicionalParaGuardar()
+                    : $this->prepararNumeroCotizacionParaGuardar();
+
+                $fechaCotizacion = Carbon::createFromFormat('d-m-Y', $this->cotDate)->format('Y-m-d');
+                $fechaValidaHasta = Carbon::createFromFormat('d-m-Y', $this->cotValid)->format('Y-m-d');
+
+                $fotoPortadaPath = $this->fotoPortadaActual;
+
+                if ($this->fotoPortadaCotizacion) {
+                    $fotoPortadaPath = $this->fotoPortadaCotizacion->store('cotizaciones/portadas', 'public');
+                }
+                $cotizacion = Cotizacion::create([
+                    'numero' => $numeroData['numero'],
+                    'titulo' => $this->tituloCotizacion,
+                    'subtitulo' => $this->subtituloCotizacion,
+
+                    'cot_year' => $numeroData['year'],
+                    'correlativo' => $numeroData['correlativo'],
+                    'letra' => $numeroData['letra'],
+                    'version' => $numeroData['version'],
+
+                    'id_cliente' => $this->cliente_id,
+                    'id_motor' => $this->motor_id,
+                    'equipo_no_ingresado_taller' => $this->equipoNoIngresadoTaller ? 1 : 0,
+
+                    'fecha_cotizacion' => $fechaCotizacion,
+                    'fecha_valida_hasta' => $fechaValidaHasta,
+
+                    'presentacion_id' => $this->presentacion_id,
+                    'texto_presentacion' => $this->textoPresentacion,
+
+                    'usar_datos_equipo' => $this->usarDatosEquipo ? 1 : 0,
+                    'resumen_equipo' => $this->usarDatosEquipo ? $this->resumenEquipo : null,
+
+                    'moneda' => $this->monedaCotizacion,
+                    'tipo_cambio' => $this->monedaCotizacion === 'GTQ_USD'
+                        ? $this->tipoCambio
+                        : null,
+
+                    'subtotal' => $this->subtotalItems,
+                    'descuento' => 0,
+                    'total' => $this->subtotalItems,
+
+                    'estado' => 'borrador',
+                    'no_incluye' => $this->noIncluyeItems,
+
+                    'tiempo_entrega' => $this->tiempoEntrega,
+                    'tiempo_entrega_otro' => $this->tiempoEntregaOtro,
+
+                    'garantia_modo' => $this->garantiaModo,
+                    'garantia_general_activa' => $this->garantiaGeneralActiva ? 1 : 0,
+                    'garantia_general_tiempo' => $this->garantiaGeneralTiempo,
+                    'garantia_electrica_tiempo' => $this->garantiaElectricaTiempo,
+                    'garantia_mecanica_tiempo' => $this->garantiaMecanicaTiempo,
+                    'incluir_terminos_garantias' => $this->incluirTerminosGarantias ? 1 : 0,
+
+                    'terminos_pago' => $this->terminosPago,
+                    'cliente_debe_proveer_oc' => $this->clienteDebeProveerOc ? 1 : 0,
+
+                    'notas_adicionales' => $this->notasAdicionales,
+                    'foto_portada' => $fotoPortadaPath,
+                    'creado_por' => auth()->id(),
+                ]);
+
+                $this->guardarContactosCotizacionSnapshot($cotizacion);
+
+                foreach ($this->itemsCotizacion as $index => $item) {
+                    $cantidad = (float) ($item['cantidad'] ?? 0);
+                    $precioUnitario = (float) ($item['precio_unitario'] ?? 0);
+                    $precioTotal = round($cantidad * $precioUnitario, 2);
+                    $this->recalcularTotalesItems();
+                    CotizacionItem::create([
+                        'cotizacion_id' => $cotizacion->id,
+                        'catalogo_item_id' => $item['catalogo_item_id'] ?? null,
+                        'nombre' => $item['nombre'],
+                        'descripcion' => $item['descripcion'] ?? null,
+                        'cantidad' => $item['cantidad'] ?? 1,
+                        'precio_unitario' => $item['precio_unitario'] ?? 0,
+                        'precio_total' => $item['precio_total'] ?? 0,
+                        'orden' => $index + 1,
+                    ]);
+                }
+
+                /*
+ * PDFs adjuntos
+ */
+                $this->guardarPdfsAdjuntosCotizacion($cotizacion);
+
+                return $cotizacion;
+            });
+
+            $this->cotizacionGuardadaId = $cotizacion->id;
+            $this->sincronizarCotizacionConTableroAdministrativo($cotizacion);
+
+            session()->flash('success', 'Cotización guardada correctamente.');
 
             if ($generarPdf) {
                 $urlPdf = route('admin.cotizaciones.downloadPdf', [
-                    'cotizacion' => $this->cotizacionEditandoId,
+                    'cotizacion' => $cotizacion->id,
                     'portada' => $this->pdfUsarPortada ? 1 : 0,
                     'carta' => $this->pdfUsarCartaPresentacion ? 1 : 0,
                 ]);
@@ -1932,123 +2070,9 @@ class NuevaCotizacion extends Component
             }
 
             return redirect()->route('admin.cotizaciones.index');
+        } finally {
+            $this->guardandoCotizacion = false;
         }
-
-        $cotizacion = null;
-
-        $cotizacion = DB::transaction(function () {
-            $numeroData = $this->modoAdicional
-                ? $this->prepararNumeroCotizacionAdicionalParaGuardar()
-                : $this->prepararNumeroCotizacionParaGuardar();
-
-            $fechaCotizacion = Carbon::createFromFormat('d-m-Y', $this->cotDate)->format('Y-m-d');
-            $fechaValidaHasta = Carbon::createFromFormat('d-m-Y', $this->cotValid)->format('Y-m-d');
-
-            $fotoPortadaPath = $this->fotoPortadaActual;
-
-            if ($this->fotoPortadaCotizacion) {
-                $fotoPortadaPath = $this->fotoPortadaCotizacion->store('cotizaciones/portadas', 'public');
-            }
-            $cotizacion = Cotizacion::create([
-                'numero' => $numeroData['numero'],
-                'titulo' => $this->tituloCotizacion,
-                'subtitulo' => $this->subtituloCotizacion,
-
-                'cot_year' => $numeroData['year'],
-                'correlativo' => $numeroData['correlativo'],
-                'letra' => $numeroData['letra'],
-                'version' => $numeroData['version'],
-
-                'id_cliente' => $this->cliente_id,
-                'id_motor' => $this->motor_id,
-                'equipo_no_ingresado_taller' => $this->equipoNoIngresadoTaller ? 1 : 0,
-
-                'fecha_cotizacion' => $fechaCotizacion,
-                'fecha_valida_hasta' => $fechaValidaHasta,
-
-                'presentacion_id' => $this->presentacion_id,
-                'texto_presentacion' => $this->textoPresentacion,
-
-                'usar_datos_equipo' => $this->usarDatosEquipo ? 1 : 0,
-                'resumen_equipo' => $this->usarDatosEquipo ? $this->resumenEquipo : null,
-
-                'moneda' => $this->monedaCotizacion,
-                'tipo_cambio' => $this->monedaCotizacion === 'GTQ_USD'
-                    ? $this->tipoCambio
-                    : null,
-
-                'subtotal' => $this->subtotalItems,
-                'descuento' => 0,
-                'total' => $this->subtotalItems,
-
-                'estado' => 'borrador',
-                'no_incluye' => $this->noIncluyeItems,
-
-                'tiempo_entrega' => $this->tiempoEntrega,
-                'tiempo_entrega_otro' => $this->tiempoEntregaOtro,
-
-                'garantia_modo' => $this->garantiaModo,
-                'garantia_general_activa' => $this->garantiaGeneralActiva ? 1 : 0,
-                'garantia_general_tiempo' => $this->garantiaGeneralTiempo,
-                'garantia_electrica_tiempo' => $this->garantiaElectricaTiempo,
-                'garantia_mecanica_tiempo' => $this->garantiaMecanicaTiempo,
-                'incluir_terminos_garantias' => $this->incluirTerminosGarantias ? 1 : 0,
-
-                'terminos_pago' => $this->terminosPago,
-                'cliente_debe_proveer_oc' => $this->clienteDebeProveerOc ? 1 : 0,
-
-                'notas_adicionales' => $this->notasAdicionales,
-                'foto_portada' => $fotoPortadaPath,
-                'creado_por' => auth()->id(),
-            ]);
-
-            $this->guardarContactosCotizacionSnapshot($cotizacion);
-
-            foreach ($this->itemsCotizacion as $index => $item) {
-                $cantidad = (float) ($item['cantidad'] ?? 0);
-                $precioUnitario = (float) ($item['precio_unitario'] ?? 0);
-                $precioTotal = round($cantidad * $precioUnitario, 2);
-                $this->recalcularTotalesItems();
-                CotizacionItem::create([
-                    'cotizacion_id' => $cotizacion->id,
-                    'catalogo_item_id' => $item['catalogo_item_id'] ?? null,
-                    'nombre' => $item['nombre'],
-                    'descripcion' => $item['descripcion'] ?? null,
-                    'cantidad' => $item['cantidad'] ?? 1,
-                    'precio_unitario' => $item['precio_unitario'] ?? 0,
-                    'precio_total' => $item['precio_total'] ?? 0,
-                    'orden' => $index + 1,
-                ]);
-            }
-
-            /*
- * PDFs adjuntos
- */
-            $this->guardarPdfsAdjuntosCotizacion($cotizacion);
-
-            return $cotizacion;
-        });
-
-        $this->cotizacionGuardadaId = $cotizacion->id;
-        $this->sincronizarCotizacionConTableroAdministrativo($cotizacion);
-
-        session()->flash('success', 'Cotización guardada correctamente.');
-
-        if ($generarPdf) {
-            $urlPdf = route('admin.cotizaciones.downloadPdf', [
-                'cotizacion' => $cotizacion->id,
-                'portada' => $this->pdfUsarPortada ? 1 : 0,
-                'carta' => $this->pdfUsarCartaPresentacion ? 1 : 0,
-            ]);
-
-            $this->dispatchBrowserEvent('cotizacion-pdf-listo', [
-                'url' => $urlPdf,
-            ]);
-
-            return;
-        }
-
-        return redirect()->route('admin.cotizaciones.index');
     }
     public function abrirModalOpcionesPdf()
     {
@@ -5216,16 +5240,30 @@ class NuevaCotizacion extends Component
     }
     public function updatedPdfsAntesItemsUpload()
     {
+        if ($this->procesandoPdfsAdjuntos) {
+            return;
+        }
+
         $this->procesarUploadsPdfsCotizacion('antes_items');
     }
 
     public function updatedPdfsDespuesItemsUpload()
     {
+        if ($this->procesandoPdfsAdjuntos) {
+            return;
+        }
+
         $this->procesarUploadsPdfsCotizacion('despues_items');
     }
 
     private function procesarUploadsPdfsCotizacion($seccion)
     {
+        if ($this->procesandoPdfsAdjuntos) {
+            return;
+        }
+
+        $this->procesandoPdfsAdjuntos = true;
+
         $uploadProperty = $seccion === 'antes_items'
             ? 'pdfsAntesItemsUpload'
             : 'pdfsDespuesItemsUpload';
@@ -5234,35 +5272,80 @@ class NuevaCotizacion extends Component
             ? 'pdfsAntesItems'
             : 'pdfsDespuesItems';
 
-        $this->validate([
-            $uploadProperty . '.*' => 'file|mimes:pdf|max:25600',
-        ], [
-            $uploadProperty . '.*.mimes' => 'Solo puede cargar archivos PDF.',
-            $uploadProperty . '.*.max' => 'Cada PDF no debe superar 25 MB.',
-        ]);
+        try {
+            $files = $this->{$uploadProperty};
 
-        foreach ($this->{$uploadProperty} as $file) {
-            $nombreOriginal = $file->getClientOriginalName();
+            if (empty($files)) {
+                return;
+            }
 
-            $path = $file->storeAs(
-                'cotizaciones/pdf-adjuntos/tmp',
-                Str::uuid() . '.pdf',
-                'public'
-            );
+            if (!is_array($files)) {
+                $files = [$files];
+            }
 
-            $this->{$listProperty}[] = [
-                'uuid' => (string) Str::uuid(),
-                'id' => null,
-                'nombre_original' => $nombreOriginal,
-                'path' => $path,
-                'mime_type' => $file->getMimeType(),
-                'size_bytes' => $file->getSize(),
-                'orden' => count($this->{$listProperty}) + 1,
-                'nuevo' => true,
-            ];
+            $this->validate([
+                $uploadProperty . '.*' => 'file|mimes:pdf|max:25600',
+            ], [
+                $uploadProperty . '.*.mimes' => 'Solo puede cargar archivos PDF.',
+                $uploadProperty . '.*.max' => 'Cada PDF no debe superar 25 MB.',
+            ]);
+
+            foreach ($files as $file) {
+                if (!is_object($file) || !method_exists($file, 'getClientOriginalName')) {
+                    continue;
+                }
+
+                $nombreOriginal = $file->getClientOriginalName();
+                $size = $file->getSize();
+
+                /*
+             * Huella básica para evitar que Livewire agregue el mismo archivo
+             * varias veces si el input dispara más de un update.
+             */
+                $fingerprint = md5($seccion . '|' . $nombreOriginal . '|' . $size);
+
+                $yaExisteEnLista = collect($this->{$listProperty})
+                    ->contains(function ($item) use ($fingerprint) {
+                        return ($item['upload_fingerprint'] ?? null) === $fingerprint
+                            && !empty($item['nuevo']);
+                    });
+
+                if ($yaExisteEnLista) {
+                    continue;
+                }
+
+                $path = $file->storeAs(
+                    'cotizaciones/pdf-adjuntos/tmp',
+                    Str::uuid() . '.pdf',
+                    'public'
+                );
+
+                $this->{$listProperty}[] = [
+                    'uuid' => (string) Str::uuid(),
+                    'id' => null,
+                    'cotizacion_id' => null,
+                    'nombre_original' => $nombreOriginal,
+                    'path' => $path,
+                    'mime_type' => $file->getMimeType(),
+                    'size_bytes' => $size,
+                    'orden' => count($this->{$listProperty}) + 1,
+                    'nuevo' => true,
+                    'upload_fingerprint' => $fingerprint,
+                ];
+            }
+        } finally {
+            /*
+         * Importante: se limpia mientras el candado todavía está activo,
+         * para que el reset del input no dispare otro procesamiento.
+         */
+            $this->{$uploadProperty} = [];
+
+            $this->dispatchBrowserEvent('limpiar-input-pdfs-cotizacion', [
+                'seccion' => $seccion,
+            ]);
+
+            $this->procesandoPdfsAdjuntos = false;
         }
-
-        $this->{$uploadProperty} = [];
     }
 
     public function actualizarOrdenPdfsAdjuntosCotizacion($seccion, $uuids)
@@ -5384,24 +5467,33 @@ class NuevaCotizacion extends Component
             }
 
             /*
-         * CASO 2:
-         * PDF existente de una versión anterior.
-         * Lo registramos también para esta nueva versión.
-         */
+ * CASO 2:
+ * PDF existente de una versión anterior.
+ * Lo copiamos físicamente para esta nueva versión.
+ * No compartimos el mismo path entre versiones.
+ */
             if (
                 !empty($item['id']) &&
                 !empty($item['path']) &&
                 empty($item['nuevo'])
             ) {
-                if (!Storage::disk('public')->exists($item['path'])) {
+                $sourcePath = ltrim($item['path'], '/');
+
+                if (!Storage::disk('public')->exists($sourcePath)) {
                     continue;
                 }
+
+                $finalDir = 'cotizaciones/' . $cotizacion->id . '/pdf-adjuntos';
+                $finalPath = $finalDir . '/' . Str::uuid() . '.pdf';
+
+                Storage::disk('public')->makeDirectory($finalDir);
+                Storage::disk('public')->copy($sourcePath, $finalPath);
 
                 CotizacionPdfAdjunto::create([
                     'cotizacion_id' => $cotizacion->id,
                     'seccion' => $seccion,
                     'nombre_original' => $item['nombre_original'] ?? 'documento.pdf',
-                    'path' => $item['path'],
+                    'path' => $finalPath,
                     'mime_type' => $item['mime_type'] ?? 'application/pdf',
                     'size_bytes' => $item['size_bytes'] ?? null,
                     'orden' => $orden,
