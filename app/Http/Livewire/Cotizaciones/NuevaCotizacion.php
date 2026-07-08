@@ -1933,7 +1933,7 @@ class NuevaCotizacion extends Component
             return false;
         }
 
-        
+
 
         if ($this->monedaCotizacion === 'GTQ_USD' && (!$this->tipoCambio || $this->tipoCambio <= 0)) {
             $this->addError('tipoCambio', 'Debe ingresar un tipo de cambio válido.');
@@ -5444,6 +5444,13 @@ class NuevaCotizacion extends Component
 
         $this->{$listProperty} = array_values($ordenados);
     }
+    public function confirmarEliminarPdfAdjuntoCotizacion($seccion, $uuid)
+    {
+        $this->dispatchBrowserEvent('confirmar-eliminar-pdf-adjunto-cotizacion', [
+            'seccion' => $seccion,
+            'uuid' => $uuid,
+        ]);
+    }
 
     public function eliminarPdfAdjuntoCotizacion($seccion, $uuid)
     {
@@ -5484,6 +5491,7 @@ class NuevaCotizacion extends Component
         }
 
         $this->{$listProperty} = array_values($nuevoListado);
+        $this->dispatchBrowserEvent('pdf-adjunto-cotizacion-eliminado');
     }
     private function guardarPdfsAdjuntosCotizacion($cotizacion)
     {

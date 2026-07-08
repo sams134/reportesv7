@@ -1066,7 +1066,7 @@
                         </div>
 
                         <button type="button" class="btn btn-sm btn-outline-danger"
-                           wire:click="confirmarEliminarPdfAdjuntoCotizacion('{{ $seccion }}', '{{ $pdf['uuid'] }}')">
+                            wire:click="confirmarEliminarPdfAdjuntoCotizacion('{{ $seccion }}', '{{ $pdf['uuid'] }}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -3270,6 +3270,38 @@
                         title: 'Item eliminado',
                         timer: 1200,
                         showConfirmButton: false,
+                    });
+                });
+            </script>
+            <script>
+                window.addEventListener('confirmar-eliminar-pdf-adjunto-cotizacion', function(event) {
+                    Swal.fire({
+                        title: '¿Eliminar PDF adjunto?',
+                        text: 'Este PDF será quitado de la cotización. Si pertenece a esta misma versión, se eliminará al guardar o generar nuevamente la cotización.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#6c757d',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            @this.call(
+                                'eliminarPdfAdjuntoCotizacion',
+                                event.detail.seccion,
+                                event.detail.uuid
+                            );
+                        }
+                    });
+                });
+
+                window.addEventListener('pdf-adjunto-cotizacion-eliminado', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'PDF quitado',
+                        text: 'El PDF fue quitado de la cotización.',
+                        timer: 1400,
+                        showConfirmButton: false
                     });
                 });
             </script>
