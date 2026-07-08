@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\CotizacionPdfAdjunto;
 use App\Models\MotorAdminStatus;
+use Illuminate\Validation\ValidationException;
 
 
 class NuevaCotizacion extends Component
@@ -1772,6 +1773,9 @@ class NuevaCotizacion extends Component
         $this->resetErrorBag();
 
         $this->recalcularTotalesItems();
+        $this->asegurarContactosEnModoEdicion();
+        $this->pdfsAntesItemsUpload = [];
+        $this->pdfsDespuesItemsUpload = [];
 
         $rules = [
             'tituloCotizacion' => 'required|string|max:255',
@@ -1825,24 +1829,42 @@ class NuevaCotizacion extends Component
             ]);
         }
 
-        $this->validate($rules, [
-            'tituloCotizacion.required' => 'Debe ingresar un título para la cotización.',
-            'cliente_id.required' => 'Debe seleccionar un cliente.',
-            'contactosSeleccionados.required' => 'Debe seleccionar al menos un contacto.',
-            'contactosSeleccionados.min' => 'Debe seleccionar al menos un contacto.',
+        try {
+            $this->validate($rules, [
+                'tituloCotizacion.required' => 'Debe ingresar un título para la cotización.',
+                'cliente_id.required' => 'Debe seleccionar un cliente.',
+                'contactosSeleccionados.required' => 'Debe seleccionar al menos un contacto.',
+                'contactosSeleccionados.min' => 'Debe seleccionar al menos un contacto.',
 
-            'itemsCotizacion.required' => 'Debe agregar al menos un item.',
-            'itemsCotizacion.min' => 'Debe agregar al menos un item.',
-            'itemsCotizacion.*.nombre.required' => 'Todos los items deben tener nombre.',
-            'itemsCotizacion.*.cantidad.required' => 'Todos los items deben tener cantidad.',
-            'itemsCotizacion.*.precio_unitario.required' => 'Todos los items deben tener precio unitario.',
+                'cotDate.required' => 'Debe ingresar la fecha de cotización.',
+                'cotValid.required' => 'Debe ingresar la fecha de validez.',
 
-            'gruposUnificados.required' => 'Debe existir al menos un grupo de cotización.',
-            'gruposUnificados.min' => 'Debe existir al menos un grupo de cotización.',
-            'gruposUnificados.*.items.required' => 'Cada grupo debe tener al menos un item.',
-            'gruposUnificados.*.items.min' => 'Cada grupo debe tener al menos un item.',
-            'gruposUnificados.*.items.*.nombre.required' => 'Todos los items deben tener nombre.',
-        ]);
+                'itemsCotizacion.required' => 'Debe agregar al menos un item.',
+                'itemsCotizacion.min' => 'Debe agregar al menos un item.',
+                'itemsCotizacion.*.nombre.required' => 'Todos los items deben tener nombre.',
+                'itemsCotizacion.*.cantidad.required' => 'Todos los items deben tener cantidad.',
+                'itemsCotizacion.*.precio_unitario.required' => 'Todos los items deben tener precio unitario.',
+
+                'gruposUnificados.required' => 'Debe existir al menos un grupo de cotización.',
+                'gruposUnificados.min' => 'Debe existir al menos un grupo de cotización.',
+                'gruposUnificados.*.items.required' => 'Cada grupo debe tener al menos un item.',
+                'gruposUnificados.*.items.min' => 'Cada grupo debe tener al menos un item.',
+                'gruposUnificados.*.items.*.nombre.required' => 'Todos los items deben tener nombre.',
+            ]);
+        } catch (ValidationException $e) {
+            $this->setErrorBag($e->validator->errors());
+
+            $primerError = collect($e->validator->errors()->toArray())
+                ->flatten()
+                ->first();
+
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'No se puede generar la cotización',
+                'text' => $primerError ?: 'Revise los campos requeridos antes de guardar la cotización.',
+            ]);
+
+            return false;
+        }
 
         if ($this->modoUnificacion) {
             foreach ($this->gruposUnificados as $grupoIndex => $grupo) {
@@ -5562,5 +5584,32 @@ class NuevaCotizacion extends Component
         $this->pdfUsarCartaPresentacion = (bool) $usarCartaPresentacion;
 
         return $this->guardarCotizacion(true);
+    }
+    private function asegurarContactosEnModoEdicion(): void
+    {
+        if (! $this->modoEdicion || ! $this->cotizacionEditandoId) {
+            return;
+        }
+
+        if (! empty($this->contactosSeleccionados)) {
+            return;
+        }
+
+        $contactos = CotizacionContacto::where('cotizacion_id', $this->cotizacionEditandoId)
+            ->orderBy('id')
+            ->pluck('contacto_id')
+            ->filter()
+            ->values()
+            ->toArray();
+
+        if (empty($contactos)) {
+            return;
+        }
+
+        $this->contactosSeleccionados = $contactos;
+
+        $this->actualizarContactosPreview();
+
+        $this->cargarContactosParaChoices();
     }
 }
