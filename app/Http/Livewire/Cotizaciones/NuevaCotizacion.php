@@ -2098,7 +2098,28 @@ class NuevaCotizacion extends Component
     }
     public function abrirModalOpcionesPdf()
     {
-        if (!$this->validarCotizacionAntesDeContinuar()) {
+        if (! $this->validarCotizacionAntesDeContinuar()) {
+            $errores = $this->getErrorBag()->toArray();
+
+            $primerError = collect($errores)
+                ->flatten()
+                ->first();
+
+            $detalleErrores = collect($errores)
+                ->map(function ($mensajes, $campo) {
+                    return $campo . ': ' . implode(' / ', (array) $mensajes);
+                })
+                ->values()
+                ->implode("\n");
+
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'No se puede generar la cotización',
+                'text' => $primerError ?: 'Revise los campos requeridos antes de guardar la cotización.',
+                'html' => $detalleErrores
+                    ? nl2br(e($detalleErrores))
+                    : 'Revise los campos requeridos antes de guardar la cotización.',
+            ]);
+
             return;
         }
 
@@ -5611,5 +5632,29 @@ class NuevaCotizacion extends Component
         $this->actualizarContactosPreview();
 
         $this->cargarContactosParaChoices();
+    }
+    public function debugValidacionCotizacion()
+    {
+        $resultado = $this->validarCotizacionAntesDeContinuar();
+
+        dd([
+            'resultado' => $resultado,
+            'errores' => $this->getErrorBag()->toArray(),
+            'estado' => [
+                'tituloCotizacion' => $this->tituloCotizacion,
+                'cliente_id' => $this->cliente_id,
+                'contactosSeleccionados' => $this->contactosSeleccionados,
+                'cotDate' => $this->cotDate,
+                'cotValid' => $this->cotValid,
+                'itemsCotizacion_count' => count($this->itemsCotizacion),
+                'tiempoEntrega' => $this->tiempoEntrega,
+                'tiempoEntregaOtro' => $this->tiempoEntregaOtro,
+                'monedaCotizacion' => $this->monedaCotizacion,
+                'tipoCambio' => $this->tipoCambio,
+                'pdfsAntesItems_count' => count($this->pdfsAntesItems),
+                'pdfsDespuesItems_count' => count($this->pdfsDespuesItems),
+                'pdfsAdjuntosEliminarIds' => $this->pdfsAdjuntosEliminarIds,
+            ],
+        ]);
     }
 }

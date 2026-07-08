@@ -2484,11 +2484,15 @@
                             Guardar y generar PDF
                         </span>
 
+
                         <span x-show="generandoPdf">
                             <span class="spinner-border spinner-border-sm me-1" role="status"
                                 aria-hidden="true"></span>
                             Generando PDF...
                         </span>
+                    </button>
+                    <button type="button" class="btn btn-warning btn-sm" wire:click="debugValidacionCotizacion">
+                        Debug validación
                     </button>
                 </div>
             </div>
@@ -3088,6 +3092,16 @@
             }
 
             window.dispatchEvent(new CustomEvent('cotizacion-pdf-finalizado'));
+        });
+    </script>
+    <script>
+        window.addEventListener('swal-error', function(event) {
+            Swal.fire({
+                title: event.detail.title || 'Error',
+                html: event.detail.html || event.detail.text || 'Ocurrió un error.',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
         });
     </script>
     <script>
