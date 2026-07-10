@@ -28,6 +28,8 @@ use Illuminate\Support\Str;
 use App\Models\CotizacionPdfAdjunto;
 use App\Models\MotorAdminStatus;
 use Illuminate\Validation\ValidationException;
+use App\Models\MotorAdminStatusDocument;
+
 
 
 class NuevaCotizacion extends Component
@@ -166,6 +168,10 @@ class NuevaCotizacion extends Component
     public $cotizacionOriginalHash = null;
     public $cotizacionTieneCambios = false;
 
+    public $modoDuplicado = false;
+    public $cotizacionDuplicadaDeId = null;
+    public $cotizacionDuplicadaDeNumero = null;
+
 
     public $noIncluyeItems = [];
     public $noIncluyePersonalizado = '';
@@ -256,6 +262,18 @@ class NuevaCotizacion extends Component
                 : Cotizacion::findOrFail($cotizacion);
 
             $this->inicializarModoAdicional($cotizacionModel);
+            return;
+        }
+
+        /*
+        * MODO DUPLICAR COTIZACIÓN
+        */
+        if (request()->routeIs('admin.cotizaciones.duplicar')) {
+            $cotizacionModel = $cotizacion instanceof Cotizacion
+                ? $cotizacion
+                : Cotizacion::findOrFail($cotizacion);
+
+            $this->inicializarModoDuplicado($cotizacionModel);
             return;
         }
 
@@ -4277,6 +4295,188 @@ class NuevaCotizacion extends Component
             'pdfsDespuesItems' => $this->normalizarPdfsAdjuntosParaHash($this->pdfsDespuesItems),
             'pdfsAdjuntosEliminarIds' => array_values($this->pdfsAdjuntosEliminarIds),
         ];
+    }
+
+    /* duplicar */
+
+    private function inicializarModoDuplicado(Cotizacion $cotizacionBase)
+    {
+        if ((bool) $cotizacionBase->es_unificada) {
+            abort(403, 'Por ahora no se permite duplicar cotizaciones unificadas.');
+        }
+
+        $cotizacionBase->load([
+            'cliente.info_cliente',
+            'contactosCotizacion',
+            'itemsCotizacion',
+        ]);
+
+        /*
+     * Estados del componente.
+     */
+        $this->modoDuplicado = true;
+        $this->modoEdicion = false;
+        $this->modoAdicional = false;
+        $this->modoUnificacion = false;
+
+        $this->cotizacionEditandoId = null;
+        $this->cotizacionGuardadaId = null;
+        $this->cotizacionOriginalHash = null;
+        $this->cotizacionTieneCambios = false;
+
+        $this->cotizacionDuplicadaDeId = $cotizacionBase->id;
+        $this->cotizacionDuplicadaDeNumero = $cotizacionBase->numero;
+
+        /*
+     * Nuevo número de cotización.
+     */
+        $this->cotDate = Carbon::now()->format('d-m-Y');
+        $this->cotValid = Carbon::now()->addDays(30)->format('d-m-Y');
+
+        $this->generarNumeroCotizacionInicial();
+
+        /*
+     * Cliente.
+     */
+        $this->cliente_id = $cotizacionBase->id_cliente;
+
+        if ($this->cliente_id) {
+            $this->updatedClienteId($this->cliente_id);
+        }
+
+        /*
+     * Encabezado.
+     */
+        $this->tituloCotizacion = $cotizacionBase->titulo;
+        $this->subtituloCotizacion = $cotizacionBase->subtitulo;
+
+        /*
+     * Contactos.
+     */
+        $this->contactosSeleccionados = CotizacionContacto::where('cotizacion_id', $cotizacionBase->id)
+            ->orderBy('id')
+            ->pluck('contacto_id')
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $this->actualizarContactosPreview();
+        $this->cargarContactosParaChoices();
+
+        /*
+     * OS / motor:
+     * NO copiamos id_motor.
+     * La duplicada queda como oferta preliminar para que puedas escoger otra OS
+     * o dejarla sin ingreso a taller.
+     */
+        $this->motor_id = null;
+        $this->equipoNoIngresadoTaller = true;
+        $this->motorPreview = null;
+        $this->osSeleccionadaLabel = 'Equipo no ha ingresado a taller, Oferta presupuestaria';
+
+        /*
+     * Datos del equipo:
+     * Copiamos el resumen porque puede servir para motores similares,
+     * pero no queda amarrado a la OS original.
+     */
+        $this->usarDatosEquipo = (bool) $cotizacionBase->usar_datos_equipo;
+        $this->resumenEquipo = $cotizacionBase->resumen_equipo ?? '';
+
+        /*
+     * Presentación.
+     */
+        $this->presentacion_id = $cotizacionBase->presentacion_id;
+        $this->textoPresentacion = $cotizacionBase->texto_presentacion ?? '';
+
+        $this->dispatchBrowserEvent('actualizar-texto-presentacion', [
+            'contenido' => $this->textoPresentacion,
+        ]);
+
+        /*
+     * Moneda y condiciones.
+     */
+        $this->monedaCotizacion = $cotizacionBase->moneda ?? 'GTQ';
+        $this->tipoCambio = $cotizacionBase->tipo_cambio ?: 7.80;
+
+        $this->noIncluyeItems = $cotizacionBase->no_incluye ?: [];
+
+        $this->tiempoEntrega = $cotizacionBase->tiempo_entrega ?? '';
+        $this->tiempoEntregaOtro = $cotizacionBase->tiempo_entrega_otro ?? '';
+
+        $this->garantiaModo = $cotizacionBase->garantia_modo ?? 'general';
+        $this->garantiaGeneralActiva = (bool) $cotizacionBase->garantia_general_activa;
+        $this->garantiaGeneralTiempo = $cotizacionBase->garantia_general_tiempo ?? '3_meses';
+        $this->garantiaElectricaTiempo = $cotizacionBase->garantia_electrica_tiempo ?? '3_meses';
+        $this->garantiaMecanicaTiempo = $cotizacionBase->garantia_mecanica_tiempo ?? '30_dias';
+        $this->incluirTerminosGarantias = (bool) $cotizacionBase->incluir_terminos_garantias;
+
+        $this->terminosPago = $cotizacionBase->terminos_pago ?? '';
+        $this->clienteDebeProveerOc = (bool) $cotizacionBase->cliente_debe_proveer_oc;
+
+        $this->notasAdicionales = $cotizacionBase->notas_adicionales ?? '';
+
+        $this->dispatchBrowserEvent('actualizar-notas-adicionales-cotizacion', [
+            'contenido' => $this->notasAdicionales,
+        ]);
+
+        /*
+     * Foto de portada:
+     * NO se copia.
+     */
+        $this->fotoPortadaCotizacion = null;
+        $this->fotoPortadaActual = null;
+        $this->pdfUsarPortada = false;
+
+        /*
+     * Items.
+     */
+        $this->itemsCotizacion = CotizacionItem::where('cotizacion_id', $cotizacionBase->id)
+            ->orderBy('orden')
+            ->get()
+            ->map(function ($item) {
+                $precioTotal = (float) $item->precio_total;
+
+                $tipoItem = $item->getAttribute('tipo_item');
+
+                if (! $tipoItem) {
+                    $tipoItem = $precioTotal < 0 ? 'descuento' : 'general';
+                }
+
+                return [
+                    'uid' => uniqid('item_', true),
+                    'catalogo_item_id' => $item->catalogo_item_id,
+                    'tipo_item' => $tipoItem,
+
+                    'nombre' => $item->nombre,
+                    'descripcion' => $item->descripcion,
+
+                    'cantidad' => (float) $item->cantidad,
+                    'precio_unitario' => (float) $item->precio_unitario,
+                    'precio_total' => $precioTotal,
+
+                    'descuento_porcentaje' => $item->getAttribute('descuento_porcentaje'),
+                    'descuento_alcance' => $item->getAttribute('descuento_alcance'),
+                    'descuento_item_principal_uid' => $item->getAttribute('descuento_item_principal_uid'),
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        $this->recalcularTotalesItems();
+
+        /*
+     * PDFs adjuntos:
+     * Sí se copian como referencia inicial.
+     * Al guardar la nueva cotización, deben copiarse físicamente a la carpeta
+     * de la nueva cotización si ya tienes aplicado el Storage::copy().
+     */
+        $this->pdfsAntesItems = [];
+        $this->pdfsDespuesItems = [];
+        $this->pdfsAntesItemsUpload = [];
+        $this->pdfsDespuesItemsUpload = [];
+        $this->pdfsAdjuntosEliminarIds = [];
+
+        $this->cargarPdfsAdjuntosCotizacion($cotizacionBase);
     }
 
     private function normalizarPdfsAdjuntosParaHash(array $items): array

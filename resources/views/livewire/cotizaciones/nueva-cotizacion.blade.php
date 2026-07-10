@@ -95,6 +95,14 @@
                 @endif
             </div>
         @endif
+        @if ($modoDuplicado)
+            <div class="alert alert-info">
+                <i class="far fa-copy me-1"></i>
+                Está duplicando la cotización
+                <strong>{{ $cotizacionDuplicadaDeNumero }}</strong>.
+                Se generará un nuevo número de cotización y no se copiará la OS ni la foto de portada.
+            </div>
+        @endif
     </x-pretty-card>
 
 

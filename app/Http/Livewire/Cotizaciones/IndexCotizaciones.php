@@ -15,6 +15,13 @@ use Livewire\WithFileUploads;
 use App\Http\Livewire\Traits\HandlesMotorAdminStatus;
 
 
+use App\Models\CotizacionItem;
+use App\Models\CotizacionContacto;
+use App\Models\CotizacionPdfAdjunto;
+use App\Models\CotizacionUnificadaDetalle;
+
+
+
 class IndexCotizaciones extends Component
 {
     use WithPagination;
@@ -652,5 +659,152 @@ class IndexCotizaciones extends Component
             'aceptacion' => 'Aceptación',
             'anticipo' => 'Anticipo',
         ][$tipo] ?? ucfirst((string) $tipo);
+    }
+    public function confirmarEliminarCotizacion($cotizacionId)
+    {
+        $cotizacion = Cotizacion::find($cotizacionId);
+
+        if (! $cotizacion) {
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'Cotización no encontrada',
+                'text' => 'La cotización ya no existe o fue eliminada previamente.',
+            ]);
+
+            return;
+        }
+
+        $this->dispatchBrowserEvent('confirmar-eliminar-cotizacion', [
+            'cotizacion_id' => $cotizacion->id,
+            'numero' => $cotizacion->numero,
+        ]);
+    }
+    public function eliminarCotizacion($cotizacionId)
+    {
+        $cotizacion = Cotizacion::find($cotizacionId);
+
+        if (! $cotizacion) {
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'Cotización no encontrada',
+                'text' => 'La cotización ya no existe o fue eliminada previamente.',
+            ]);
+
+            return;
+        }
+
+        DB::transaction(function () use ($cotizacion) {
+            $idMotor = $cotizacion->id_motor;
+            $cotizacionId = $cotizacion->id;
+
+            /*
+         * 1. Eliminar PDFs adjuntos.
+         * Si el archivo físico no lo usa otra cotización, también se borra del storage.
+         */
+            $adjuntos = CotizacionPdfAdjunto::where('cotizacion_id', $cotizacionId)->get();
+
+            foreach ($adjuntos as $adjunto) {
+                $path = $adjunto->path;
+
+                $adjunto->delete();
+
+                if ($path) {
+                    $usadoPorOtros = CotizacionPdfAdjunto::where('path', $path)->exists();
+
+                    if (! $usadoPorOtros) {
+                        Storage::disk('public')->delete($path);
+                    }
+                }
+            }
+
+            /*
+         * 2. Eliminar relaciones directas.
+         */
+            CotizacionItem::where('cotizacion_id', $cotizacionId)->delete();
+            CotizacionContacto::where('cotizacion_id', $cotizacionId)->delete();
+
+            /*
+         * 3. Eliminar detalles si es una cotización unificada.
+         */
+            CotizacionUnificadaDetalle::where('cotizacion_unificada_id', $cotizacionId)
+                ->orWhere('cotizacion_origen_id', $cotizacionId)
+                ->delete();
+
+            /*
+         * 4. Eliminar la cotización principal.
+         */
+            $cotizacion->delete();
+
+            /*
+         * 5. Resincronizar tablero administrativo si esta cotización tenía OS.
+         */
+            if ($idMotor) {
+                $this->resincronizarAdminStatusDespuesDeEliminarCotizacion($idMotor, $cotizacionId);
+            }
+        });
+
+        $this->dispatchBrowserEvent('cotizacion-eliminada', [
+            'message' => 'La cotización fue eliminada correctamente.',
+        ]);
+    }
+    private function resincronizarAdminStatusDespuesDeEliminarCotizacion($idMotor, $cotizacionEliminadaId)
+    {
+        $admin = MotorAdminStatus::where('id_motor', $idMotor)->first();
+
+        if (! $admin) {
+            return;
+        }
+
+        /*
+     * Solo tocamos el tablero administrativo si apuntaba a la cotización eliminada.
+     */
+        if ((int) $admin->cotizacion_id !== (int) $cotizacionEliminadaId) {
+            return;
+        }
+
+        /*
+     * Buscar otra cotización interna para la misma OS.
+     */
+        $ultimaCotizacion = Cotizacion::where('id_motor', $idMotor)
+            ->orderByDesc('id')
+            ->first();
+
+        if ($ultimaCotizacion) {
+            $admin->update([
+                'cotizacion_estado' => 'cotizado',
+                'cotizacion_id' => $ultimaCotizacion->id,
+                'cotizacion_fecha' => $ultimaCotizacion->fecha_cotizacion,
+                'updated_by' => auth()->id(),
+            ]);
+
+            return;
+        }
+
+        /*
+     * Si no queda cotización interna, pero hay cotización externa cargada,
+     * se mantiene como cotizado.
+     */
+        $tieneCotizacionExterna = MotorAdminStatusDocument::where('motor_admin_status_id', $admin->id)
+            ->where('tipo', 'cotizacion_externa')
+            ->exists();
+
+        if ($tieneCotizacionExterna) {
+            $admin->update([
+                'cotizacion_estado' => 'cotizado',
+                'cotizacion_id' => null,
+                'cotizacion_fecha' => $admin->cotizacion_fecha,
+                'updated_by' => auth()->id(),
+            ]);
+
+            return;
+        }
+
+        /*
+     * Si no queda cotización interna ni externa, vuelve a pendiente.
+     */
+        $admin->update([
+            'cotizacion_estado' => 'pendiente',
+            'cotizacion_id' => null,
+            'cotizacion_fecha' => null,
+            'updated_by' => auth()->id(),
+        ]);
     }
 }

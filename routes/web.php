@@ -133,6 +133,9 @@ Route::middleware([
             Route::get('cotizaciones/{cotizacion}/adicional', \App\Http\Livewire\Cotizaciones\NuevaCotizacion::class)
                 ->name('cotizaciones.adicional');
 
+            Route::get('cotizaciones/{cotizacion}/duplicar', NuevaCotizacion::class)
+                ->name('cotizaciones.duplicar');
+
             Route::get('cotizaciones/{cotizacion}/edit', NuevaCotizacion::class)
                 ->name('cotizaciones.edit');
 
@@ -140,9 +143,9 @@ Route::middleware([
                 ->name('cotizaciones.downloadPdf');
         });
 
-//tableros administrativos
-Route::get('/admin/tablero-administrativo', TableroAdministrativo::class)
-    ->name('admin.tableroAdministrativo');
+    //tableros administrativos
+    Route::get('/admin/tablero-administrativo', TableroAdministrativo::class)
+        ->name('admin.tableroAdministrativo');
 
     //boards
     Route::get('/boards/{board}', IndexBoard::class)->name('boards.index');

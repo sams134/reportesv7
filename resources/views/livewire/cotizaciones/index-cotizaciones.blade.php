@@ -102,9 +102,7 @@
                                 OS
                             </th>
 
-                            <th style="width:8%;">
-                                Potencia
-                            </th>
+
 
                             <th style="width:20%;">
                                 Título
@@ -159,10 +157,12 @@
 
                                 <td>
                                     {{ $this->osCotizacion($cotizacion) }}
-                                </td>
 
-                                <td>
-                                    {{ $this->potenciaCotizacion($cotizacion) }}
+                                    @if ($cotizacion->motor && $this->potenciaCotizacion($cotizacion) !== '-')
+                                        <div class="text-muted small" style="line-height: 1.1;">
+                                            {{ $this->potenciaCotizacion($cotizacion) }}
+                                        </div>
+                                    @endif
                                 </td>
 
                                 <td>
@@ -223,6 +223,15 @@
                                             title="Administrativo">
                                             <i class="fas fa-clipboard-check"></i>
                                         </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                            wire:click="confirmarEliminarCotizacion({{ $cotizacion->id }})"
+                                            wire:loading.attr="disabled" title="Eliminar cotización">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <a href="{{ route('admin.cotizaciones.duplicar', ['cotizacion' => $cotizacion->id]) }}"
+                                            class="btn btn-sm btn-outline-info" title="Duplicar cotización">
+                                            <i class="far fa-copy"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -308,7 +317,15 @@
                                                 title="Agregar otra cotización adicional">
                                                 <i class="fas fa-plus-circle"></i>
                                             </a>
-
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                wire:click="confirmarEliminarCotizacion({{ $cotizacion->id }})"
+                                                wire:loading.attr="disabled" title="Eliminar cotización">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            <a href="{{ route('admin.cotizaciones.duplicar', ['cotizacion' => $adicional->id]) }}"
+                                                class="btn btn-sm btn-outline-info" title="Duplicar adicional">
+                                                <i class="far fa-copy"></i>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -328,7 +345,7 @@
                                                             <th>Número</th>
                                                             <th>Fecha</th>
                                                             <th>OS</th>
-                                                            <th>Potencia</th>
+
                                                             <th>Título</th>
                                                             <th class="text-center">Versión</th>
                                                             <th class="text-end">Total</th>
@@ -351,10 +368,13 @@
 
                                                                 <td>
                                                                     {{ $this->osCotizacion($version) }}
-                                                                </td>
 
-                                                                <td>
-                                                                    {{ $this->potenciaCotizacion($version) }}
+                                                                    @if ($cotizacion->motor && $this->potenciaCotizacion($cotizacion) !== '-')
+                                                                        <div class="text-muted small"
+                                                                            style="line-height: 1.1;">
+                                                                            {{ $this->potenciaCotizacion($cotizacion) }}
+                                                                        </div>
+                                                                    @endif
                                                                 </td>
 
                                                                 <td>
@@ -396,6 +416,13 @@
                                                                             title="Eliminar esta versión">
                                                                             <i class="far fa-trash-alt"></i>
                                                                         </button>
+                                                                        <button type="button"
+                                                                            class="btn btn-sm btn-outline-danger"
+                                                                            wire:click="confirmarEliminarCotizacion({{ $cotizacion->id }})"
+                                                                            wire:loading.attr="disabled"
+                                                                            title="Eliminar cotización">
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </button>
                                                                     </div>
                                                                 </td>
                                                             </tr>
@@ -409,7 +436,7 @@
                             @endif
                         @empty
                             <tr>
-                                <td colspan="10" class="text-center text-muted py-4">
+                                <td colspan="9" class="text-center text-muted py-4">
                                     No hay cotizaciones registradas.
                                 </td>
                             </tr>
@@ -424,7 +451,7 @@
         </div>
     </div>
     @include('livewire.administracion.partials.admin-status-modal')
-@include('livewire.administracion.partials.admin-info-modal')
+    @include('livewire.administracion.partials.admin-info-modal')
     <script>
         window.addEventListener('confirmar-eliminar-version-cotizacion', function(event) {
             const cotizacionId = event.detail.cotizacion_id;
@@ -464,8 +491,8 @@
                 icon: 'error',
             });
         });
-     
-        window.addEventListener('abrir-modal-admin-status', function () {
+
+        window.addEventListener('abrir-modal-admin-status', function() {
             var modalEl = document.getElementById('adminStatusModal');
 
             if (!modalEl) {
@@ -477,7 +504,7 @@
             modal.show();
         });
 
-        window.addEventListener('cerrar-modal-admin-status', function () {
+        window.addEventListener('cerrar-modal-admin-status', function() {
             var modalEl = document.getElementById('adminStatusModal');
 
             if (!modalEl) {
@@ -488,7 +515,7 @@
             modal.hide();
         });
 
-        window.addEventListener('abrir-modal-admin-info', function () {
+        window.addEventListener('abrir-modal-admin-info', function() {
             var modalEl = document.getElementById('adminInfoModal');
 
             if (!modalEl) {
@@ -500,7 +527,7 @@
             modal.show();
         });
 
-        window.addEventListener('admin-status-actualizado', function () {
+        window.addEventListener('admin-status-actualizado', function() {
             Swal.fire({
                 title: 'Estado actualizado',
                 text: 'El estado administrativo fue actualizado correctamente.',
@@ -508,7 +535,7 @@
             });
         });
 
-        window.addEventListener('admin-info-guardada', function () {
+        window.addEventListener('admin-info-guardada', function() {
             Swal.fire({
                 title: 'Evidencia guardada',
                 text: 'La información fue guardada correctamente.',
@@ -516,13 +543,49 @@
             });
         });
 
-        window.addEventListener('swal-error', function (event) {
+        window.addEventListener('swal-error', function(event) {
             Swal.fire({
                 title: event.detail.title || 'Error',
                 text: event.detail.text || 'No se pudo completar la acción.',
                 icon: 'error'
             });
         });
-   
+    </script>
+    <script>
+        window.addEventListener('confirmar-eliminar-cotizacion', function(event) {
+            Swal.fire({
+                title: '¿Eliminar cotización?',
+                html: 'Está por eliminar la cotización <strong>' + event.detail.numero +
+                    '</strong>.<br><br>Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.call('eliminarCotizacion', event.detail.cotizacion_id);
+                }
+            });
+        });
+
+        window.addEventListener('cotizacion-eliminada', function(event) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Cotización eliminada',
+                text: event.detail.message || 'La cotización fue eliminada correctamente.',
+                timer: 1800,
+                showConfirmButton: false
+            });
+        });
+
+        window.addEventListener('swal-error', function(event) {
+            Swal.fire({
+                icon: 'error',
+                title: event.detail.title || 'Error',
+                text: event.detail.text || 'Ocurrió un error.',
+            });
+        });
     </script>
 </div>
