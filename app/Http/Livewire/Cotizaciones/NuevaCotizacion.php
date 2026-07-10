@@ -166,6 +166,7 @@ class NuevaCotizacion extends Component
     public $cotizacionOriginalHash = null;
     public $cotizacionTieneCambios = false;
 
+
     public $noIncluyeItems = [];
     public $noIncluyePersonalizado = '';
 
@@ -192,6 +193,8 @@ class NuevaCotizacion extends Component
     public $garantiaElectricaTiempo = '3_meses';
     public $garantiaMecanicaTiempo = '30_dias';
     public $incluirTerminosGarantias = false;
+    public $recalculandoItemsCotizacion = false;
+
 
     public $terminosPago = '';
     public $clienteDebeProveerOc = true;
@@ -1594,16 +1597,33 @@ class NuevaCotizacion extends Component
 
     public function updated($propertyName)
     {
-        if (strpos($propertyName, 'itemsCotizacion.') === 0) {
+        if ($this->recalculandoItemsCotizacion) {
+            return;
+        }
+
+        if (strpos($propertyName, 'itemsCotizacion.') !== 0) {
+            return;
+        }
+
+        if (! preg_match('/^itemsCotizacion\.\d+\.(cantidad|precio_unitario|descuento_porcentaje|descuento_alcance|descuento_item_principal_uid)$/', $propertyName)) {
+            return;
+        }
+
+        $this->recalculandoItemsCotizacion = true;
+
+        try {
             $this->recalcularTotalesItems();
+        } finally {
+            $this->recalculandoItemsCotizacion = false;
         }
     }
 
     private function recalcularTotalesItems()
     {
+        $this->normalizarItemsCotizacion();
+
         /*
-     * Primero recalculamos todos los items normales.
-     * Los descuentos se saltan porque se calculan después.
+     * Primero recalculamos items normales.
      */
         foreach ($this->itemsCotizacion as $index => $item) {
             if ($this->esItemDescuento($item)) {
@@ -1618,8 +1638,8 @@ class NuevaCotizacion extends Component
         }
 
         /*
-     * Luego recalculamos los descuentos.
-     * Si es un descuento viejo sin porcentaje, lo respetamos tal como está.
+     * Luego recalculamos descuentos reales.
+     * Si es descuento viejo sin porcentaje, lo respetamos.
      */
         foreach ($this->itemsCotizacion as $index => $item) {
             if (! $this->esItemDescuento($item)) {
@@ -1628,11 +1648,16 @@ class NuevaCotizacion extends Component
 
             $this->itemsCotizacion[$index]['tipo_item'] = 'descuento';
 
-            if (empty($item['descuento_porcentaje'])) {
+            if (
+                empty($item['descuento_porcentaje']) ||
+                (float) $item['descuento_porcentaje'] <= 0
+            ) {
+                $this->itemsCotizacion[$index]['precio_unitario'] = -1 * abs((float) ($item['precio_unitario'] ?? 0));
+                $this->itemsCotizacion[$index]['precio_total'] = -1 * abs((float) ($item['precio_total'] ?? 0));
                 continue;
             }
 
-            $porcentaje = (float) ($item['descuento_porcentaje'] ?? 0);
+            $porcentaje = (float) $item['descuento_porcentaje'];
             $alcance = $item['descuento_alcance'] ?? 'principal';
             $principalUid = $item['descuento_item_principal_uid'] ?? null;
 
@@ -1664,21 +1689,66 @@ class NuevaCotizacion extends Component
     }
     private function esItemDescuento($item): bool
     {
-        $tipo = strtolower((string) ($item['tipo_item'] ?? ''));
+        $tipo = strtolower(trim((string) ($item['tipo_item'] ?? '')));
+
+        $nombre = strtolower(trim((string) ($item['nombre'] ?? '')));
+
+        $precioUnitario = (float) ($item['precio_unitario'] ?? 0);
+        $precioTotal = (float) ($item['precio_total'] ?? 0);
+
+        $descuentoPorcentaje = $item['descuento_porcentaje'] ?? null;
 
         if ($tipo === 'descuento') {
             return true;
         }
 
-        if (array_key_exists('descuento_porcentaje', $item) || array_key_exists('descuento_alcance', $item)) {
+        if (
+            $descuentoPorcentaje !== null &&
+            $descuentoPorcentaje !== '' &&
+            (float) $descuentoPorcentaje > 0 &&
+            ($precioUnitario < 0 || $precioTotal < 0)
+        ) {
             return true;
         }
 
-        $nombre = strtolower((string) ($item['nombre'] ?? ''));
-        $precioUnitario = (float) ($item['precio_unitario'] ?? 0);
-        $precioTotal = (float) ($item['precio_total'] ?? 0);
+        if (
+            strpos($nombre, 'descuento') !== false &&
+            ($precioUnitario < 0 || $precioTotal < 0)
+        ) {
+            return true;
+        }
 
-        return strpos($nombre, 'descuento') !== false && ($precioUnitario < 0 || $precioTotal < 0);
+        return false;
+    }
+    private function normalizarItemsCotizacion(): void
+    {
+        foreach ($this->itemsCotizacion as $index => $item) {
+            if ($this->esItemDescuento($item)) {
+                $precioUnitario = abs((float) ($item['precio_unitario'] ?? 0));
+                $precioTotal = abs((float) ($item['precio_total'] ?? 0));
+
+                $this->itemsCotizacion[$index]['tipo_item'] = 'descuento';
+                $this->itemsCotizacion[$index]['cantidad'] = 1;
+                $this->itemsCotizacion[$index]['precio_unitario'] = -1 * $precioUnitario;
+                $this->itemsCotizacion[$index]['precio_total'] = -1 * $precioTotal;
+
+                continue;
+            }
+
+            /*
+         * Defensa temporal:
+         * Si un item normal quedó negativo por el bug anterior, lo regresamos a positivo.
+         */
+            if ((float) ($item['precio_unitario'] ?? 0) < 0) {
+                $this->itemsCotizacion[$index]['precio_unitario'] = abs((float) $item['precio_unitario']);
+            }
+
+            $cantidad = (float) ($this->itemsCotizacion[$index]['cantidad'] ?? 1);
+            $precio = (float) ($this->itemsCotizacion[$index]['precio_unitario'] ?? 0);
+
+            $this->itemsCotizacion[$index]['tipo_item'] = $item['tipo_item'] ?? 'general';
+            $this->itemsCotizacion[$index]['precio_total'] = round($cantidad * $precio, 2);
+        }
     }
     public function updatedMonedaCotizacion($value)
     {
@@ -1799,6 +1869,7 @@ class NuevaCotizacion extends Component
     {
         $this->resetErrorBag();
 
+        $this->normalizarItemsCotizacion();
         $this->recalcularTotalesItems();
         $this->asegurarContactosEnModoEdicion();
         $this->pdfsAntesItemsUpload = [];
@@ -1893,6 +1964,12 @@ class NuevaCotizacion extends Component
             return false;
         }
 
+
+        if ($this->tiempoEntrega === 'otro' && blank($this->tiempoEntregaOtro)) {
+            $this->addError('tiempoEntregaOtro', 'Debe ingresar el tiempo de entrega aproximado.');
+            return false;
+        }
+
         if ($this->modoUnificacion) {
             foreach ($this->gruposUnificados as $grupoIndex => $grupo) {
                 foreach (($grupo['items'] ?? []) as $itemIndex => $item) {
@@ -1927,13 +2004,6 @@ class NuevaCotizacion extends Component
                 }
             }
         }
-
-        if ($this->tiempoEntrega === 'otro' && blank($this->tiempoEntregaOtro)) {
-            $this->addError('tiempoEntregaOtro', 'Debe ingresar el tiempo de entrega aproximado.');
-            return false;
-        }
-
-
 
         if ($this->monedaCotizacion === 'GTQ_USD' && (!$this->tipoCambio || $this->tipoCambio <= 0)) {
             $this->addError('tipoCambio', 'Debe ingresar un tipo de cambio válido.');
