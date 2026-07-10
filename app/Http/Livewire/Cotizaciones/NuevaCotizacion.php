@@ -1675,11 +1675,20 @@ class NuevaCotizacion extends Component
             $this->itemsCotizacion[$index]['precio_unitario'] = -1 * $montoDescuento;
             $this->itemsCotizacion[$index]['precio_total'] = -1 * $montoDescuento;
 
-            $this->itemsCotizacion[$index]['nombre'] = 'Descuento especial ' . $porcentaje . '%';
-            $this->itemsCotizacion[$index]['descripcion'] = $this->descripcionDescuento(
-                $porcentaje,
-                $itemsAfectos
-            );
+            if (blank($this->itemsCotizacion[$index]['nombre'] ?? null)) {
+                $this->itemsCotizacion[$index]['nombre'] = 'Descuento especial ' . $porcentaje . '%';
+            }
+
+            /*
+ * No sobreescribimos la descripción si el usuario ya la editó.
+ * Solo generamos descripción automática si está vacía.
+ */
+            if (blank($this->itemsCotizacion[$index]['descripcion'] ?? null)) {
+                $this->itemsCotizacion[$index]['descripcion'] = $this->descripcionDescuento(
+                    $porcentaje,
+                    $itemsAfectos
+                );
+            }
         }
 
         $this->subtotalItems = collect($this->itemsCotizacion)
