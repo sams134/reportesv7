@@ -7,6 +7,7 @@ use App\Models\CotizacionContacto;
 use App\Models\CotizacionItem;
 use App\Models\CotizacionUnificadaDetalle;
 use App\Models\CotizacionPdfAdjunto;
+use App\Models\CotizacionExcelGrupo;
 
 class Cotizacion extends Model
 {
@@ -146,6 +147,11 @@ class Cotizacion extends Model
     {
         return $this->hasMany(CotizacionPdfAdjunto::class, 'cotizacion_id', 'id')
             ->where('seccion', 'despues_items')
+            ->orderBy('orden');
+    }
+    public function excelGrupos()
+    {
+        return $this->hasMany(CotizacionExcelGrupo::class, 'cotizacion_id', 'id')
             ->orderBy('orden');
     }
 }

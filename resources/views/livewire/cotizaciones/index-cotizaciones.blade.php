@@ -17,6 +17,11 @@
                 Nueva Cotización
             </a>
 
+            <button type="button" class="btn btn-outline-info" wire:click="abrirModalCotizacionExcel">
+                <i class="far fa-file-excel me-1"></i>
+                Crear cotización desde Excel
+            </button>
+
             <button type="button" class="btn btn-outline-success" wire:click="unificarCotizaciones"
                 wire:loading.attr="disabled" wire:target="unificarCotizaciones">
 
@@ -449,6 +454,85 @@
                 {{ $cotizaciones->links() }}
             </div>
         </div>
+        {{-- Modales --}}
+        <div wire:ignore.self class="modal fade" id="cotizacionExcelModal" tabindex="-1"
+            aria-labelledby="cotizacionExcelModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cotizacionExcelModalLabel">
+                            Crear cotización desde Excel
+                        </h5>
+
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <strong>Flujo:</strong>
+                            descargue la plantilla, llénela con los motores/equipos y luego suba el archivo.
+                            Cada fila será tratada como un motor separado.
+                        </div>
+
+                        <div class="d-flex gap-2 mb-4">
+                            <button type="button" class="btn btn-outline-success"
+                                wire:click="descargarPlantillaCotizacionExcel" wire:loading.attr="disabled"
+                                wire:target="descargarPlantillaCotizacionExcel">
+                                <i class="fas fa-download me-1"></i>
+                                Descargar plantilla Excel
+                            </button>
+
+                            <div wire:loading wire:target="descargarPlantillaCotizacionExcel"
+                                class="small text-muted align-self-center">
+                                Generando plantilla...
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Subir Excel lleno
+                            </label>
+
+                            <input type="file" class="form-control" wire:model="excelCotizacionUpload"
+                                accept=".xlsx,.xls">
+
+                            @error('excelCotizacionUpload')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+
+                            <div wire:loading wire:target="excelCotizacionUpload" class="small text-muted mt-2">
+                                Cargando archivo...
+                            </div>
+                        </div>
+
+                        <div class="small text-muted">
+                            Formatos permitidos: .xlsx y .xls. Tamaño máximo: 10 MB.
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+
+                        <button type="button" class="btn btn-primary" wire:click="procesarCotizacionExcel"
+                            wire:loading.attr="disabled" wire:target="procesarCotizacionExcel">
+                            <span wire:loading.remove wire:target="procesarCotizacionExcel">
+                                Procesar Excel
+                            </span>
+
+                            <span wire:loading wire:target="procesarCotizacionExcel">
+                                Procesando...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
     @include('livewire.administracion.partials.admin-status-modal')
     @include('livewire.administracion.partials.admin-info-modal')
@@ -484,13 +568,7 @@
             });
         });
 
-        window.addEventListener('swal-error', function(event) {
-            Swal.fire({
-                title: event.detail.title || 'Error',
-                text: event.detail.text || '',
-                icon: 'error',
-            });
-        });
+
 
         window.addEventListener('abrir-modal-admin-status', function() {
             var modalEl = document.getElementById('adminStatusModal');
@@ -542,14 +620,6 @@
                 icon: 'success'
             });
         });
-
-        window.addEventListener('swal-error', function(event) {
-            Swal.fire({
-                title: event.detail.title || 'Error',
-                text: event.detail.text || 'No se pudo completar la acción.',
-                icon: 'error'
-            });
-        });
     </script>
     <script>
         window.addEventListener('confirmar-eliminar-cotizacion', function(event) {
@@ -579,12 +649,34 @@
                 showConfirmButton: false
             });
         });
+    </script>
+    <script>
+        window.addEventListener('abrir-modal-cotizacion-excel', function() {
+            const modalElement = document.getElementById('cotizacionExcelModal');
 
+            if (!modalElement) {
+                return;
+            }
+
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        });
+
+        window.addEventListener('swal-success', function(event) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Correcto',
+                text: event.detail.message || 'Proceso completado correctamente.',
+                timer: 1800,
+                showConfirmButton: false
+            });
+        });
         window.addEventListener('swal-error', function(event) {
             Swal.fire({
                 icon: 'error',
                 title: event.detail.title || 'Error',
-                text: event.detail.text || 'Ocurrió un error.',
+                html: event.detail.html || event.detail.text || 'Ocurrió un error.',
+                confirmButtonText: 'Entendido'
             });
         });
     </script>

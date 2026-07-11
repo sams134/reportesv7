@@ -103,6 +103,26 @@
                 Se generará un nuevo número de cotización y no se copiará la OS ni la foto de portada.
             </div>
         @endif
+        @if ($modoExcel)
+            <div class="alert alert-info border mb-3">
+                <div class="fw-bold mb-2">
+                    <i class="far fa-file-excel me-1"></i>
+                    Modo cotización desde Excel
+                </div>
+
+                <div class="small mb-2">
+                    Se cargaron {{ count($gruposExcel) }} equipo(s) desde la plantilla Excel.
+                    Puede editar, agregar o eliminar items por motor antes de guardar.
+                </div>
+
+                <div class="small">
+                    Total preliminar:
+                    <strong>
+                        {{ $this->simboloMoneda() }}{{ number_format($totalExcel, 2) }}
+                    </strong>
+                </div>
+            </div>
+        @endif
     </x-pretty-card>
 
 
@@ -625,7 +645,11 @@
             <div class="card-header bg-light d-flex justify-content-between align-items-center"
                 onclick="scrollItemsCotizacionTop()" style="cursor: pointer;">
                 <span class="fw-semibold">
-                    Detalle de trabajos y materiales
+                    @if ($modoExcel)
+                        Detalle de trabajos y materiales importados desde Excel
+                    @else
+                        Detalle de trabajos y materiales
+                    @endif
                 </span>
 
                 <span class="ms-2" :class="open ? 'rotate-180' : ''" style="transition: transform 0.2s;">
@@ -708,161 +732,313 @@
             </div>
 
             {{-- CONTENIDO --}}
-            <div class="card-body p-0">
-                <div id="tablaItemsCotizacionWrapper"
-                    class="table-responsive scrollbar cotizacion-items-table-wrapper">
-                    <table class="table table-hover table-striped overflow-hidden mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th style="width: 55%;">Producto</th>
-                                <th class="text-center" style="width: 12%;">Cantidad</th>
-                                <th class="text-end" style="width: 15%;">Precio Unitario</th>
-                                <th class="text-end" style="width: 18%;">Precio Total</th>
-                            </tr>
-                        </thead>
+            @if (!$modoUnificacion)
+                <div class="card-body p-0">
+                    <div id="tablaItemsCotizacionWrapper"
+                        class="table-responsive scrollbar cotizacion-items-table-wrapper">
 
-                        <tbody id="itemsCotizacionSortable">
-                            @foreach ($itemsCotizacion as $index => $item)
-                                <tr wire:key="item-cotizacion-{{ $item['uid'] ?? 'sin-uid-' . $index }}"
-                                    data-uid="{{ $item['uid'] ?? $index }}">
-                                    <td>
-                                        <div class="d-flex align-items-start mb-2">
-                                            {{-- HANDLE PARA ARRASTRAR --}}
-                                            <span class="btn btn-link text-600 p-1 me-2 drag-handle"
-                                                title="Arrastrar para ordenar">
-                                                <i class="fas fa-grip-vertical"></i>
-                                            </span>
-
-                                            {{-- NOMBRE DEL ITEM --}}
-                                            <input type="text" class="form-control fw-bold"
-                                                wire:model.defer="itemsCotizacion.{{ $index }}.nombre">
-
-                                            {{-- ELIMINAR ITEM --}}
-                                            <button type="button" class="btn btn-sm btn-outline-danger ms-2"
-                                                title="Eliminar item"
-                                                wire:click="confirmarEliminarItemCotizacion('{{ $item['uid'] }}')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
+                        @if ($modoExcel)
+                            <div class="p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <div class="fw-bold text-success">
+                                            Items agrupados por motor
                                         </div>
-
-                                        {{-- DESCRIPCIÓN --}}
-                                        <textarea class="form-control" rows="3" wire:model.defer="itemsCotizacion.{{ $index }}.descripcion"></textarea>
-                                    </td>
-
-                                    <td class="align-top">
-                                        <input type="number" step="1" min="0"
-                                            class="form-control text-center"
-                                            wire:model.debounce.500ms="itemsCotizacion.{{ $index }}.cantidad">
-                                    </td>
-
-                                    <td class="align-top">
-                                        <div class="input-group input-group-sm">
-                                            <span class="input-group-text">
-                                                {{ $this->simboloMoneda() }}
-                                            </span>
-
-                                            <input type="number" step="0.01" class="form-control text-end"
-                                                wire:model.debounce.500ms="itemsCotizacion.{{ $index }}.precio_unitario"
-                                                {{ ($item['tipo_item'] ?? null) === 'descuento' ? 'readonly' : '' }}>
-                                        </div>
-
-                                        @if ($this->mostrarConversionUsd())
-                                            <div class="text-muted text-end mt-1"
-                                                style="font-size: 9px; line-height: 1;">
-                                                USD
-                                                ${{ number_format($this->convertirAUsd($item['precio_unitario'] ?? 0), 2) }}
-                                            </div>
-                                        @endif
-                                    </td>
-
-                                    <td
-                                        class="align-top text-end fw-semibold {{ ($item['tipo_item'] ?? null) === 'descuento' ? 'text-danger' : '' }}">
-                                        @if (($item['tipo_item'] ?? null) === 'descuento')
-                                            -{{ $this->simboloMoneda() }}{{ number_format(abs($item['precio_total'] ?? 0), 2) }}
-                                        @else
-                                            {{ $this->simboloMoneda() }}{{ number_format($item['precio_total'] ?? 0, 2) }}
-                                        @endif
-
-                                        @if ($this->mostrarConversionUsd())
-                                            <div class="text-muted mt-1" style="font-size: 9px; line-height: 1;">
-                                                USD
-                                                ${{ number_format(abs($this->convertirAUsd($item['precio_total'] ?? 0)), 2) }}
-                                            </div>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-
-
-
-                        </tbody>
-                        <tbody>
-                            {{-- FILA AGREGAR ITEM --}}
-                            <tr>
-                                <td colspan="4">
-                                    @livewire('cotizaciones.search-item-cotizacion', key('search-item-cotizacion'))
-                                </td>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="3" class="text-end fw-bold">
-                                    Total
-                                </td>
-
-                                <td class="text-end fw-bold">
-                                    {{ $this->simboloMoneda() }}{{ number_format($subtotalItems, 2) }}
-
-                                    @if ($this->mostrarConversionUsd())
-                                        <div class="text-muted mt-1" style="font-size: 10px; line-height: 1;">
-                                            USD ${{ number_format($this->convertirAUsd($subtotalItems), 2) }}
-                                        </div>
-                                    @endif
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td colspan="2"></td>
-
-                                <td colspan="2">
-                                    <div class="row justify-content-end">
-                                        <div class="col-xl-8 col-lg-10 col-md-12">
-                                            <label class="form-label small mb-1">
-                                                Moneda
-                                            </label>
-
-                                            <select class="form-select form-select-sm" wire:model="monedaCotizacion">
-                                                <option value="GTQ">Q. Quetzales</option>
-                                                <option value="USD">USD $ Dólares</option>
-                                                <option value="GTQ_USD">Manejar Quetzales y Convertir a Dólares
-                                                </option>
-                                            </select>
-
-                                            @if ($monedaCotizacion === 'GTQ_USD')
-                                                <div class="mt-2">
-                                                    <label class="form-label small mb-1">
-                                                        Tipo de cambio Q x 1 USD
-                                                    </label>
-
-                                                    <div class="input-group input-group-sm">
-                                                        <span class="input-group-text">Q</span>
-
-                                                        <input type="number" step="0.0001" min="0"
-                                                            class="form-control text-end"
-                                                            wire:model.lazy="tipoCambio">
-
-                                                        <span class="input-group-text">x 1 USD</span>
-                                                    </div>
-                                                </div>
-                                            @endif
+                                        <div class="small text-muted">
+                                            Puede editar, agregar o eliminar items por cada motor importado.
                                         </div>
                                     </div>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
+
+                                    <div class="text-end">
+                                        <div class="small text-muted">Total Excel</div>
+                                        <div class="fw-bold fs-5">
+                                            {{ $this->simboloMoneda() }}{{ number_format($totalExcel, 2) }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @foreach ($gruposExcel as $grupoIndex => $grupo)
+                                    <div class="border rounded mb-4 overflow-hidden"
+                                        wire:key="grupo-excel-{{ $grupo['uid'] ?? $grupoIndex }}">
+                                        <div
+                                            class="bg-success text-white px-3 py-2 d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="fw-bold">
+                                                    {{ $grupo['nombre_equipo'] ?? 'Equipo importado' }}
+                                                </div>
+
+                                                <div class="small">
+                                                    {{ $grupo['descripcion_tecnica'] ?? '' }}
+                                                </div>
+                                            </div>
+
+                                            <div class="text-end">
+                                                <div class="small">Subtotal</div>
+                                                <div class="fw-bold">
+                                                    {{ $this->simboloMoneda() }}{{ number_format((float) ($grupo['subtotal'] ?? 0), 2) }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered align-middle mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th style="width: 4%;">#</th>
+                                                        <th style="width: 24%;">Nombre</th>
+                                                        <th>Descripción</th>
+                                                        <th style="width: 9%;" class="text-end">Cantidad</th>
+                                                        <th style="width: 13%;" class="text-end">Precio Unit.</th>
+                                                        <th style="width: 13%;" class="text-end">Total</th>
+                                                        <th style="width: 6%;" class="text-center">Acción</th>
+                                                    </tr>
+                                                </thead>
+
+                                                <tbody>
+                                                    @forelse (($grupo['items'] ?? []) as $itemIndex => $item)
+                                                        <tr
+                                                            wire:key="grupo-excel-{{ $grupoIndex }}-item-{{ $item['uid'] ?? $itemIndex }}">
+                                                            <td class="text-center">
+                                                                {{ $loop->iteration }}
+                                                            </td>
+
+                                                            <td>
+                                                                <input type="text"
+                                                                    class="form-control form-control-sm"
+                                                                    wire:model.defer="gruposExcel.{{ $grupoIndex }}.items.{{ $itemIndex }}.nombre">
+                                                            </td>
+
+                                                            <td>
+                                                                <textarea class="form-control form-control-sm" rows="2"
+                                                                    wire:model.defer="gruposExcel.{{ $grupoIndex }}.items.{{ $itemIndex }}.descripcion"></textarea>
+                                                            </td>
+
+                                                            <td>
+                                                                <input type="number" step="0.01" min="0"
+                                                                    class="form-control form-control-sm text-end"
+                                                                    wire:model.defer="gruposExcel.{{ $grupoIndex }}.items.{{ $itemIndex }}.cantidad"
+                                                                    wire:change="recalcularItemExcel({{ $grupoIndex }}, {{ $itemIndex }})">
+                                                            </td>
+
+                                                            <td>
+                                                                <div class="input-group input-group-sm">
+                                                                    <span class="input-group-text">
+                                                                        {{ $this->simboloMoneda() }}
+                                                                    </span>
+
+                                                                    <input type="number" step="0.01"
+                                                                        class="form-control form-control-sm text-end"
+                                                                        wire:model.defer="gruposExcel.{{ $grupoIndex }}.items.{{ $itemIndex }}.precio_unitario"
+                                                                        wire:change="recalcularItemExcel({{ $grupoIndex }}, {{ $itemIndex }})">
+                                                                </div>
+                                                            </td>
+
+                                                            <td class="text-end fw-bold">
+                                                                {{ $this->simboloMoneda() }}{{ number_format((float) ($item['precio_total'] ?? 0), 2) }}
+                                                            </td>
+
+                                                            <td class="text-center">
+                                                                <button type="button"
+                                                                    class="btn btn-sm btn-outline-danger"
+                                                                    wire:click="eliminarItemExcel({{ $grupoIndex }}, {{ $itemIndex }})"
+                                                                    title="Eliminar item">
+                                                                    <i class="far fa-trash-alt"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    @empty
+                                                        <tr>
+                                                            <td colspan="7" class="text-center text-muted py-3">
+                                                                Este motor no tiene items.
+                                                            </td>
+                                                        </tr>
+                                                    @endforelse
+                                                </tbody>
+
+                                                <tfoot>
+                                                    <tr class="table-light">
+                                                        <td colspan="5" class="text-end fw-bold">
+                                                            Subtotal {{ $grupo['nombre_equipo'] ?? 'equipo' }}
+                                                        </td>
+
+                                                        <td class="text-end fw-bold">
+                                                            {{ $this->simboloMoneda() }}{{ number_format((float) ($grupo['subtotal'] ?? 0), 2) }}
+                                                        </td>
+
+                                                        <td></td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+
+                                        <div class="p-2 bg-light text-end">
+                                            <button type="button" class="btn btn-sm btn-outline-success"
+                                                wire:click="agregarItemExcel({{ $grupoIndex }})">
+                                                <i class="fas fa-plus me-1"></i>
+                                                Agregar item a {{ $grupo['nombre_equipo'] ?? 'equipo' }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <table class="table table-hover table-striped overflow-hidden mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th style="width: 55%;">Producto</th>
+                                        <th class="text-center" style="width: 12%;">Cantidad</th>
+                                        <th class="text-end" style="width: 15%;">Precio Unitario</th>
+                                        <th class="text-end" style="width: 18%;">Precio Total</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="itemsCotizacionSortable">
+                                    @foreach ($itemsCotizacion as $index => $item)
+                                        <tr wire:key="item-cotizacion-{{ $item['uid'] ?? 'sin-uid-' . $index }}"
+                                            data-uid="{{ $item['uid'] ?? $index }}">
+                                            <td>
+                                                <div class="d-flex align-items-start mb-2">
+                                                    {{-- HANDLE PARA ARRASTRAR --}}
+                                                    <span class="btn btn-link text-600 p-1 me-2 drag-handle"
+                                                        title="Arrastrar para ordenar">
+                                                        <i class="fas fa-grip-vertical"></i>
+                                                    </span>
+
+                                                    {{-- NOMBRE DEL ITEM --}}
+                                                    <input type="text" class="form-control fw-bold"
+                                                        wire:model.defer="itemsCotizacion.{{ $index }}.nombre">
+
+                                                    {{-- ELIMINAR ITEM --}}
+                                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                                        title="Eliminar item"
+                                                        wire:click="confirmarEliminarItemCotizacion('{{ $item['uid'] }}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+
+                                                {{-- DESCRIPCIÓN --}}
+                                                <textarea class="form-control" rows="3" wire:model.defer="itemsCotizacion.{{ $index }}.descripcion"></textarea>
+                                            </td>
+
+                                            <td class="align-top">
+                                                <input type="number" step="1" min="0"
+                                                    class="form-control text-center"
+                                                    wire:model.debounce.500ms="itemsCotizacion.{{ $index }}.cantidad">
+                                            </td>
+
+                                            <td class="align-top">
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text">
+                                                        {{ $this->simboloMoneda() }}
+                                                    </span>
+
+                                                    <input type="number" step="0.01"
+                                                        class="form-control text-end"
+                                                        wire:model.debounce.500ms="itemsCotizacion.{{ $index }}.precio_unitario"
+                                                        {{ ($item['tipo_item'] ?? null) === 'descuento' ? 'readonly' : '' }}>
+                                                </div>
+
+                                                @if ($this->mostrarConversionUsd())
+                                                    <div class="text-muted text-end mt-1"
+                                                        style="font-size: 9px; line-height: 1;">
+                                                        USD
+                                                        ${{ number_format($this->convertirAUsd($item['precio_unitario'] ?? 0), 2) }}
+                                                    </div>
+                                                @endif
+                                            </td>
+
+                                            <td
+                                                class="align-top text-end fw-semibold {{ ($item['tipo_item'] ?? null) === 'descuento' ? 'text-danger' : '' }}">
+                                                @if (($item['tipo_item'] ?? null) === 'descuento')
+                                                    -{{ $this->simboloMoneda() }}{{ number_format(abs($item['precio_total'] ?? 0), 2) }}
+                                                @else
+                                                    {{ $this->simboloMoneda() }}{{ number_format($item['precio_total'] ?? 0, 2) }}
+                                                @endif
+
+                                                @if ($this->mostrarConversionUsd())
+                                                    <div class="text-muted mt-1"
+                                                        style="font-size: 9px; line-height: 1;">
+                                                        USD
+                                                        ${{ number_format(abs($this->convertirAUsd($item['precio_total'] ?? 0)), 2) }}
+                                                    </div>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+
+                                <tbody>
+                                    {{-- FILA AGREGAR ITEM --}}
+                                    <tr>
+                                        <td colspan="4">
+                                            @livewire('cotizaciones.search-item-cotizacion', key('search-item-cotizacion'))
+                                        </td>
+                                    </tr>
+                                </tbody>
+
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">
+                                            Total
+                                        </td>
+
+                                        <td class="text-end fw-bold">
+                                            {{ $this->simboloMoneda() }}{{ number_format($subtotalItems, 2) }}
+
+                                            @if ($this->mostrarConversionUsd())
+                                                <div class="text-muted mt-1" style="font-size: 10px; line-height: 1;">
+                                                    USD ${{ number_format($this->convertirAUsd($subtotalItems), 2) }}
+                                                </div>
+                                            @endif
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="2"></td>
+
+                                        <td colspan="2">
+                                            <div class="row justify-content-end">
+                                                <div class="col-xl-8 col-lg-10 col-md-12">
+                                                    <label class="form-label small mb-1">
+                                                        Moneda
+                                                    </label>
+
+                                                    <select class="form-select form-select-sm"
+                                                        wire:model="monedaCotizacion">
+                                                        <option value="GTQ">Q. Quetzales</option>
+                                                        <option value="USD">USD $ Dólares</option>
+                                                        <option value="GTQ_USD">Manejar Quetzales y Convertir a Dólares
+                                                        </option>
+                                                    </select>
+
+                                                    @if ($monedaCotizacion === 'GTQ_USD')
+                                                        <div class="mt-2">
+                                                            <label class="form-label small mb-1">
+                                                                Tipo de cambio Q x 1 USD
+                                                            </label>
+
+                                                            <div class="input-group input-group-sm">
+                                                                <span class="input-group-text">Q</span>
+
+                                                                <input type="number" step="0.0001" min="0"
+                                                                    class="form-control text-end"
+                                                                    wire:model.lazy="tipoCambio">
+
+                                                                <span class="input-group-text">x 1 USD</span>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        @endif
+
+                    </div>
                 </div>
-            </div>
+            @endif
         </div>
     @endif
     @if ($modoUnificacion)
@@ -1868,8 +2044,8 @@
                             <div class="mb-3">
                                 <label class="form-label">Designación generada</label>
 
-                                <input type="text" class="form-control fw-bold" wire:model="rodamientoDesignacion"
-                                    readonly>
+                                <input type="text" class="form-control fw-bold"
+                                    wire:model="rodamientoDesignacion" readonly>
                             </div>
 
                             <div class="row">
@@ -1906,8 +2082,8 @@
                                         <h2 class="accordion-header" id="headingReferenciasRodamiento">
                                             <button class="accordion-button collapsed" type="button"
                                                 data-bs-toggle="collapse"
-                                                data-bs-target="#collapseReferenciasRodamiento" aria-expanded="false"
-                                                aria-controls="collapseReferenciasRodamiento">
+                                                data-bs-target="#collapseReferenciasRodamiento"
+                                                aria-expanded="false" aria-controls="collapseReferenciasRodamiento">
                                                 Referencias de precios similares
                                             </button>
                                         </h2>

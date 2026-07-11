@@ -281,13 +281,6 @@
                 });
             });
 
-            window.addEventListener('swal-error', function(event) {
-                Swal.fire({
-                    title: event.detail.title || 'Error',
-                    text: event.detail.text || 'No se pudo completar la acción.',
-                    icon: 'error'
-                });
-            });
 
             document.addEventListener('paste', function(event) {
                 var modalEl = document.getElementById('adminInfoModal');

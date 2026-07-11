@@ -29,6 +29,7 @@ use App\Models\CotizacionPdfAdjunto;
 use App\Models\MotorAdminStatus;
 use Illuminate\Validation\ValidationException;
 use App\Models\MotorAdminStatusDocument;
+use App\Models\CotizacionExcelGrupo;
 
 
 
@@ -234,6 +235,10 @@ class NuevaCotizacion extends Component
     public $procesandoPdfsAdjuntos = false;
     public $guardandoCotizacion = false;
 
+    public $modoExcel = false;
+    public $gruposExcel = [];
+    public $totalExcel = 0;
+
 
     protected $listeners = [
         'osCotizacionSeleccionada' => 'seleccionarOsCotizacion',
@@ -250,6 +255,14 @@ class NuevaCotizacion extends Component
      */
         if (request()->routeIs('admin.cotizaciones.unificar')) {
             $this->inicializarModoUnificacion(request()->query('ids'));
+            return;
+        }
+
+        /*
+        * MODO COTIZACIÓN DESDE EXCEL
+            */
+        if (request()->routeIs('admin.cotizaciones.excel')) {
+            $this->inicializarModoExcel();
             return;
         }
 
@@ -1944,6 +1957,17 @@ class NuevaCotizacion extends Component
                 'gruposUnificados.*.items.*.cantidad' => 'required|numeric|min:0.01',
                 'gruposUnificados.*.items.*.precio_unitario' => 'required|numeric',
             ]);
+        } elseif ($this->modoExcel) {
+            $this->recalcularTotalExcel();
+
+            $rules = array_merge($rules, [
+                'gruposExcel' => 'required|array|min:1',
+                'gruposExcel.*.items' => 'required|array|min:1',
+                'gruposExcel.*.items.*.nombre' => 'required|string|max:255',
+                'gruposExcel.*.items.*.descripcion' => 'nullable|string',
+                'gruposExcel.*.items.*.cantidad' => 'required|numeric|min:0.01',
+                'gruposExcel.*.items.*.precio_unitario' => 'required|numeric',
+            ]);
         } else {
             $rules = array_merge($rules, [
                 'itemsCotizacion' => 'required|array|min:1',
@@ -1975,6 +1999,11 @@ class NuevaCotizacion extends Component
                 'gruposUnificados.*.items.required' => 'Cada grupo debe tener al menos un item.',
                 'gruposUnificados.*.items.min' => 'Cada grupo debe tener al menos un item.',
                 'gruposUnificados.*.items.*.nombre.required' => 'Todos los items deben tener nombre.',
+                'gruposExcel.required' => 'Debe existir al menos un grupo importado desde Excel.',
+                'gruposExcel.min' => 'Debe existir al menos un grupo importado desde Excel.',
+                'gruposExcel.*.items.required' => 'Cada motor importado debe tener al menos un item.',
+                'gruposExcel.*.items.min' => 'Cada motor importado debe tener al menos un item.',
+                'gruposExcel.*.items.*.nombre.required' => 'Todos los items importados deben tener nombre.',
             ]);
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->errors());
@@ -2056,6 +2085,9 @@ class NuevaCotizacion extends Component
 
             if ($this->modoUnificacion) {
                 return $this->guardarCotizacionUnificada($generarPdf);
+            }
+            if ($this->modoExcel) {
+                return $this->guardarCotizacionExcel($generarPdf);
             }
 
             if ($this->modoEdicion && !$this->hayCambiosEnCotizacion()) {
@@ -4193,10 +4225,35 @@ class NuevaCotizacion extends Component
 
 
         /*
+ * Si esta cotización fue creada desde Excel,
+ * debe cargarse agrupada por motor, no como tabla normal.
+ */
+        if ((string) $cotizacion->tipo_cotizacion === 'excel') {
+            $this->modoExcel = true;
+            $this->modoUnificacion = false;
+            $this->modoAdicional = false;
+            $this->modoDuplicado = false;
+
+            $this->itemsCotizacion = [];
+
+            $this->cargarGruposExcelParaEditar($cotizacion);
+
+            $this->recalcularTotalExcel();
+
+            $this->subtotalItems = $this->totalExcel;
+
+            $this->cotizacionOriginalHash = $this->generarHashEstadoCotizacion();
+
+            return;
+        }
+
+        /*
 
         // adicionales
         
     
+                
+
      * Items snapshot.
      */
         $this->itemsCotizacion = $cotizacion->itemsCotizacion
@@ -5968,5 +6025,399 @@ class NuevaCotizacion extends Component
                 'pdfsAdjuntosEliminarIds' => $this->pdfsAdjuntosEliminarIds,
             ],
         ]);
+    }
+
+    /* excel */
+    private function inicializarModoExcel()
+    {
+        $payload = session('cotizacion_excel_payload');
+
+        if (!$payload || empty($payload['grupos'])) {
+            session()->flash('error', 'No hay datos de Excel cargados para crear la cotización.');
+            redirect()->route('admin.cotizaciones.index')->send();
+            return;
+        }
+
+        $this->modoExcel = true;
+        $this->modoUnificacion = false;
+        $this->modoAdicional = false;
+        $this->modoDuplicado = false;
+        $this->modoEdicion = false;
+
+        $this->cotizacionEditandoId = null;
+        $this->cotizacionGuardadaId = null;
+
+        $this->cotDate = Carbon::now()->format('d-m-Y');
+        $this->cotValid = Carbon::now()->addDays(30)->format('d-m-Y');
+
+        $this->generarNumeroCotizacionInicial();
+
+        $this->tituloCotizacion = 'Oferta Presupuestaria';
+        $this->subtituloCotizacion = 'Cotización de varios equipos';
+
+        $this->motor_id = null;
+        $this->equipoNoIngresadoTaller = true;
+        $this->osSeleccionadaLabel = 'Cotización generada desde Excel';
+        $this->motorPreview = null;
+        $this->usarDatosEquipo = false;
+        $this->resumenEquipo = '';
+
+        $this->fotoPortadaCotizacion = null;
+        $this->fotoPortadaActual = null;
+        $this->pdfUsarPortada = false;
+
+        $this->gruposExcel = $payload['grupos'];
+        $this->totalExcel = (float) ($payload['total'] ?? 0);
+
+        $this->itemsCotizacion = [];
+        $this->subtotalItems = $this->totalExcel;
+    }
+    public function recalcularItemExcel($grupoIndex, $itemIndex)
+    {
+        if (! isset($this->gruposExcel[$grupoIndex]['items'][$itemIndex])) {
+            return;
+        }
+
+        $cantidad = (float) ($this->gruposExcel[$grupoIndex]['items'][$itemIndex]['cantidad'] ?? 0);
+        $precioUnitario = (float) ($this->gruposExcel[$grupoIndex]['items'][$itemIndex]['precio_unitario'] ?? 0);
+
+        $this->gruposExcel[$grupoIndex]['items'][$itemIndex]['precio_total'] = round($cantidad * $precioUnitario, 2);
+
+        $this->recalcularSubtotalGrupoExcel($grupoIndex);
+        $this->recalcularTotalExcel();
+    }
+
+    private function recalcularSubtotalGrupoExcel($grupoIndex)
+    {
+        if (! isset($this->gruposExcel[$grupoIndex])) {
+            return;
+        }
+
+        $this->gruposExcel[$grupoIndex]['subtotal'] = collect($this->gruposExcel[$grupoIndex]['items'] ?? [])
+            ->sum(function ($item) {
+                return (float) ($item['precio_total'] ?? 0);
+            });
+    }
+
+    public function recalcularTotalExcel()
+    {
+        foreach ($this->gruposExcel as $grupoIndex => $grupo) {
+            $this->recalcularSubtotalGrupoExcel($grupoIndex);
+        }
+
+        $this->totalExcel = collect($this->gruposExcel)
+            ->sum(function ($grupo) {
+                return (float) ($grupo['subtotal'] ?? 0);
+            });
+
+        $this->subtotalItems = round($this->totalExcel, 2);
+    }
+
+    public function agregarItemExcel($grupoIndex)
+    {
+        if (! isset($this->gruposExcel[$grupoIndex])) {
+            return;
+        }
+
+        $this->gruposExcel[$grupoIndex]['items'][] = [
+            'uid' => uniqid('item_excel_', true),
+            'catalogo_item_id' => null,
+            'tipo_item' => 'general',
+            'nombre' => 'Nuevo ítem',
+            'descripcion' => '',
+            'cantidad' => 1,
+            'precio_unitario' => 0,
+            'precio_total' => 0,
+            'descuento_porcentaje' => null,
+            'descuento_alcance' => null,
+            'descuento_item_principal_uid' => null,
+            'orden' => count($this->gruposExcel[$grupoIndex]['items'] ?? []) + 1,
+        ];
+
+        $this->recalcularSubtotalGrupoExcel($grupoIndex);
+        $this->recalcularTotalExcel();
+    }
+
+    public function eliminarItemExcel($grupoIndex, $itemIndex)
+    {
+        if (! isset($this->gruposExcel[$grupoIndex]['items'][$itemIndex])) {
+            return;
+        }
+
+        unset($this->gruposExcel[$grupoIndex]['items'][$itemIndex]);
+
+        $this->gruposExcel[$grupoIndex]['items'] = array_values($this->gruposExcel[$grupoIndex]['items']);
+
+        foreach ($this->gruposExcel[$grupoIndex]['items'] as $index => &$item) {
+            $item['orden'] = $index + 1;
+        }
+
+        $this->recalcularSubtotalGrupoExcel($grupoIndex);
+        $this->recalcularTotalExcel();
+    }
+    private function guardarCotizacionExcel($generarPdf = false)
+    {
+        $this->recalcularTotalExcel();
+
+        $cotizacion = DB::transaction(function () {
+            $numeroData = $this->prepararNumeroCotizacionParaGuardar();
+
+            $fechaCotizacion = Carbon::createFromFormat('d-m-Y', $this->cotDate)->format('Y-m-d');
+            $fechaValidaHasta = Carbon::createFromFormat('d-m-Y', $this->cotValid)->format('Y-m-d');
+
+            $fotoPortadaPath = $this->fotoPortadaActual;
+
+            if ($this->fotoPortadaCotizacion) {
+                $fotoPortadaPath = $this->fotoPortadaCotizacion->store('cotizaciones/portadas', 'public');
+            }
+
+            $cotizacion = Cotizacion::create([
+                'numero' => $numeroData['numero'],
+                'titulo' => $this->tituloCotizacion,
+                'subtitulo' => $this->subtituloCotizacion,
+
+                'cot_year' => $numeroData['year'],
+                'correlativo' => $numeroData['correlativo'],
+                'letra' => $numeroData['letra'],
+                'version' => $numeroData['version'],
+
+                'id_cliente' => $this->cliente_id,
+                'id_motor' => null,
+                'equipo_no_ingresado_taller' => 1,
+
+                'fecha_cotizacion' => $fechaCotizacion,
+                'fecha_valida_hasta' => $fechaValidaHasta,
+
+                'presentacion_id' => $this->presentacion_id,
+                'texto_presentacion' => $this->textoPresentacion,
+
+                'usar_datos_equipo' => 0,
+                'resumen_equipo' => null,
+
+                'moneda' => $this->monedaCotizacion,
+                'tipo_cambio' => $this->monedaCotizacion === 'GTQ_USD'
+                    ? $this->tipoCambio
+                    : null,
+
+                'subtotal' => $this->totalExcel,
+                'descuento' => 0,
+                'total' => $this->totalExcel,
+
+                'estado' => 'borrador',
+                'no_incluye' => $this->noIncluyeItems,
+
+                'tiempo_entrega' => $this->tiempoEntrega,
+                'tiempo_entrega_otro' => $this->tiempoEntrega === 'otro'
+                    ? $this->tiempoEntregaOtro
+                    : null,
+
+                'garantia_modo' => $this->garantiaModo,
+                'garantia_general_activa' => $this->garantiaGeneralActiva ? 1 : 0,
+                'garantia_general_tiempo' => $this->garantiaGeneralTiempo,
+                'garantia_electrica_tiempo' => $this->garantiaElectricaTiempo,
+                'garantia_mecanica_tiempo' => $this->garantiaMecanicaTiempo,
+                'incluir_terminos_garantias' => $this->incluirTerminosGarantias ? 1 : 0,
+
+                'terminos_pago' => $this->terminosPago,
+                'cliente_debe_proveer_oc' => $this->clienteDebeProveerOc ? 1 : 0,
+
+                'notas_adicionales' => $this->notasAdicionales,
+                'foto_portada' => $fotoPortadaPath,
+
+                'tipo_cotizacion' => 'excel',
+                'es_unificada' => 0,
+
+                'creado_por' => auth()->id(),
+            ]);
+
+            $this->guardarContactosCotizacionSnapshot($cotizacion);
+
+            foreach ($this->gruposExcel as $grupoIndex => $grupo) {
+                $grupoDb = CotizacionExcelGrupo::create([
+                    'cotizacion_id' => $cotizacion->id,
+                    'nombre_equipo' => $grupo['nombre_equipo'] ?? ('Equipo ' . ($grupoIndex + 1)),
+                    'datos_tecnicos_json' => $grupo['datos_tecnicos'] ?? [],
+                    'subtotal' => (float) ($grupo['subtotal'] ?? 0),
+                    'orden' => $grupoIndex + 1,
+                ]);
+
+                foreach (($grupo['items'] ?? []) as $itemIndex => $item) {
+                    CotizacionItem::create([
+                        'cotizacion_id' => $cotizacion->id,
+                        'cotizacion_excel_grupo_id' => $grupoDb->id,
+
+                        'catalogo_item_id' => $item['catalogo_item_id'] ?? null,
+                        'tipo_item' => $item['tipo_item'] ?? 'general',
+
+                        'nombre' => $item['nombre'],
+                        'descripcion' => $item['descripcion'] ?? null,
+                        'cantidad' => (float) ($item['cantidad'] ?? 1),
+                        'precio_unitario' => (float) ($item['precio_unitario'] ?? 0),
+                        'precio_total' => (float) ($item['precio_total'] ?? 0),
+
+                        'descuento_porcentaje' => $item['descuento_porcentaje'] ?? null,
+                        'descuento_alcance' => $item['descuento_alcance'] ?? null,
+                        'descuento_item_principal_uid' => $item['descuento_item_principal_uid'] ?? null,
+
+                        'orden' => $itemIndex + 1,
+                    ]);
+                }
+            }
+
+            $this->guardarPdfsAdjuntosCotizacion($cotizacion);
+
+            return $cotizacion;
+        });
+
+        $this->cotizacionGuardadaId = $cotizacion->id;
+
+        session()->forget('cotizacion_excel_payload');
+
+        session()->flash('success', 'Cotización desde Excel guardada correctamente.');
+
+        if ($generarPdf) {
+            $urlPdf = route('admin.cotizaciones.downloadPdf', [
+                'cotizacion' => $cotizacion->id,
+                'portada' => $this->pdfUsarPortada ? 1 : 0,
+            ]);
+
+            $this->dispatchBrowserEvent('cotizacion-pdf-listo', [
+                'url' => $urlPdf,
+            ]);
+
+            return;
+        }
+
+        return redirect()->route('admin.cotizaciones.index');
+    }
+    private function cargarGruposExcelParaEditar(Cotizacion $cotizacion): void
+    {
+        $grupos = CotizacionExcelGrupo::with('items')
+            ->where('cotizacion_id', $cotizacion->id)
+            ->orderBy('orden')
+            ->get();
+
+        $this->gruposExcel = $grupos
+            ->map(function ($grupo) {
+                $datosTecnicos = $grupo->datos_tecnicos_json;
+
+                if (is_string($datosTecnicos)) {
+                    $datosTecnicos = json_decode($datosTecnicos, true) ?: [];
+                }
+
+                if (! is_array($datosTecnicos)) {
+                    $datosTecnicos = [];
+                }
+
+                $items = $grupo->items
+                    ->map(function ($item) {
+                        $precioTotal = (float) $item->precio_total;
+
+                        $tipoItem = $item->getAttribute('tipo_item');
+
+                        if (! $tipoItem) {
+                            $tipoItem = $precioTotal < 0 ? 'descuento' : 'general';
+                        }
+
+                        return [
+                            'uid' => 'db-item-excel-' . $item->id,
+                            'id' => $item->id,
+                            'catalogo_item_id' => $item->catalogo_item_id,
+                            'tipo_item' => $tipoItem,
+
+                            'nombre' => $item->nombre,
+                            'descripcion' => $item->descripcion,
+
+                            'cantidad' => (float) $item->cantidad,
+                            'precio_unitario' => (float) $item->precio_unitario,
+                            'precio_total' => $precioTotal,
+
+                            'descuento_porcentaje' => $item->getAttribute('descuento_porcentaje'),
+                            'descuento_alcance' => $item->getAttribute('descuento_alcance'),
+                            'descuento_item_principal_uid' => $item->getAttribute('descuento_item_principal_uid'),
+
+                            'orden' => $item->orden,
+                        ];
+                    })
+                    ->values()
+                    ->toArray();
+
+                return [
+                    'uid' => 'db-grupo-excel-' . $grupo->id,
+                    'id' => $grupo->id,
+                    'nombre_equipo' => $grupo->nombre_equipo,
+                    'datos_tecnicos' => $datosTecnicos,
+                    'descripcion_tecnica' => $this->descripcionTecnicaGrupoExcel(
+                        $datosTecnicos,
+                        $grupo->nombre_equipo
+                    ),
+                    'items' => $items,
+                    'subtotal' => (float) $grupo->subtotal,
+                ];
+            })
+            ->values()
+            ->toArray();
+    }
+    private function descripcionTecnicaGrupoExcel(array $datos, $nombreFallback = null): string
+    {
+        $partes = [];
+
+        $nombreEquipo = $datos['nombre_equipo'] ?? $nombreFallback;
+
+        if (filled($nombreEquipo)) {
+            $partes[] = '"' . trim($nombreEquipo) . '"';
+        }
+
+        if (filled($datos['hp'] ?? null)) {
+            $partes[] = $this->valorConUnidadGrupoExcel($datos['hp'], 'HP', false);
+        }
+
+        if (filled($datos['rpm'] ?? null)) {
+            $partes[] = $this->valorConUnidadGrupoExcel($datos['rpm'], 'RPM');
+        }
+
+        if (filled($datos['voltaje'] ?? null)) {
+            $partes[] = $this->valorConUnidadGrupoExcel($datos['voltaje'], 'V');
+        }
+
+        if (filled($datos['amperaje'] ?? null)) {
+            $partes[] = $this->valorConUnidadGrupoExcel($datos['amperaje'], 'A');
+        }
+
+        if (filled($datos['serie'] ?? null)) {
+            $partes[] = 'Serie: ' . trim($datos['serie']);
+        }
+
+        if (filled($datos['modelo'] ?? null)) {
+            $partes[] = 'Modelo: ' . trim($datos['modelo']);
+        }
+
+        if (filled($datos['frame'] ?? null)) {
+            $partes[] = 'Frame ' . trim($datos['frame']);
+        }
+
+        if (filled($datos['hz'] ?? null)) {
+            $partes[] = $this->valorConUnidadGrupoExcel($datos['hz'], 'Hz');
+        }
+
+        if (empty($partes)) {
+            return 'Motor';
+        }
+
+        return 'Motor ' . implode(', ', $partes);
+    }
+    private function valorConUnidadGrupoExcel($valor, string $unidad, bool $espacio = true): string
+    {
+        $valor = trim((string) $valor);
+
+        if ($valor === '') {
+            return '';
+        }
+
+        if (preg_match('/[a-zA-Z%]/', $valor)) {
+            return $valor;
+        }
+
+        return $valor . ($espacio ? ' ' : '') . $unidad;
     }
 }

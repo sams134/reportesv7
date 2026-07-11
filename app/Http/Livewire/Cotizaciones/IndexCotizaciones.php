@@ -20,6 +20,13 @@ use App\Models\CotizacionContacto;
 use App\Models\CotizacionPdfAdjunto;
 use App\Models\CotizacionUnificadaDetalle;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Illuminate\Support\Facades\File;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
 
 
 class IndexCotizaciones extends Component
@@ -71,7 +78,10 @@ class IndexCotizaciones extends Component
     public $infoDocumentos = [];
     public $cotizacion_estado;
 
+    public $excelCotizacionUpload;
+
     public $adminDocumentosResumen = [];
+
 
 
     protected $paginationTheme = 'bootstrap';
@@ -805,6 +815,733 @@ class IndexCotizaciones extends Component
             'cotizacion_id' => null,
             'cotizacion_fecha' => null,
             'updated_by' => auth()->id(),
+        ]);
+    }
+
+    // Excel-related methods can be added here
+
+    public function abrirModalCotizacionExcel()
+    {
+        $this->resetValidation();
+        $this->excelCotizacionUpload = null;
+
+        $this->dispatchBrowserEvent('abrir-modal-cotizacion-excel');
+    }
+    public function descargarPlantillaCotizacionExcel()
+    {
+        $spreadsheet = new Spreadsheet();
+
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Plantilla');
+
+        $headers = [
+            'Nombre Equipo',
+            'HP',
+            'RPM',
+            'Voltaje',
+            'Amperaje',
+            'Serie',
+            'Modelo',
+            'Frame',
+            'HZ',
+            'Mantenimiento',
+            'Rebobinado',
+            'Inverter duty',
+            'Rodamiento LC',
+            'Precio Rodamiento LC',
+            'Rodamiento LO',
+            'Precio Rodamiento LO',
+            'Balanceo',
+            'Pruebas',
+            'Transporte',
+            'Pintura',
+        ];
+
+        foreach ($headers as $index => $header) {
+            $column = $this->excelColumnName($index + 1);
+
+            $sheet->setCellValue($column . '1', $header);
+
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        /*
+     * Fila ejemplo.
+     */
+        $ejemplo = [
+            'Bomba 1 Achique',
+            '150',
+            '3545',
+            '460',
+            '184',
+            '12333',
+            'ABF444',
+            '444T',
+            '60',
+            '4500',
+            '',
+            '',
+            '6320',
+            '1800',
+            '6318',
+            '1600',
+            '1200',
+            '600',
+            '500',
+            '350',
+        ];
+
+        foreach ($ejemplo as $index => $value) {
+            $column = $this->excelColumnName($index + 1);
+            $sheet->setCellValue($column . '2', $value);
+        }
+
+        /*
+     * Estilo encabezado.
+     */
+        $lastColumn = $this->excelColumnName(count($headers));
+
+        $sheet->getStyle('A1:' . $lastColumn . '1')->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '1F4E78'],
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+                'wrapText' => true,
+            ],
+        ]);
+
+        $sheet->freezePane('A2');
+
+        /*
+     * Hoja de instrucciones.
+     */
+        $instructions = $spreadsheet->createSheet();
+        $instructions->setTitle('Instrucciones');
+
+        $instructions->setCellValue('A1', 'Instrucciones para llenar la plantilla');
+        $instructions->setCellValue('A3', '1. Cada fila representa un motor/equipo.');
+        $instructions->setCellValue('A4', '2. Debe venir Mantenimiento o Rebobinado. No pueden venir ambos llenos.');
+        $instructions->setCellValue('A5', '3. Si Inverter duty = 1, el rebobinado usará descripción Inverter Duty.');
+        $instructions->setCellValue('A6', '4. Si Rodamiento LC o LO viene lleno, su precio correspondiente es obligatorio.');
+        $instructions->setCellValue('A7', '5. Si solo viene precio de rodamiento sin número, se tomará como precio aproximado.');
+        $instructions->setCellValue('A8', '6. Las celdas vacías no crean items.');
+        $instructions->setCellValue('A9', '7. Los campos técnicos vacíos se omiten de la descripción.');
+
+        $instructions->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $instructions->getColumnDimension('A')->setWidth(120);
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $tmpDir = storage_path('app/tmp/cotizaciones');
+
+        if (! File::exists($tmpDir)) {
+            File::makeDirectory($tmpDir, 0755, true);
+        }
+
+        $fileName = 'plantilla_cotizacion_excel.xlsx';
+        $filePath = $tmpDir . '/' . $fileName;
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filePath);
+
+        return response()
+            ->download($filePath, $fileName)
+            ->deleteFileAfterSend(true);
+    }
+    private function excelColumnName($number)
+    {
+        $column = '';
+
+        while ($number > 0) {
+            $modulo = ($number - 1) % 26;
+            $column = chr(65 + $modulo) . $column;
+            $number = (int) (($number - $modulo) / 26);
+        }
+
+        return $column;
+    }
+    public function procesarCotizacionExcel()
+    {
+        $this->validate([
+            'excelCotizacionUpload' => 'required|file|mimes:xlsx,xls|max:10240',
+        ], [
+            'excelCotizacionUpload.required' => 'Debe seleccionar un archivo Excel.',
+            'excelCotizacionUpload.mimes' => 'El archivo debe ser .xlsx o .xls.',
+            'excelCotizacionUpload.max' => 'El archivo no debe superar 10 MB.',
+        ]);
+
+        $path = null;
+        $fullPath = null;
+
+        try {
+            $path = $this->excelCotizacionUpload->store('tmp/cotizaciones/excel');
+            $fullPath = storage_path('app/' . $path);
+
+            $payload = $this->leerCotizacionDesdeExcel($fullPath);
+
+            if (!empty($payload['errores'])) {
+                $erroresTexto = collect($payload['errores'])
+                    ->map(function ($error) {
+                        return '- ' . $error;
+                    })
+                    ->implode("\n");
+
+                $erroresHtml = collect($payload['errores'])
+                    ->map(function ($error) {
+                        return '<li>' . e($error) . '</li>';
+                    })
+                    ->implode('');
+
+                $this->dispatchBrowserEvent('swal-error', [
+                    'title' => 'Errores en el Excel',
+
+                    // Para listener nuevo
+                    'html' => '<div class="text-start">'
+                        . '<p>Corrija los siguientes errores y vuelva a subir el archivo:</p>'
+                        . '<ul class="mb-0">' . $erroresHtml . '</ul>'
+                        . '</div>',
+
+                    // Para cualquier listener viejo que todavía lea text
+                    'text' => "Corrija los siguientes errores:\n\n" . $erroresTexto,
+                ]);
+
+                return;
+            }
+
+            session([
+                'cotizacion_excel_payload' => [
+                    'grupos' => $payload['grupos'],
+                    'total' => $payload['total'],
+                    'created_at' => now()->toDateTimeString(),
+                ],
+            ]);
+
+            return redirect()->route('admin.cotizaciones.excel');
+        } catch (\Throwable $e) {
+            report($e);
+
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'No se pudo cargar el Excel',
+                'html' => '<div class="text-start">'
+                    . '<p>Ocurrió un error técnico al leer el archivo.</p>'
+                    . '<p class="mb-0"><strong>Detalle:</strong> ' . e($e->getMessage()) . '</p>'
+                    . '</div>',
+            ]);
+
+            return;
+        } finally {
+            if ($fullPath && file_exists($fullPath)) {
+                @unlink($fullPath);
+            }
+
+            $this->excelCotizacionUpload = null;
+        }
+    }
+    private function leerCotizacionDesdeExcel($fullPath): array
+    {
+        $spreadsheet = IOFactory::load($fullPath);
+        $sheet = $spreadsheet->getSheetByName('Plantilla') ?: $spreadsheet->getActiveSheet();
+
+        $rows = $sheet->toArray(null, true, true, true);
+
+        if (count($rows) < 2) {
+            return [
+                'errores' => ['El Excel no contiene filas de datos.'],
+                'grupos' => [],
+                'total' => 0,
+            ];
+        }
+
+        $headersEsperados = $this->headersCotizacionExcel();
+
+        $headerRow = $rows[1] ?? [];
+        $columnas = [];
+
+        foreach ($headerRow as $column => $header) {
+            $normalizado = $this->normalizarHeaderExcel($header);
+
+            if ($normalizado !== '') {
+                $columnas[$normalizado] = $column;
+            }
+        }
+
+        $errores = [];
+
+        foreach ($headersEsperados as $headerEsperado) {
+            $normalizado = $this->normalizarHeaderExcel($headerEsperado);
+
+            if (!isset($columnas[$normalizado])) {
+                $errores[] = 'Falta la columna obligatoria: ' . $headerEsperado;
+            }
+        }
+
+        if (!empty($errores)) {
+            return [
+                'errores' => $errores,
+                'grupos' => [],
+                'total' => 0,
+            ];
+        }
+
+        $grupos = [];
+
+        foreach ($rows as $rowIndex => $row) {
+            if ($rowIndex === 1) {
+                continue;
+            }
+
+            if ($this->filaExcelVacia($row, $columnas)) {
+                continue;
+            }
+
+            $resultadoFila = $this->convertirFilaExcelAGrupo($row, $rowIndex, $columnas);
+
+            if (!empty($resultadoFila['errores'])) {
+                $errores = array_merge($errores, $resultadoFila['errores']);
+                continue;
+            }
+
+            $grupos[] = $resultadoFila['grupo'];
+        }
+
+        if (empty($grupos) && empty($errores)) {
+            $errores[] = 'El Excel no contiene filas válidas para crear cotización.';
+        }
+
+        return [
+            'errores' => $errores,
+            'grupos' => $grupos,
+            'total' => collect($grupos)->sum('subtotal'),
+        ];
+    }
+    private function convertirFilaExcelAGrupo(array $row, int $rowIndex, array $columnas): array
+    {
+        $errores = [];
+
+        $datos = [
+            'nombre_equipo' => $this->valorExcel($row, $columnas, 'Nombre Equipo'),
+            'hp' => $this->valorExcel($row, $columnas, 'HP'),
+            'rpm' => $this->valorExcel($row, $columnas, 'RPM'),
+            'voltaje' => $this->valorExcel($row, $columnas, 'Voltaje'),
+            'amperaje' => $this->valorExcel($row, $columnas, 'Amperaje'),
+            'serie' => $this->valorExcel($row, $columnas, 'Serie'),
+            'modelo' => $this->valorExcel($row, $columnas, 'Modelo'),
+            'frame' => $this->valorExcel($row, $columnas, 'Frame'),
+            'hz' => $this->valorExcel($row, $columnas, 'HZ'),
+        ];
+
+        $mantenimiento = $this->precioExcel($row, $columnas, 'Mantenimiento', $rowIndex, $errores);
+        $rebobinado = $this->precioExcel($row, $columnas, 'Rebobinado', $rowIndex, $errores);
+        $balanceo = $this->precioExcel($row, $columnas, 'Balanceo', $rowIndex, $errores);
+        $pruebas = $this->precioExcel($row, $columnas, 'Pruebas', $rowIndex, $errores);
+        $transporte = $this->precioExcel($row, $columnas, 'Transporte', $rowIndex, $errores);
+        $pintura = $this->precioExcel($row, $columnas, 'Pintura', $rowIndex, $errores);
+
+        $rodamientoLc = $this->valorExcel($row, $columnas, 'Rodamiento LC');
+        $precioRodamientoLc = $this->precioExcel($row, $columnas, 'Precio Rodamiento LC', $rowIndex, $errores);
+
+        $rodamientoLo = $this->valorExcel($row, $columnas, 'Rodamiento LO');
+        $precioRodamientoLo = $this->precioExcel($row, $columnas, 'Precio Rodamiento LO', $rowIndex, $errores);
+
+        $inverterDuty = $this->inverterDutyExcelActivo(
+            $this->valorExcel($row, $columnas, 'Inverter duty')
+        );
+
+        if ($mantenimiento !== null && $rebobinado !== null) {
+            $errores[] = "Fila {$rowIndex}: no puede venir Mantenimiento y Rebobinado llenos al mismo tiempo.";
+        }
+
+        if ($mantenimiento === null && $rebobinado === null) {
+            $errores[] = "Fila {$rowIndex}: debe venir Mantenimiento o Rebobinado.";
+        }
+
+        if ($inverterDuty && $rebobinado === null) {
+            $errores[] = "Fila {$rowIndex}: Inverter duty solo aplica si Rebobinado viene lleno.";
+        }
+
+        if (filled($rodamientoLc) && $precioRodamientoLc === null) {
+            $errores[] = "Fila {$rowIndex}: Rodamiento LC viene lleno, pero Precio Rodamiento LC está vacío o inválido.";
+        }
+
+        if (filled($rodamientoLo) && $precioRodamientoLo === null) {
+            $errores[] = "Fila {$rowIndex}: Rodamiento LO viene lleno, pero Precio Rodamiento LO está vacío o inválido.";
+        }
+
+        if (!empty($errores)) {
+            return [
+                'errores' => $errores,
+                'grupo' => null,
+            ];
+        }
+
+        $descripcionTecnica = $this->descripcionTecnicaMotorExcel($datos);
+
+        $items = [];
+
+        if ($mantenimiento !== null) {
+            $items[] = $this->crearItemExcel(
+                'mantenimiento',
+                'Mantenimiento de ' . $descripcionTecnica,
+                $this->descripcionMantenimientoExcel(),
+                $mantenimiento
+            );
+        }
+
+        if ($rebobinado !== null) {
+            $items[] = $this->crearItemExcel(
+                'rebobinado',
+                'Rebobinado de ' . $descripcionTecnica,
+                $inverterDuty
+                    ? $this->descripcionRebobinadoInverterDutyExcel()
+                    : $this->descripcionRebobinadoNormalExcel(),
+                $rebobinado
+            );
+        }
+
+        if ($precioRodamientoLc !== null) {
+            $titulo = filled($rodamientoLc)
+                ? 'Rodamiento Lado Carga ' . $rodamientoLc
+                : 'Precio aproximado Rodamiento Lado Carga';
+
+            $descripcion = filled($rodamientoLc)
+                ? 'Venta e instalación de rodamiento Lado Carga.'
+                : 'Precio aproximado de venta e instalación de rodamiento Lado Carga.';
+
+            $items[] = $this->crearItemExcel(
+                'rodamiento',
+                $titulo,
+                $descripcion,
+                $precioRodamientoLc
+            );
+        }
+
+        if ($precioRodamientoLo !== null) {
+            $titulo = filled($rodamientoLo)
+                ? 'Rodamiento Lado Opuesto ' . $rodamientoLo
+                : 'Precio aproximado Rodamiento Lado Opuesto';
+
+            $descripcion = filled($rodamientoLo)
+                ? 'Venta e instalación de rodamiento Lado Opuesto.'
+                : 'Precio aproximado de venta e instalación de rodamiento Lado Opuesto.';
+
+            $items[] = $this->crearItemExcel(
+                'rodamiento',
+                $titulo,
+                $descripcion,
+                $precioRodamientoLo
+            );
+        }
+
+        if ($balanceo !== null) {
+            $items[] = $this->crearItemExcel(
+                'balanceo',
+                'Balanceo dinámico de ' . $descripcionTecnica,
+                'Balanceo dinámico de rotor bajo norma ISO 1940 G1.0.',
+                $balanceo
+            );
+        }
+
+        if ($pruebas !== null) {
+            $items[] = $this->crearItemExcel(
+                'pruebas',
+                'Pruebas eléctricas de ' . $descripcionTecnica,
+                $rebobinado !== null
+                    ? $this->descripcionPruebasRebobinadoExcel()
+                    : $this->descripcionPruebasMantenimientoExcel(),
+                $pruebas
+            );
+        }
+
+        if ($transporte !== null) {
+            $items[] = $this->crearItemExcel(
+                'transporte',
+                'Transporte',
+                'Transporte desde y hacia su planta.',
+                $transporte
+            );
+        }
+
+        if ($pintura !== null) {
+            $items[] = $this->crearItemExcel(
+                'pintura',
+                'Pintura externa',
+                'Pintura externa.',
+                $pintura
+            );
+        }
+
+        $subtotal = collect($items)->sum('precio_total');
+
+        return [
+            'errores' => [],
+            'grupo' => [
+                'uid' => (string) Str::uuid(),
+                'nombre_equipo' => $datos['nombre_equipo'] ?: 'Equipo fila ' . $rowIndex,
+                'datos_tecnicos' => $datos,
+                'descripcion_tecnica' => $descripcionTecnica,
+                'items' => $items,
+                'subtotal' => round($subtotal, 2),
+            ],
+        ];
+    }
+    private function headersCotizacionExcel(): array
+    {
+        return [
+            'Nombre Equipo',
+            'HP',
+            'RPM',
+            'Voltaje',
+            'Amperaje',
+            'Serie',
+            'Modelo',
+            'Frame',
+            'HZ',
+            'Mantenimiento',
+            'Rebobinado',
+            'Inverter duty',
+            'Rodamiento LC',
+            'Precio Rodamiento LC',
+            'Rodamiento LO',
+            'Precio Rodamiento LO',
+            'Balanceo',
+            'Pruebas',
+            'Transporte',
+            'Pintura',
+        ];
+    }
+    private function normalizarHeaderExcel($value): string
+    {
+        $value = Str::ascii(trim((string) $value));
+        $value = strtolower($value);
+        $value = preg_replace('/\s+/', ' ', $value);
+
+        return $value;
+    }
+    private function filaExcelVacia(array $row, array $columnas): bool
+    {
+        foreach ($this->headersCotizacionExcel() as $header) {
+            if (filled($this->valorExcel($row, $columnas, $header))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    private function valorExcel(array $row, array $columnas, string $header)
+    {
+        $normalizado = $this->normalizarHeaderExcel($header);
+        $column = $columnas[$normalizado] ?? null;
+
+        if (!$column) {
+            return null;
+        }
+
+        $value = $row[$column] ?? null;
+
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+
+        return $value === '' ? null : $value;
+    }
+    private function precioExcel(array $row, array $columnas, string $header, int $rowIndex, array &$errores): ?float
+    {
+        $value = $this->valorExcel($row, $columnas, $header);
+
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $original = $value;
+
+        $value = str_replace(['Q', '$', ' '], '', $value);
+        $value = preg_replace('/[^0-9,\.\-]/', '', $value);
+
+        if ($value === '' || $value === '-' || $value === '.' || $value === ',') {
+            $errores[] = "Fila {$rowIndex}: {$header} tiene un valor inválido: {$original}.";
+            return null;
+        }
+
+        /*
+     * Soporta:
+     * 1200
+     * 1200.50
+     * 1,200.50
+     * 1200,50
+     */
+        if (str_contains($value, ',') && !str_contains($value, '.')) {
+            $value = str_replace(',', '.', $value);
+        } else {
+            $value = str_replace(',', '', $value);
+        }
+
+        if (!is_numeric($value)) {
+            $errores[] = "Fila {$rowIndex}: {$header} tiene un valor inválido: {$original}.";
+            return null;
+        }
+
+        $precio = round((float) $value, 2);
+
+        if ($precio <= 0) {
+            $errores[] = "Fila {$rowIndex}: {$header} debe ser mayor a cero.";
+            return null;
+        }
+
+        return $precio;
+    }
+    private function inverterDutyExcelActivo($value): bool
+    {
+        $value = strtoupper(trim((string) $value));
+
+        return in_array($value, ['1', 'SI', 'SÍ', 'X', 'YES', 'TRUE'], true);
+    }
+    private function descripcionTecnicaMotorExcel(array $datos): string
+    {
+        $partes = [];
+
+        if (filled($datos['nombre_equipo'] ?? null)) {
+            $partes[] = '"' . trim($datos['nombre_equipo']) . '"';
+        }
+
+        if (filled($datos['hp'] ?? null)) {
+            $partes[] = $this->valorConUnidadExcel($datos['hp'], 'HP', false);
+        }
+
+        if (filled($datos['rpm'] ?? null)) {
+            $partes[] = $this->valorConUnidadExcel($datos['rpm'], 'RPM');
+        }
+
+        if (filled($datos['voltaje'] ?? null)) {
+            $partes[] = $this->valorConUnidadExcel($datos['voltaje'], 'V');
+        }
+
+        if (filled($datos['amperaje'] ?? null)) {
+            $partes[] = $this->valorConUnidadExcel($datos['amperaje'], 'A');
+        }
+
+        if (filled($datos['serie'] ?? null)) {
+            $partes[] = 'Serie: ' . trim($datos['serie']);
+        }
+
+        if (filled($datos['modelo'] ?? null)) {
+            $partes[] = 'Modelo: ' . trim($datos['modelo']);
+        }
+
+        if (filled($datos['frame'] ?? null)) {
+            $partes[] = 'Frame ' . trim($datos['frame']);
+        }
+
+        if (filled($datos['hz'] ?? null)) {
+            $partes[] = $this->valorConUnidadExcel($datos['hz'], 'Hz');
+        }
+
+        if (empty($partes)) {
+            return 'Motor';
+        }
+
+        return 'Motor ' . implode(', ', $partes);
+    }
+    private function valorConUnidadExcel($valor, string $unidad, bool $espacio = true): string
+    {
+        $valor = trim((string) $valor);
+
+        if ($valor === '') {
+            return '';
+        }
+
+        if (preg_match('/[a-zA-Z%]/', $valor)) {
+            return $valor;
+        }
+
+        return $valor . ($espacio ? ' ' : '') . $unidad;
+    }
+    private function crearItemExcel(string $tipo, string $nombre, string $descripcion, float $precio): array
+    {
+        return [
+            'uid' => (string) Str::uuid(),
+            'catalogo_item_id' => null,
+            'tipo_item' => $tipo,
+            'nombre' => $nombre,
+            'descripcion' => $descripcion,
+            'cantidad' => 1,
+            'precio_unitario' => round($precio, 2),
+            'precio_total' => round($precio, 2),
+            'descuento_porcentaje' => null,
+            'descuento_alcance' => null,
+            'descuento_item_principal_uid' => null,
+        ];
+    }
+    private function descripcionMantenimientoExcel(): string
+    {
+        return implode("\n", [
+            'Desarmado y armado de motor',
+            'Extracción e instalación de rodamientos',
+            'Lavado de bobina con dieléctricos y desplazantes de humedad.',
+            'Secado en horno a temperatura regulada.',
+            'Re-Barnizado de bobina para aumentar capacidad dieléctrica.',
+            'Revisión de conexiones y borneras.',
+            'Inspección de cables de salida.',
+            'Eliminación de corrosión en núcleo.',
+            'Pintura externa.',
+        ]);
+    }
+    private function descripcionRebobinadoNormalExcel(): string
+    {
+        return implode("\n", [
+            'Extracción de alambre en horno de pirólisis controlada',
+            'Limpieza de núcleo',
+            'Pruebas de Core Loss Test y Hot Spot Test',
+            'Fabricación e inserción de bobinas con alambre magneto clase H',
+            'Colocación de cables de salida de alta temperatura clase H',
+            'Cálculo de densidades eléctricas para verificación de potencia y torque',
+            'Barnizado VPI clase H',
+        ]);
+    }
+    private function descripcionRebobinadoInverterDutyExcel(): string
+    {
+        return implode("\n", [
+            'Extracción de alambre en horno de pirólisis controlada',
+            'Limpieza de núcleo',
+            'Pruebas de Core Loss Test y Hot Spot Test',
+            'Fabricación e inserción de bobinas con alambre para operación Inverter Duty clase H',
+            'Colocación de cables de salida de alta temperatura clase H',
+            'Cálculo de densidades eléctricas para verificación de potencia y torque',
+            'Barnizado VPI clase H',
+        ]);
+    }
+    private function descripcionPruebasMantenimientoExcel(): string
+    {
+        return implode("\n", [
+            'Prueba DLRO (Micro OHM)',
+            'Medición de inductancias, impedancias y Q Factor',
+            'IR, Mega Ohm',
+            'IP / DAR',
+            'Step Voltage DC Hipot',
+            'Surge Test Clásico L-L EAR',
+            'Surge P-P EAR%',
+        ]);
+    }
+    private function descripcionPruebasRebobinadoExcel(): string
+    {
+        return implode("\n", [
+            'Prueba DLRO (Micro OHM)',
+            'Medición de inductancias, impedancias y Q Factor',
+            'IR, Mega Ohm',
+            'IP / DAR',
+            'Step Voltage DC Hipot',
+            'Surge Test Clásico L-L EAR',
+            'Surge P-P EAR%',
+            'Core Loss Test',
+            'Hot Spot Test',
         ]);
     }
 }

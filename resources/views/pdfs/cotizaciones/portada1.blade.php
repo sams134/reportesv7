@@ -247,6 +247,99 @@
 @php
     /*
      * =========================
+     * COTIZACIÓN DESDE EXCEL
+     * =========================
+     */
+
+    $esCotizacionExcel = (string) ($cotizacion->tipo_cotizacion ?? '') === 'excel';
+
+    $gruposItemsExcel = collect();
+
+    if ($esCotizacionExcel && $cotizacion->excelGrupos) {
+        $gruposItemsExcel = $cotizacion->excelGrupos
+            ->map(function ($grupo) {
+                $datosTecnicos = $grupo->datos_tecnicos_json ?? [];
+
+                if (is_string($datosTecnicos)) {
+                    $datosTecnicos = json_decode($datosTecnicos, true) ?: [];
+                }
+
+                if (!is_array($datosTecnicos)) {
+                    $datosTecnicos = [];
+                }
+
+                $partes = [];
+
+                $nombreEquipo = $datosTecnicos['nombre_equipo'] ?? ($grupo->nombre_equipo ?? null);
+
+                if (!empty($nombreEquipo)) {
+                    $partes[] = '"' . trim($nombreEquipo) . '"';
+                }
+
+                if (!empty($datosTecnicos['hp'] ?? null)) {
+                    $hp = trim((string) $datosTecnicos['hp']);
+                    $partes[] = preg_match('/[a-zA-Z]/', $hp) ? $hp : $hp . 'HP';
+                }
+
+                if (!empty($datosTecnicos['rpm'] ?? null)) {
+                    $rpm = trim((string) $datosTecnicos['rpm']);
+                    $partes[] = preg_match('/[a-zA-Z]/', $rpm) ? $rpm : $rpm . ' RPM';
+                }
+
+                if (!empty($datosTecnicos['voltaje'] ?? null)) {
+                    $voltaje = trim((string) $datosTecnicos['voltaje']);
+                    $partes[] = preg_match('/[a-zA-Z]/', $voltaje) ? $voltaje : $voltaje . ' V';
+                }
+
+                if (!empty($datosTecnicos['amperaje'] ?? null)) {
+                    $amperaje = trim((string) $datosTecnicos['amperaje']);
+                    $partes[] = preg_match('/[a-zA-Z]/', $amperaje) ? $amperaje : $amperaje . ' A';
+                }
+
+                if (!empty($datosTecnicos['serie'] ?? null)) {
+                    $partes[] = 'Serie: ' . trim((string) $datosTecnicos['serie']);
+                }
+
+                if (!empty($datosTecnicos['modelo'] ?? null)) {
+                    $partes[] = 'Modelo: ' . trim((string) $datosTecnicos['modelo']);
+                }
+
+                if (!empty($datosTecnicos['frame'] ?? null)) {
+                    $partes[] = 'Frame ' . trim((string) $datosTecnicos['frame']);
+                }
+
+                if (!empty($datosTecnicos['hz'] ?? null)) {
+                    $hz = trim((string) $datosTecnicos['hz']);
+                    $partes[] = preg_match('/[a-zA-Z]/', $hz) ? $hz : $hz . ' Hz';
+                }
+
+                $descripcionTecnica = empty($partes) ? 'Motor' : 'Motor ' . implode(', ', $partes);
+
+                $tituloGrupo = $grupo->nombre_equipo ?: 'Equipo cotizado';
+
+                return [
+                    'detalle_id' => $grupo->id,
+                    'cotizacion_origen_id' => null,
+                    'numero_origen' => null,
+                    'titulo' => $tituloGrupo,
+                    'os' => null,
+                    'equipo' => $grupo->nombre_equipo,
+                    'potencia' => $datosTecnicos['hp'] ?? null,
+                    'descripcion_tecnica' => $descripcionTecnica,
+                    'subtotal' => (float) $grupo->subtotal,
+                    'items' => $grupo->items ?: collect(),
+                ];
+            })
+            ->values();
+    }
+
+    $esCotizacionAgrupada = $esCotizacionUnificada || $esCotizacionExcel;
+
+    $gruposItemsPdf = $esCotizacionExcel ? $gruposItemsExcel : $gruposItemsUnificados;
+@endphp
+@php
+    /*
+     * =========================
      * INFORMACIÓN ADICIONAL
      * =========================
      */
@@ -1682,78 +1775,78 @@
 </style>
 
 <body>
-   
-        @if(($usarPortada ?? true) && in_array($seccionPdf ?? 'completo', ['completo', 'inicio']))
 
-            @if ($esCotizacionUnificada)
-                <div class="cover2-page">
-                    <div class="cover2-bg"></div>
+    @if (($usarPortada ?? true) && in_array($seccionPdf ?? 'completo', ['completo', 'inicio']))
 
-                    <div class="cover2-title-wrap">
-                        @if ($tituloLinea1)
-                            <div class="cover2-title-dark">
-                                {{ strtoupper($tituloLinea1) }}
-                            </div>
-                        @endif
+        @if ($esCotizacionUnificada)
+            <div class="cover2-page">
+                <div class="cover2-bg"></div>
 
-                        @if ($tituloLinea2)
-                            <div class="cover2-title-light">
-                                {{ strtoupper($tituloLinea2) }}
-                            </div>
-                        @endif
-                    </div>
-
-                    <div class="cover2-subtitle-box">
-                        {{ $subtituloPortada }}
-                    </div>
-
-                    {{-- SOLO el nombre del cliente abajo, porque el "Cliente:" ya viene en la imagen base --}}
-                    <div class="cover2-client-name">
-                        {{ strtoupper($clientePortada) }}
-                    </div>
-                </div>
-
-                {{-- <div class="page-break"></div> --}}
-            @else
-                <div class="cover1-page">
-                    <div class="cover1-bg"></div>
-
-                    <div class="cover1-title">
-                        {!! nl2br(e($cover1Titulo)) !!}
-                    </div>
-
-                    @if ($cover1OS)
-                        <div class="cover1-os">
-                            {{ strtoupper($cover1OS) }}
+                <div class="cover2-title-wrap">
+                    @if ($tituloLinea1)
+                        <div class="cover2-title-dark">
+                            {{ strtoupper($tituloLinea1) }}
                         </div>
                     @endif
 
-                    @if ($cover1EquipoDescripcion)
-                        <div class="cover1-equipo">
-                            {{ $cover1EquipoDescripcion }}
-                        </div>
-                    @endif
-
-                    @if ($cover1Cliente)
-                        <div class="cover1-cliente">
-                            {{ $cover1Cliente }}
-                        </div>
-                    @endif
-
-                    @if ($cover1FotoUrl)
-                        <div class="cover1-foto-wrap" style="background-image: url('{{ $cover1FotoUrl }}');">
+                    @if ($tituloLinea2)
+                        <div class="cover2-title-light">
+                            {{ strtoupper($tituloLinea2) }}
                         </div>
                     @endif
                 </div>
 
-              {{--   <div class="page-break"></div> --}}
-            @endif
+                <div class="cover2-subtitle-box">
+                    {{ $subtituloPortada }}
+                </div>
 
+                {{-- SOLO el nombre del cliente abajo, porque el "Cliente:" ya viene en la imagen base --}}
+                <div class="cover2-client-name">
+                    {{ strtoupper($clientePortada) }}
+                </div>
+            </div>
+
+            {{-- <div class="page-break"></div> --}}
+        @else
+            <div class="cover1-page">
+                <div class="cover1-bg"></div>
+
+                <div class="cover1-title">
+                    {!! nl2br(e($cover1Titulo)) !!}
+                </div>
+
+                @if ($cover1OS)
+                    <div class="cover1-os">
+                        {{ strtoupper($cover1OS) }}
+                    </div>
+                @endif
+
+                @if ($cover1EquipoDescripcion)
+                    <div class="cover1-equipo">
+                        {{ $cover1EquipoDescripcion }}
+                    </div>
+                @endif
+
+                @if ($cover1Cliente)
+                    <div class="cover1-cliente">
+                        {{ $cover1Cliente }}
+                    </div>
+                @endif
+
+                @if ($cover1FotoUrl)
+                    <div class="cover1-foto-wrap" style="background-image: url('{{ $cover1FotoUrl }}');">
+                    </div>
+                @endif
+            </div>
+
+            {{--   <div class="page-break"></div> --}}
         @endif
 
-        
+    @endif
 
-        @if(($usarCartaPresentacion ?? true) && in_array($seccionPdf ?? 'completo', ['completo', 'inicio']))
+
+
+    @if (($usarCartaPresentacion ?? true) && in_array($seccionPdf ?? 'completo', ['completo', 'inicio']))
         <div class="page-letter">
 
             @if (file_exists($logoPath))
@@ -1882,10 +1975,10 @@
             </div>
 
         </div>
-        
-        @endif
 
-   
+    @endif
+
+
     @if (in_array($seccionPdf, ['completo', 'items']))
         <div class="page-items">
 
@@ -1961,9 +2054,9 @@
                 </thead>
 
                 <tbody>
-                    @if ($esCotizacionUnificada)
+                    @if ($esCotizacionAgrupada)
 
-                        @forelse($gruposItemsUnificados as $grupo)
+                        @forelse($gruposItemsPdf as $grupo)
                             <tr class="unified-group-row">
                                 <td colspan="5">
                                     <div class="unified-group-header">
@@ -1971,7 +2064,16 @@
                                             <div class="unified-group-title">
                                                 {{ $grupo['titulo'] }}
                                             </div>
-
+                                            @if ($esCotizacionExcel && !empty($grupo['descripcion_tecnica']))
+                                                <div style="font-size: 10px; font-weight: normal; margin-top: 2px;">
+                                                    {{ $grupo['descripcion_tecnica'] }}
+                                                </div>
+                                            @endif
+                                            @if (!$esCotizacionExcel && !empty($grupo['numero_origen']))
+                                                <div style="font-size: 10px; font-weight: normal; margin-top: 2px;">
+                                                    Cotización origen: {{ $grupo['numero_origen'] }}
+                                                </div>
+                                            @endif
                                             <div class="unified-group-subtitle">
                                                 @if ($grupo['numero_origen'])
                                                     Cotización origen: {{ $grupo['numero_origen'] }}
@@ -2036,7 +2138,7 @@
 
                             <tr class="unified-subtotal-row">
                                 <td colspan="4">
-                                    Subtotal {{ $grupo['titulo'] }}
+                                   Subtotal {{ $esCotizacionExcel ? ($grupo['equipo'] ?? $grupo['titulo']) : $grupo['titulo'] }}
                                 </td>
 
                                 <td>
@@ -2103,7 +2205,7 @@
                 <table class="items-total-table">
                     <tr class="items-grand-total">
                         <td>
-                            {{ $esCotizacionUnificada ? 'Total general (IVA incluido)' : 'Total (IVA incluido)' }}
+                           {{ $esCotizacionAgrupada ? 'Total general (IVA incluido)' : 'Total (IVA incluido)' }}
                         </td>
 
                         <td class="items-total-value">

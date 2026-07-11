@@ -26,11 +26,14 @@ class CotizacionPdfController extends Controller
             'contactosCotizacion',
             'itemsCotizacion',
             'creadoPor',
+
             'unificadaDetalles.items',
             'unificadaDetalles.cotizacionOrigen.motor.infoMotor',
+
+            'excelGrupos.items',
+
             'pdfsAntesItems',
             'pdfsDespuesItems',
-
         ]);
         $usarPortada = filter_var(
             $request->query('portada', 1),

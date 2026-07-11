@@ -10,6 +10,7 @@ class CotizacionItem extends Model
 
     protected $fillable = [
         'cotizacion_id',
+        'cotizacion_excel_grupo_id',
         'catalogo_item_id',
         'nombre',
         'descripcion',
@@ -39,5 +40,9 @@ class CotizacionItem extends Model
     public function catalogoItem()
     {
         return $this->belongsTo(CotizacionCatalogoItem::class, 'catalogo_item_id');
+    }
+    public function excelGrupo()
+    {
+        return $this->belongsTo(CotizacionExcelGrupo::class, 'cotizacion_excel_grupo_id', 'id');
     }
 }

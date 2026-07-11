@@ -127,6 +127,9 @@ Route::middleware([
             Route::get('cotizaciones/create', NuevaCotizacion::class)
                 ->name('cotizaciones.create');
 
+            Route::get('cotizaciones/excel/create', NuevaCotizacion::class)
+                ->name('cotizaciones.excel');
+
             Route::get('cotizaciones/unificar', \App\Http\Livewire\Cotizaciones\NuevaCotizacion::class)
                 ->name('cotizaciones.unificar');
 

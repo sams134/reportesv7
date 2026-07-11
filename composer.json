@@ -19,6 +19,7 @@
         "laraveles/spanish": "^1.5",
         "livewire/livewire": "^2.5",
         "openai-php/client": "^0.10.3",
+        "phpoffice/phpspreadsheet": "^5.8",
         "setasign/fpdf": "^1.9",
         "setasign/fpdi": "^2.6",
         "setasign/fpdi-fpdf": "^2.3"
