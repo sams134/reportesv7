@@ -140,10 +140,12 @@
                               <div class="mb-3">
                                 <label class="form-label" for="exampleFormControlInput1">Tipo de Equipo</label>
                                 <select class="form-select" aria-label="Default select example" wire:model="equipmentType">
-                                    <option selected="">Seleccione tipo de equipo</option>
-                                                      @foreach ($equipmentTypes as
-                                    $types)
-                                <option value="{{ $types->id }}">{{ $types->name }}</option>
+                                   <option value="">Seleccione tipo de equipo</option>
+
+                                @foreach ($equipmentTypes as $types)
+                                <option value="{{ $types->id }}">
+                                    {{ $types->name }}
+                                </option>
                                 @endforeach
                                 </select>
                                 @error('tipo_equipo')
