@@ -25,12 +25,12 @@ class EditMotor extends Component
     public $motor;
     public $step = 0;
     public $clientesList, $customer_id = "", $contactList = array(), $equipmentTypes, $year, $os, $inDate, $fechaSpanish, $emailTo = [], $emailToReal = [], $preAutorizado = false;
-    public $inventory, $customer, $emergencyLevel = 1, $comentariosCliente, $inventoryComments,$previusNamePlates;
-    public $photoInventory = [],$previusPhotoInventory;
+    public $inventory, $customer, $emergencyLevel = 1, $comentariosCliente, $inventoryComments, $previusNamePlates;
+    public $photoInventory = [], $previusPhotoInventory;
     public $nameplates = [];
-    public $photosMotor = ['', '', '', ''],$photosMotorDB;
-    public $equipmentName, $equipmentType = null, $selectedEquipmentTypeName, $potencia, $aproximado = false, $powerUnit = 0, $rpm, $marca, $serie, $modelo, $voltaje, $amperaje, $frame, $hz, $inverter, $pf, $eff,$phases;
-    public $listeners = ['next', 'prev', 'newCustomerAdded', 'render', 'store', 'removeNameplateDB', 'removePhotoDB','removeInventoryPhotoDB'];
+    public $photosMotor = ['', '', '', ''], $photosMotorDB;
+    public $equipmentName, $equipmentType = null, $selectedEquipmentTypeName, $potencia, $aproximado = false, $powerUnit = 0, $rpm, $marca, $serie, $modelo, $voltaje, $amperaje, $frame, $hz, $inverter, $pf, $eff, $phases;
+    public $listeners = ['next', 'prev', 'newCustomerAdded', 'render', 'store', 'removeNameplateDB', 'removePhotoDB', 'removeInventoryPhotoDB'];
     protected $rules = [
         'customer_id' => 'required',
         'inventory.*.name' => '',
@@ -47,7 +47,7 @@ class EditMotor extends Component
     public function mount(Motor $motor)
     {
         $this->motor = $motor->load('contactos');
-    
+
         $this->year = (int) str_replace('2M', '', $motor->year);
         $this->os = $motor->os;
         $this->customer_id = $motor->id_cliente;
@@ -70,15 +70,22 @@ class EditMotor extends Component
         $this->pf = $motor->pf;
         $this->eff = $motor->eff;
         $this->inverter = $motor->inverter_duty;
-        
+
         $this->inventory = collect();
         $this->addInventoryParts();
-        
+
 
         //$this->contactList = $this->customer->contactos;
         //$this->emailTo = $motor->contactos;
-        
-        $this->preAutorizado = ($motor->infoMotor->cotizar == "Si, Empezar a trabajar")?true:false;        
+
+        $this->contactList = Contacto::where(
+            'id_cliente',
+            $this->customer_id
+        )
+            ->orderBy('contacto', 'asc')
+            ->get();
+
+        $this->preAutorizado = ($motor->infoMotor->cotizar == "Si, Empezar a trabajar") ? true : false;
         $this->emergencyLevel = $motor->infoMotor->emergenciaValue;
         $this->comentariosCliente = $motor->comentarios;
         $this->inventoryComments = $motor->inventario->comentarios;
@@ -96,15 +103,43 @@ class EditMotor extends Component
             ->pluck('id')
             ->toArray();
 
-       
+        $this->emailToReal = Contacto::whereIn('id', $this->emailTo)
+            ->get()
+            ->toArray();
+
+
         $this->previusNamePlates = $motor->fotos->where('type', Foto::NAMEPLATE);
         $this->previusPhotoInventory = $motor->fotos->where('type', Foto::INVENTORY);
         $this->photosMotorDB = $motor->fotos->whereIn('type', [Foto::MOTOR, Foto::TRABAJO])->take(4);
-        
-        
+
+
 
         //nameplates
         //dd($this->emailTo);
+    }
+    public function fillContacts()
+    {
+        if (empty($this->customer_id)) {
+            $this->customer = null;
+            $this->contactList = collect();
+            $this->emailTo = [];
+            $this->emailToReal = [];
+
+            return;
+        }
+
+        $this->customer = Cliente::find($this->customer_id);
+
+        $this->contactList = Contacto::where(
+            'id_cliente',
+            $this->customer_id
+        )
+            ->orderBy('contacto', 'asc')
+            ->get();
+
+        // Evita conservar contactos seleccionados del cliente anterior.
+        $this->emailTo = [];
+        $this->emailToReal = [];
     }
     public function addInventoryParts()
     {
@@ -113,7 +148,7 @@ class EditMotor extends Component
         $this->inventory->push(['name' => 'Tapa caja de conexiones', 'valor' => $this->motor->inventario->tapa_caja]);
         $this->inventory->push(['name' => 'Difusor', 'valor' => $this->motor->inventario->difusor]);
         $this->inventory->push(['name' => 'Ventilador', 'valor' => $this->motor->inventario->ventilador]);
-        $this->inventory->push(['name' => 'Bornera', 'valor' => $this->motor->inventario->bornera]);   
+        $this->inventory->push(['name' => 'Bornera', 'valor' => $this->motor->inventario->bornera]);
         $this->inventory->push(['name' => 'Cuña', 'valor' => $this->motor->inventario->cunia]);
         $this->inventory->push(['name' => 'Graseras', 'valor' => $this->motor->inventario->graseras]);
         $this->inventory->push(['name' => 'Cancamo', 'valor' => $this->motor->inventario->cancamo]);
@@ -203,9 +238,9 @@ class EditMotor extends Component
     }
     public function removeNameplateDB($key)
     {
-       Foto::find($key)->delete();
-       $this->motor = Motor::find($this->motor->id_motor);
-         $this->previusNamePlates = $this->motor->fotos->where('type', Foto::NAMEPLATE);
+        Foto::find($key)->delete();
+        $this->motor = Motor::find($this->motor->id_motor);
+        $this->previusNamePlates = $this->motor->fotos->where('type', Foto::NAMEPLATE);
         $this->gotoStep(1);
     }
     public function removePhotoDB($key)
@@ -222,14 +257,15 @@ class EditMotor extends Component
         $this->previusPhotoInventory = $this->motor->fotos->where('type', Foto::INVENTORY);
         $this->gotoStep(2);
     }
-    public function update(){
-        
+    public function update()
+    {
+
         $this->validate();
-        
+
         $folderPath = '/uploads/' . "2M" . $this->year . '-' . $this->os . '/ingreso';
         Storage::disk('public')->makeDirectory($folderPath); // Asegúrate de usar el disco correcto
         try {
-            $this->motor->year = "2M".$this->year;
+            $this->motor->year = "2M" . $this->year;
             $this->motor->os = $this->os;
             $this->motor->id_cliente = $this->customer_id;
             $this->motor->fecha_ingreso = date('Y-m-d', strtotime($this->inDate));
@@ -245,22 +281,22 @@ class EditMotor extends Component
             $this->motor->frame = $this->frame;
             $this->motor->hz = $this->hz;
             $this->motor->phases = $this->phases;
-            
+
             $this->motor->pf = $this->pf;
             $this->motor->eff = $this->eff;
             $this->motor->inverter_duty = $this->inverter;
             $this->motor->comentarios = $this->comentariosCliente;
             $this->motor->inventario->comentarios = $this->inventoryComments;
-            $this->motor->infoMotor->cotizar = $this->preAutorizado ? 0:1;
+            $this->motor->infoMotor->cotizar = $this->preAutorizado ? 0 : 1;
             $this->motor->infoMotor->emergencia = $this->emergencyLevel;
             $this->motor->infoMotor->reales = $this->aproximado ? 0 : 1;
             $this->motor->infoMotor->nombre_equipo = $this->equipmentName;
-            
+
             $this->motor->infoMotor->save();
-            
+
             $this->motor->contactos()->sync($this->emailTo);
 
-            
+
             $this->motor->save();
             $this->motor->inventario->acople = $this->inventory[0]['valor'];
             $this->motor->inventario->caja_conexiones = $this->inventory[1]['valor'];
@@ -275,7 +311,7 @@ class EditMotor extends Component
             $this->motor->inventario->tornillos = $this->inventory[10]['valor'];
             $this->motor->inventario->capacitor = $this->inventory[11]['valor'];
             $this->motor->inventario->save();
-            
+
             $this->savePhotos($this->nameplates, $folderPath, Foto::NAMEPLATE, $this->motor->id_motor);
             $this->savePhotos($this->photoInventory, $folderPath, Foto::INVENTORY, $this->motor->id_motor);
             $this->savePhotos($this->photosMotor, $folderPath, Foto::MOTOR, $this->motor->id_motor);
@@ -346,8 +382,7 @@ class EditMotor extends Component
     public function render()
     {
         $this->clientesList = Cliente::orderBy('cliente', 'asc')->get();
-        if ($this->customer_id != "")
-            $this->contactList = Contacto::where('id_cliente', $this->customer_id)->get();
+
         return view('livewire.motors.edit-motor');
     }
 }

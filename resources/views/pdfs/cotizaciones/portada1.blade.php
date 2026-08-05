@@ -462,6 +462,7 @@
      */
     $cover1Titulo = strtoupper(trim($cotizacion->titulo ?? 'COTIZACIÓN'));
     $cover1Cliente = strtoupper(trim($clienteNombre ?? ''));
+    $coverNumeroCotizacion = trim($cotizacion->numero ?? '');
 
     $cover1OS = '';
     $cover1EquipoDescripcion = '';
@@ -1772,6 +1773,43 @@
     .page-break {
         page-break-before: always;
     }
+/* =========================================================
+   NÚMERO DE COTIZACIÓN EN PORTADA
+========================================================= */
+
+.cover-quote-number-box {
+    position: absolute;
+    top: 1015px;
+    left: 18px;
+    width: 420px;
+    z-index: 8;
+
+    background: #ffffff;
+    border-left: 7px solid #11a9da;
+    border-radius: 8px;
+    padding: 13px 18px 12px 18px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.cover-quote-number-label {
+    font-size: 17px;
+    line-height: 20px;
+    font-weight: 800;
+    color: #234a9b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.cover-quote-number-value {
+    font-size: 29px;
+    line-height: 32px;
+    font-weight: 800;
+    color: #222222;
+    letter-spacing: 0.4px;
+}
 </style>
 
 <body>

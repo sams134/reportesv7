@@ -4,7 +4,7 @@
 @endphp
 <div class="">
     <x-page-title>
-        <x-slot:title>Editar OS {{$motor->fullos}}</x-slot:title>
+        <x-slot:title>Editar OS {{ $motor->fullos }}</x-slot:title>
         Actualize los datos del equipo.
     </x-page-title>
 
@@ -64,7 +64,7 @@
 
                             @endif
                             @if ($customer_id != '')
-                                @livewire('customers.create-contact', ['id_cliente' => $customer->id_cliente])
+                                @livewire('customers.create-contact', ['id_cliente' => $customer_id], key('create-contact-' . $customer_id))
                             @endif
 
                         </x-form-card>
@@ -141,7 +141,8 @@
                                 <label class="form-label" for="exampleFormControlInput1">Tipo de Equipo</label>
                                 <select class="form-select" aria-label="Default select example" wire:model="equipmentType">
                                     <option selected="">Seleccione tipo de equipo</option>
-                                                     @foreach ($equipmentTypes as $types)
+                                                      @foreach ($equipmentTypes as
+                                    $types)
                                 <option value="{{ $types->id }}">{{ $types->name }}</option>
                                 @endforeach
                                 </select>
@@ -470,15 +471,19 @@
                                     <img src="{{ asset('storage/' . $photosMotorDB[0]->foto) }}" style="width:100%"
                                         class="rounded-soft img-thumbnail">
                                 </div>
-                                <button class="btn btn-danger me-1 mb-1" type="button" onclick="removePhotoDB({{ $photosMotorDB[0]->id }})">ELIMINAR
+                                <button class="btn btn-danger me-1 mb-1" type="button"
+                                    onclick="removePhotoDB({{ $photosMotorDB[0]->id }})">ELIMINAR
                                 </button>
                             @else
                                 <button class="btn btn-falcon-primary me-1 mb-1" type="button"
-                                    id="cameraBtnPhotoMotor1" onclick="document.querySelector('#cameraPhotoMotor1').click()">
+                                    id="cameraBtnPhotoMotor1"
+                                    onclick="document.querySelector('#cameraPhotoMotor1').click()">
                                     @if ($photosMotor[0] != '')
                                         <img src="{{ $photosMotor[0]->temporaryUrl() }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail" wire:loading.remove wire:target="photosMotor.0">
-                                        <div class="spinner-border text-primary" role="status" wire:loading wire:target="photosMotor.0" style="width: 100%; height: 100%;">
+                                            class="rounded-soft img-thumbnail" wire:loading.remove
+                                            wire:target="photosMotor.0">
+                                        <div class="spinner-border text-primary" role="status" wire:loading
+                                            wire:target="photosMotor.0" style="width: 100%; height: 100%;">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     @else
@@ -486,8 +491,10 @@
                                             Cargue Foto Vista 1
                                         </div>
                                         <img src="{{ asset('img/motors/m1.png') }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail" wire:loading.remove wire:target="photosMotor.0">
-                                        <div class="spinner-border text-primary" role="status" wire:loading wire:target="photosMotor.0" style="width: 100%; height: 100%;">
+                                            class="rounded-soft img-thumbnail" wire:loading.remove
+                                            wire:target="photosMotor.0">
+                                        <div class="spinner-border text-primary" role="status" wire:loading
+                                            wire:target="photosMotor.0" style="width: 100%; height: 100%;">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     @endif
@@ -500,15 +507,19 @@
                                     <img src="{{ asset('storage/' . $photosMotorDB[1]->foto) }}" style="width:100%"
                                         class="rounded-soft img-thumbnail">
                                 </div>
-                                <button class="btn btn-danger me-1 mb-1" type="button" onclick="removePhotoDB({{ $photosMotorDB[1]->id }})">ELIMINAR
+                                <button class="btn btn-danger me-1 mb-1" type="button"
+                                    onclick="removePhotoDB({{ $photosMotorDB[1]->id }})">ELIMINAR
                                 </button>
                             @else
                                 <button class="btn btn-falcon-primary me-1 mb-1" type="button"
-                                    id="cameraBtnPhotoMotor2" onclick="document.querySelector('#cameraPhotoMotor2').click()">
+                                    id="cameraBtnPhotoMotor2"
+                                    onclick="document.querySelector('#cameraPhotoMotor2').click()">
                                     @if ($photosMotor[1] != '')
                                         <img src="{{ $photosMotor[1]->temporaryUrl() }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail" wire:loading.remove wire:target="photosMotor.1">
-                                        <div class="spinner-border text-primary" role="status" wire:loading wire:target="photosMotor.1" style="width: 100%; height: 100%;">
+                                            class="rounded-soft img-thumbnail" wire:loading.remove
+                                            wire:target="photosMotor.1">
+                                        <div class="spinner-border text-primary" role="status" wire:loading
+                                            wire:target="photosMotor.1" style="width: 100%; height: 100%;">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     @else
@@ -516,8 +527,10 @@
                                             Cargue Foto Vista 2
                                         </div>
                                         <img src="{{ asset('img/motors/m1.png') }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail" wire:loading.remove wire:target="photosMotor.1">
-                                        <div class="spinner-border text-primary" role="status" wire:loading wire:target="photosMotor.1" style="width: 100%; height: 100%;">
+                                            class="rounded-soft img-thumbnail" wire:loading.remove
+                                            wire:target="photosMotor.1">
+                                        <div class="spinner-border text-primary" role="status" wire:loading
+                                            wire:target="photosMotor.1" style="width: 100%; height: 100%;">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     @endif
@@ -530,15 +543,19 @@
                                     <img src="{{ asset('storage/' . $photosMotorDB[2]->foto) }}" style="width:100%"
                                         class="rounded-soft img-thumbnail">
                                 </div>
-                                <button class="btn btn-danger me-1 mb-1" type="button" onclick="removePhotoDB({{ $photosMotorDB[2]->id }})">ELIMINAR
+                                <button class="btn btn-danger me-1 mb-1" type="button"
+                                    onclick="removePhotoDB({{ $photosMotorDB[2]->id }})">ELIMINAR
                                 </button>
                             @else
                                 <button class="btn btn-falcon-primary me-1 mb-1" type="button"
-                                    id="cameraBtnPhotoMotor3" onclick="document.querySelector('#cameraPhotoMotor3').click()">
+                                    id="cameraBtnPhotoMotor3"
+                                    onclick="document.querySelector('#cameraPhotoMotor3').click()">
                                     @if ($photosMotor[2] != '')
                                         <img src="{{ $photosMotor[2]->temporaryUrl() }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail" wire:loading.remove wire:target="photosMotor.2">
-                                        <div class="spinner-border text-primary" role="status" wire:loading wire:target="photosMotor.2" style="width: 100%; height: 100%;">
+                                            class="rounded-soft img-thumbnail" wire:loading.remove
+                                            wire:target="photosMotor.2">
+                                        <div class="spinner-border text-primary" role="status" wire:loading
+                                            wire:target="photosMotor.2" style="width: 100%; height: 100%;">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     @else
@@ -546,8 +563,10 @@
                                             Cargue Foto Vista 3
                                         </div>
                                         <img src="{{ asset('img/motors/m1.png') }}" style="width:100%"
-                                            class="rounded-soft img-thumbnail" wire:loading.remove wire:target="photosMotor.2">
-                                        <div class="spinner-border text-primary" role="status" wire:loading wire:target="photosMotor.2" style="width: 100%; height: 100%;">
+                                            class="rounded-soft img-thumbnail" wire:loading.remove
+                                            wire:target="photosMotor.2">
+                                        <div class="spinner-border text-primary" role="status" wire:loading
+                                            wire:target="photosMotor.2" style="width: 100%; height: 100%;">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     @endif
@@ -560,21 +579,30 @@
                                     <img src="{{ asset('storage/' . $photosMotorDB[3]->foto) }}" style="width:100%"
                                         class="rounded-soft img-thumbnail">
                                 </div>
-                                <button class="btn btn-danger me-1 mb-1" type="button" onclick="removePhotoDB({{ $photosMotorDB[3]->id }})">ELIMINAR
+                                <button class="btn btn-danger me-1 mb-1" type="button"
+                                    onclick="removePhotoDB({{ $photosMotorDB[3]->id }})">ELIMINAR
                                 </button>
                             @else
-                                <button class="btn btn-falcon-primary me-1 mb-1" type="button" id="cameraBtnPhotoMotor4" onclick="document.querySelector('#cameraPhotoMotor4').click()">
+                                <button class="btn btn-falcon-primary me-1 mb-1" type="button"
+                                    id="cameraBtnPhotoMotor4"
+                                    onclick="document.querySelector('#cameraPhotoMotor4').click()">
                                     @if ($photosMotor[3] != '')
-                                        <img src="{{ $photosMotor[3]->temporaryUrl() }}" style="width:100%" class="rounded-soft img-thumbnail" wire:loading.remove wire:target="photosMotor.3">
-                                        <div class="spinner-border text-primary" role="status" wire:loading wire:target="photosMotor.3" style="width: 100%; height: 100%;">
+                                        <img src="{{ $photosMotor[3]->temporaryUrl() }}" style="width:100%"
+                                            class="rounded-soft img-thumbnail" wire:loading.remove
+                                            wire:target="photosMotor.3">
+                                        <div class="spinner-border text-primary" role="status" wire:loading
+                                            wire:target="photosMotor.3" style="width: 100%; height: 100%;">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     @else
                                         <div class="img-thumbnail" wire:loading.remove wire:target="photosMotor.3">
                                             Cargue Foto Vista 4
                                         </div>
-                                        <img src="{{ asset('img/motors/m1.png') }}" style="width:100%" class="rounded-soft img-thumbnail" wire:loading.remove wire:target="photosMotor.3">
-                                        <div class="spinner-border text-primary" role="status" wire:loading wire:target="photosMotor.3" style="width: 100%; height: 100%;">
+                                        <img src="{{ asset('img/motors/m1.png') }}" style="width:100%"
+                                            class="rounded-soft img-thumbnail" wire:loading.remove
+                                            wire:target="photosMotor.3">
+                                        <div class="spinner-border text-primary" role="status" wire:loading
+                                            wire:target="photosMotor.3" style="width: 100%; height: 100%;">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     @endif
