@@ -239,6 +239,9 @@ class NuevaCotizacion extends Component
     public $gruposExcel = [];
     public $totalExcel = 0;
 
+    public $usarNumeroRequerimiento = false;
+    public $numeroRequerimiento = '';
+
 
     protected $listeners = [
         'osCotizacionSeleccionada' => 'seleccionarOsCotizacion',
@@ -554,6 +557,9 @@ class NuevaCotizacion extends Component
             $this->usarDatosEquipo = false;
             $this->resumenEquipo = '';
 
+            $this->usarNumeroRequerimiento = false;
+            $this->numeroRequerimiento = '';
+
             return;
         }
 
@@ -588,6 +594,7 @@ class NuevaCotizacion extends Component
         }
 
         $this->cargarMotorPreview($motor);
+        $this->cargarNumeroRequerimientoDesdeTablero();
     }
     private function cargarMotorPreview($motor)
     {
@@ -2136,6 +2143,7 @@ class NuevaCotizacion extends Component
                 if ($this->fotoPortadaCotizacion) {
                     $fotoPortadaPath = $this->fotoPortadaCotizacion->store('cotizaciones/portadas', 'public');
                 }
+                $this->guardarNumeroRequerimientoEnTablero();
                 $cotizacion = Cotizacion::create([
                     'numero' => $numeroData['numero'],
                     'titulo' => $this->tituloCotizacion,
@@ -2149,6 +2157,11 @@ class NuevaCotizacion extends Component
                     'id_cliente' => $this->cliente_id,
                     'id_motor' => $this->motor_id,
                     'equipo_no_ingresado_taller' => $this->equipoNoIngresadoTaller ? 1 : 0,
+
+                    'mostrar_numero_requerimiento' => (
+                        $this->usarNumeroRequerimiento &&
+                        trim((string) $this->numeroRequerimiento) !== ''
+                    ) ? 1 : 0,
 
                     'fecha_cotizacion' => $fechaCotizacion,
                     'fecha_valida_hasta' => $fechaValidaHasta,
@@ -4118,6 +4131,14 @@ class NuevaCotizacion extends Component
 
         $this->fotoPortadaActual = $cotizacion->foto_portada;
         $this->fotoPortadaCotizacion = null;
+
+        $this->usarNumeroRequerimiento = (bool) ($cotizacion->mostrar_numero_requerimiento ?? false);
+
+        $this->numeroRequerimiento = '';
+
+        if ($cotizacion->id_motor) {
+            $this->numeroRequerimiento = $this->obtenerNumeroRequerimientoDesdeTablero($cotizacion->id_motor) ?? '';
+        }
 
         /*
      * Cliente.
@@ -6419,5 +6440,85 @@ class NuevaCotizacion extends Component
         }
 
         return $valor . ($espacio ? ' ' : '') . $unidad;
+    }
+    private function cargarNumeroRequerimientoDesdeTablero()
+    {
+        $this->numeroRequerimiento = '';
+
+        if (!$this->motor_id) {
+            return;
+        }
+
+        $numero = $this->obtenerNumeroRequerimientoDesdeTablero($this->motor_id);
+
+        if ($numero) {
+            $this->numeroRequerimiento = $numero;
+        }
+    }
+
+    private function obtenerNumeroRequerimientoDesdeTablero($motorId): ?string
+    {
+        /*
+     * AJUSTAR AQUÍ si el campo real del tablero administrativo
+     * no es jobs.value_campo1.
+     */
+        $numero = DB::table('jobs')
+            ->where('id_motor', $motorId)
+            ->whereNotNull('value_campo1')
+            ->where('value_campo1', '<>', '')
+            ->orderByDesc('id')
+            ->value('value_campo1');
+
+        return $numero ? trim((string) $numero) : null;
+    }
+    public function updatedUsarNumeroRequerimiento($value)
+    {
+        if (!$value) {
+            $this->numeroRequerimiento = '';
+        }
+    }
+
+    private function guardarNumeroRequerimientoEnTablero(): void
+    {
+        if (!$this->motor_id) {
+            return;
+        }
+
+        /*
+     * Si el switch está apagado, no guardamos nada.
+     * Tampoco borramos datos históricos del tablero.
+     */
+        if (!$this->usarNumeroRequerimiento) {
+            return;
+        }
+        if (!$this->usarNumeroRequerimiento) {
+            return;
+        }
+
+        $numero = trim((string) $this->numeroRequerimiento);
+
+        if ($numero === '') {
+            return;
+        }
+
+        /*
+     * AJUSTAR AQUÍ si el campo real del tablero administrativo
+     * no es jobs.value_campo1.
+     */
+        $job = DB::table('jobs')
+            ->where('id_motor', $this->motor_id)
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$job) {
+            return;
+        }
+
+        DB::table('jobs')
+            ->where('id', $job->id)
+            ->update([
+                'value_campo1' => $numero,
+                'updated_at' => now(),
+            ]);
     }
 }

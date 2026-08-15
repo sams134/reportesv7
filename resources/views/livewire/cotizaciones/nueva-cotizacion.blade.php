@@ -356,6 +356,33 @@
                             @endif
 
                         </div>
+                        <div class="card border-light shadow-sm mt-3" x-data="{ usarReq: @entangle('usarNumeroRequerimiento') }">
+                            <div class="card-body">
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox"
+                                        id="usarNumeroRequerimientoSwitch" x-model="usarReq">
+
+                                    <label class="form-check-label" for="usarNumeroRequerimientoSwitch">
+                                        Agregar número de requerimiento
+                                    </label>
+                                </div>
+
+                                <div x-show="usarReq" x-transition>
+                                    <label class="form-label">
+                                        Número de requerimiento
+                                    </label>
+
+                                    <input type="text" class="form-control" wire:model.defer="numeroRequerimiento"
+                                        placeholder="Ej. 1234555">
+
+                                    <div class="form-text">
+                                        Se mostrará en la portada como: Req: XXXXX
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
                         @if ($equipoNoIngresadoTaller)
                             <div class="card border-primary shadow-sm mb-3">
                                 <div class="card-header bg-light">
@@ -408,6 +435,7 @@
                                 Eliminar imagen actual
                             </button>
                         @endif
+                        
                     </div>
                 </div>
             </div>

@@ -53,6 +53,7 @@ class Cotizacion extends Model
         'tipo_cotizacion',
         'es_unificada',
         'foto_portada',
+        'mostrar_numero_requerimiento',
     ];
 
     protected $casts = [
@@ -73,6 +74,7 @@ class Cotizacion extends Model
         'version' => 'integer',
         'tipo_cambio' => 'decimal:4',
         'es_unificada' => 'boolean',
+        'mostrar_numero_requerimiento' => 'boolean',
 
     ];
 

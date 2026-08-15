@@ -597,6 +597,10 @@
         return 'file://' . $path;
     };
 @endphp
+@php
+    $coverNumeroCotizacion = trim((string) ($cotizacion->numero ?? ''));
+    $coverNumeroRequerimiento = trim((string) ($numeroRequerimiento ?? ''));
+@endphp
 
 <!DOCTYPE html>
 <html lang="es">
@@ -1773,43 +1777,37 @@
     .page-break {
         page-break-before: always;
     }
-/* =========================================================
+
+    /* =========================================================
    NÚMERO DE COTIZACIÓN EN PORTADA
 ========================================================= */
+    .cover1-cotizacion-numero {
+        position: absolute;
+        top: 975px;
+        left: 17px;
+        width: 505px;
+        z-index: 8;
 
-.cover-quote-number-box {
-    position: absolute;
-    top: 1015px;
-    left: 18px;
-    width: 420px;
-    z-index: 8;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 28px;
+        line-height: 32px;
+        font-weight: 400;
+        color: #234a9b;
+    }
 
-    background: #ffffff;
-    border-left: 7px solid #11a9da;
-    border-radius: 8px;
-    padding: 13px 18px 12px 18px;
+    .cover1-req-numero {
+        position: absolute;
+        top: 1015px;
+        left: 17px;
+        width: 505px;
+        z-index: 8;
 
-    font-family: Arial, Helvetica, sans-serif;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-}
-
-.cover-quote-number-label {
-    font-size: 17px;
-    line-height: 20px;
-    font-weight: 800;
-    color: #234a9b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 5px;
-}
-
-.cover-quote-number-value {
-    font-size: 29px;
-    line-height: 32px;
-    font-weight: 800;
-    color: #222222;
-    letter-spacing: 0.4px;
-}
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 28px;
+        line-height: 32px;
+        font-weight: 400;
+        color: #234a9b;
+    }
 </style>
 
 <body>
@@ -1868,6 +1866,17 @@
                 @if ($cover1Cliente)
                     <div class="cover1-cliente">
                         {{ $cover1Cliente }}
+                    </div>
+                @endif
+                @if ($coverNumeroCotizacion)
+                    <div class="cover1-cotizacion-numero">
+                        {{ $coverNumeroCotizacion }}
+                    </div>
+                @endif
+
+                @if ($coverNumeroRequerimiento)
+                    <div class="cover1-req-numero">
+                        Req: {{ $coverNumeroRequerimiento }}
                     </div>
                 @endif
 
@@ -2176,7 +2185,8 @@
 
                             <tr class="unified-subtotal-row">
                                 <td colspan="4">
-                                   Subtotal {{ $esCotizacionExcel ? ($grupo['equipo'] ?? $grupo['titulo']) : $grupo['titulo'] }}
+                                    Subtotal
+                                    {{ $esCotizacionExcel ? $grupo['equipo'] ?? $grupo['titulo'] : $grupo['titulo'] }}
                                 </td>
 
                                 <td>
@@ -2243,7 +2253,7 @@
                 <table class="items-total-table">
                     <tr class="items-grand-total">
                         <td>
-                           {{ $esCotizacionAgrupada ? 'Total general (IVA incluido)' : 'Total (IVA incluido)' }}
+                            {{ $esCotizacionAgrupada ? 'Total general (IVA incluido)' : 'Total (IVA incluido)' }}
                         </td>
 
                         <td class="items-total-value">

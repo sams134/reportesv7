@@ -12,6 +12,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
+use Illuminate\Support\Facades\DB;
+
 
 
 class CotizacionPdfController extends Controller
@@ -132,6 +134,7 @@ class CotizacionPdfController extends Controller
             'firmante' => $this->firmanteCotizacion($cotizacion),
             'usarPortada' => $usarPortada,
             'usarCartaPresentacion' => $usarCartaPresentacion,
+            'numeroRequerimiento' => $this->numeroRequerimientoCotizacion($cotizacion),
         ];
     }
 
@@ -277,5 +280,52 @@ class CotizacionPdfController extends Controller
             'direccion_linea_1' => '23 ave 28-46 Zona 5 Guatemala,',
             'direccion_linea_2' => 'Guatemala C.A',
         ];
+    }
+    private function numeroRequerimientoCotizacion(Cotizacion $cotizacion): ?string
+    {
+        if (!(bool) ($cotizacion->mostrar_numero_requerimiento ?? false)) {
+            return null;
+        }
+
+        if (!$cotizacion->id_motor) {
+            return null;
+        }
+
+        $job = DB::table('jobs')
+            ->leftJoin('job_type', 'job_type.id', '=', 'jobs.job_type_id')
+            ->where('jobs.id_motor', $cotizacion->id_motor)
+            ->where(function ($query) {
+                $query->where('job_type.campo1', 'like', '%requer%')
+                    ->orWhere('job_type.campo1', 'like', '%solicitud%')
+                    ->orWhere('job_type.campo2', 'like', '%requer%')
+                    ->orWhere('job_type.campo2', 'like', '%solicitud%');
+            })
+            ->orderByDesc('jobs.id')
+            ->select(
+                'jobs.value_campo1',
+                'jobs.value_campo2',
+                'job_type.campo1',
+                'job_type.campo2'
+            )
+            ->first();
+
+        if (!$job) {
+            return null;
+        }
+
+        if (
+            !empty($job->campo2) &&
+            (
+                stripos($job->campo2, 'requer') !== false ||
+                stripos($job->campo2, 'solicitud') !== false
+            )
+        ) {
+            $numero = trim((string) $job->value_campo2);
+            return $numero !== '' ? $numero : null;
+        }
+
+        $numero = trim((string) $job->value_campo1);
+
+        return $numero !== '' ? $numero : null;
     }
 }
