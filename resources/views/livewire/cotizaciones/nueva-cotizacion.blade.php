@@ -9,18 +9,6 @@
         .cotizacion-items-table-wrapper td {
             overflow: visible !important;
         }
-
-        .cotizacion-items-card.items-search-open {
-            min-height: 680px;
-        }
-
-        .cotizacion-items-card.items-search-open .card-body {
-            min-height: 620px;
-        }
-
-        .cotizacion-items-table-wrapper.search-active {
-            min-height: 560px;
-        }
     </style>
     <style>
         .drag-handle {
@@ -3159,61 +3147,50 @@
             });
         }
 
-        function activarEspacioBuscadorItems() {
-            const card = document.getElementById('cardItemsCotizacion');
-            const tablaWrapper = document.getElementById('tablaItemsCotizacionWrapper');
+        function posicionarBuscadorItems() {
 
-            if (card) {
-                card.classList.add('items-search-open');
-            }
-
-            if (tablaWrapper) {
-                tablaWrapper.classList.add('search-active');
-            }
-        }
-
-        function desactivarEspacioBuscadorItems() {
-            const card = document.getElementById('cardItemsCotizacion');
-            const tablaWrapper = document.getElementById('tablaItemsCotizacionWrapper');
-
-            if (card) {
-                card.classList.remove('items-search-open');
-            }
-
-            if (tablaWrapper) {
-                tablaWrapper.classList.remove('search-active');
-            }
-        }
-
-        function enfocarBuscadorItems() {
             setTimeout(function() {
+
                 const input = document.getElementById('buscadorItemsCotizacionInput');
 
-                if (input) {
+                if (!input) {
+                    return;
+                }
+
+                /*
+                 * Colocamos el buscador aproximadamente
+                 * 100px debajo de la parte superior.
+                 *
+                 * Así queda espacio debajo para ver las opciones.
+                 */
+                const y =
+                    input.getBoundingClientRect().top +
+                    window.pageYOffset -
+                    100;
+
+                window.scrollTo({
+                    top: y,
+                    behavior: 'smooth'
+                });
+
+                /*
+                 * Le damos foco SIN permitir que el navegador
+                 * haga otro auto-scroll.
+                 */
+                try {
+                    input.focus({
+                        preventScroll: true
+                    });
+                } catch (e) {
                     input.focus();
                 }
-            }, 350);
+
+            }, 100);
         }
 
-        window.addEventListener('pre-abrir-buscador-items-cotizacion', function() {
-            activarEspacioBuscadorItems();
-
-            setTimeout(function() {
-                scrollItemsCotizacionTop();
-            }, 50);
-        });
 
         window.addEventListener('abrir-buscador-items-cotizacion', function() {
-            activarEspacioBuscadorItems();
-
-            setTimeout(function() {
-                scrollItemsCotizacionTop();
-                enfocarBuscadorItems();
-            }, 150);
-        });
-
-        window.addEventListener('cerrar-buscador-items-cotizacion', function() {
-            desactivarEspacioBuscadorItems();
+            posicionarBuscadorItems();
         });
     </script>
     <script src="{{ asset('vendors/sortable/Sortable.min.js') }}"></script>

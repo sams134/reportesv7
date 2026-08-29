@@ -1,15 +1,12 @@
-<div id="buscadorItemsCotizacionWrapper" class="w-100" style="{{ $modoBusqueda ? 'min-height: 470px;' : '' }}" x-data
-    @click.outside="$wire.cerrarBuscador()">
+<div id="buscadorItemsCotizacionWrapper" class="w-100" x-data @click.outside="$wire.cerrarBuscador()">
     @if (!$modoBusqueda)
-        <button type="button" class="btn btn-link px-0 text-primary fw-semibold"
-            onclick="window.dispatchEvent(new CustomEvent('pre-abrir-buscador-items-cotizacion'))"
-            wire:click="abrirBuscador">
+        <button type="button" class="btn btn-link px-0 text-primary fw-semibold" wire:click="abrirBuscador">
             <i class="fas fa-plus-circle me-1"></i>
             Agregar otro Item
         </button>
     @else
         <input id="buscadorItemsCotizacionInput" type="search" class="form-control"
-            placeholder="Buscar item o crear uno nuevo" wire:model.debounce.300ms="search" autofocus>
+            placeholder="Buscar item o crear uno nuevo" wire:model.debounce.300ms="search">
 
         <div id="dropdownItemsCotizacion"
             class="border font-base mt-2 py-0 overflow-hidden w-100 shadow-sm bg-white rounded {{ $isOpen ? 'd-block' : 'd-none' }}"
@@ -18,8 +15,9 @@
 
                 {{-- CREAR NUEVO ITEM SIEMPRE VISIBLE --}}
                 @if ($crearItem)
-                    <a href="#" class="dropdown-item px-card py-2 fs-0"
-                        wire:mousedown.prevent="seleccionarItem({{ $crearItem->id }})">
+                    <button type="button" class="dropdown-item px-card py-2 fs-0 text-start w-100"
+                        wire:click="seleccionarItem({{ $crearItem->id }})">
+
                         <div class="d-flex align-items-center">
                             <i class="fas fa-plus-circle text-primary me-2"></i>
 
@@ -27,12 +25,14 @@
                                 <div class="fw-semibold">
                                     {{ $crearItem->nombre }}
                                 </div>
+
                                 <div class="small text-muted">
                                     Crear un item personalizado para esta cotización
                                 </div>
                             </div>
                         </div>
-                    </a>
+
+                    </button>
                 @endif
 
                 {{-- ITEMS RÁPIDOS --}}
@@ -44,8 +44,8 @@
                     </h6>
 
                     @foreach ($itemsRapidos as $item)
-                        <a href="#" class="dropdown-item px-card py-2 fs-0"
-                            wire:mousedown.prevent="seleccionarItem({{ $item->id }})">
+                        <button type="button" class="dropdown-item px-card py-2 fs-0 text-start w-100"
+                            wire:click="seleccionarItem({{ $item->id }})">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <div class="fw-semibold">
@@ -63,7 +63,7 @@
                                     </div>
                                 @endif
                             </div>
-                        </a>
+                        </button>
                     @endforeach
                 @endif
 
@@ -76,8 +76,8 @@
                     </h6>
 
                     @forelse ($resultados as $item)
-                        <a href="#" class="dropdown-item px-card py-2 fs-0"
-                            wire:mousedown.prevent="seleccionarItemHistorico({{ $item->id }})">
+                        <button type="button" class="dropdown-item px-card py-2 fs-0 text-start w-100"
+                            wire:click="seleccionarItemHistorico({{ $item->id }})">
 
                             <div class="d-flex justify-content-between align-items-start">
 
@@ -98,7 +98,7 @@
                                 </div>
 
                             </div>
-                        </a>
+                        </button>
                     @empty
                         <div class="px-card py-2 small text-muted">
                             No se encontraron items usados anteriormente.
