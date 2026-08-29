@@ -247,6 +247,7 @@ class NuevaCotizacion extends Component
     protected $listeners = [
         'osCotizacionSeleccionada' => 'seleccionarOsCotizacion',
         'catalogoItemCotizacionSeleccionado' => 'manejarCatalogoItemSeleccionado',
+        'historialItemCotizacionSeleccionado' => 'manejarHistorialItemSeleccionado',
         'eliminarItemCotizacionConfirmado' => 'eliminarItemCotizacionConfirmado',
     ];
 
@@ -849,6 +850,52 @@ class NuevaCotizacion extends Component
         $this->agregarItemDesdeCatalogo($item);
     }
 
+    public function manejarHistorialItemSeleccionado($payload)
+    {
+        $itemId = is_array($payload)
+            ? ($payload['id'] ?? null)
+            : $payload;
+
+        if (!$itemId) {
+            return;
+        }
+
+        $item = CotizacionItem::find($itemId);
+
+        if (!$item) {
+            return;
+        }
+
+        $precio = round((float) $item->precio_unitario, 2);
+
+        $this->itemsCotizacion[] = [
+            'uid' => uniqid('item_', true),
+
+            /*
+         * Lo tratamos como un nuevo item general.
+         * No copiamos catalogo_item_id para evitar depender
+         * del catálogo original del item histórico.
+         */
+            'catalogo_item_id' => null,
+            'tipo_item' => 'general',
+
+            'nombre' => $item->nombre,
+            'descripcion' => $item->descripcion,
+
+            /*
+         * Al reutilizar un item histórico comenzamos
+         * nuevamente con cantidad 1.
+         */
+            'cantidad' => 1,
+
+            'precio_unitario' => $precio,
+            'precio_total' => $precio,
+        ];
+
+        $this->recalcularTotalesItems();
+
+        $this->dispatchBrowserEvent('item-cotizacion-agregado');
+    }
     private function abrirModalItemCotizacion($item)
     {
         $this->modalItemTipo = 'general';
@@ -5165,7 +5212,7 @@ class NuevaCotizacion extends Component
     private function mergeGarantiaUnificada($cotizaciones)
     {
         $ranking = [
-             'no_aplica' => 0,
+            'no_aplica' => 0,
             '30_dias' => 1,
             '3_meses' => 2,
             '6_meses' => 3,
@@ -5217,7 +5264,7 @@ class NuevaCotizacion extends Component
     }
     private function maxGarantiaTiempo($cotizaciones, array $ranking, string $tipo)
     {
-         $seleccionado = 'no_aplica';
+        $seleccionado = 'no_aplica';
         $maxRank = -1;
 
         foreach ($cotizaciones as $cotizacion) {
@@ -5995,7 +6042,7 @@ class NuevaCotizacion extends Component
         );
     }
 
-    public function guardarCotizacionDesdeModalPdf($usarPortada = false, $usarCartaPresentacion = true,$mostrarDesgloseIva = true)
+    public function guardarCotizacionDesdeModalPdf($usarPortada = false, $usarCartaPresentacion = true, $mostrarDesgloseIva = true)
     {
         $this->pdfUsarPortada = (bool) $usarPortada;
         $this->pdfUsarCartaPresentacion = (bool) $usarCartaPresentacion;

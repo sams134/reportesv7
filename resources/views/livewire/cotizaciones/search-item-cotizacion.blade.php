@@ -72,31 +72,36 @@
                     <hr class="bg-200 dark__bg-900 my-2">
 
                     <h6 class="dropdown-header fw-medium text-uppercase px-card fs--2 pt-0 pb-2">
-                        Items encontrados
+                        Items usados anteriormente
                     </h6>
 
                     @forelse ($resultados as $item)
                         <a href="#" class="dropdown-item px-card py-2 fs-0"
-                            wire:mousedown.prevent="seleccionarItem({{ $item->id }})">
+                            wire:mousedown.prevent="seleccionarItemHistorico({{ $item->id }})">
+
                             <div class="d-flex justify-content-between align-items-start">
+
                                 <div>
                                     <div class="fw-semibold">
                                         {{ $item->nombre }}
                                     </div>
 
-                                    <div class="small text-muted">
-                                        {{ \Illuminate\Support\Str::limit($item->descripcion, 100) }}
-                                    </div>
+                                    @if ($item->descripcion)
+                                        <div class="small text-muted">
+                                            {{ \Illuminate\Support\Str::limit($item->descripcion, 100) }}
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <div class="ms-2 text-nowrap">
-                                    Q{{ number_format($item->precio, 2) }}
+                                    Q{{ number_format((float) $item->precio_unitario, 2) }}
                                 </div>
+
                             </div>
                         </a>
                     @empty
                         <div class="px-card py-2 small text-muted">
-                            No se encontraron items con ese nombre.
+                            No se encontraron items usados anteriormente.
                         </div>
                     @endforelse
                 @endif
@@ -104,4 +109,4 @@
             </div>
         </div>
     @endif
-    </div>
+</div>
