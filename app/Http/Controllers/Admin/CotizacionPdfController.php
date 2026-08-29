@@ -45,6 +45,10 @@ class CotizacionPdfController extends Controller
             $request->query('carta', 1),
             FILTER_VALIDATE_BOOLEAN
         );
+        $mostrarDesgloseIva = filter_var(
+            $request->query('iva', 1),
+            FILTER_VALIDATE_BOOLEAN
+        );
 
         $filename = $this->nombreArchivoCotizacionPdf($cotizacion);
 
@@ -56,7 +60,7 @@ class CotizacionPdfController extends Controller
         $terminosPath = $tmpDir . '/05_terminos.pdf';
         $finalPath = $tmpDir . '/cotizacion_final.pdf';
 
-        $data = $this->dataPdfCotizacion($cotizacion, $usarPortada, $usarCartaPresentacion);
+        $data = $this->dataPdfCotizacion($cotizacion, $usarPortada, $usarCartaPresentacion, $mostrarDesgloseIva);
 
         /*
      * 1. Portada + carta
@@ -125,7 +129,8 @@ class CotizacionPdfController extends Controller
     private function dataPdfCotizacion(
         Cotizacion $cotizacion,
         bool $usarPortada,
-        bool $usarCartaPresentacion
+        bool $usarCartaPresentacion,
+        bool $mostrarDesgloseIva
     ): array {
         return [
             'cotizacion' => $cotizacion,
@@ -134,6 +139,7 @@ class CotizacionPdfController extends Controller
             'firmante' => $this->firmanteCotizacion($cotizacion),
             'usarPortada' => $usarPortada,
             'usarCartaPresentacion' => $usarCartaPresentacion,
+            'mostrarDesgloseIva' => $mostrarDesgloseIva,
             'numeroRequerimiento' => $this->numeroRequerimientoCotizacion($cotizacion),
         ];
     }

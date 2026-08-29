@@ -79,6 +79,7 @@ class NuevaCotizacion extends Component
     public $subtituloCotizacion = '';
     public $pdfUsarPortada = false;
     public $pdfUsarCartaPresentacion = true;
+    public $pdfMostrarDesgloseIva = true;
 
     public $numeroCotizacion = '';
     public $cotYear;
@@ -2116,6 +2117,7 @@ class NuevaCotizacion extends Component
                     $urlPdf = route('admin.cotizaciones.downloadPdf', [
                         'cotizacion' => $this->cotizacionEditandoId,
                         'portada' => $this->pdfUsarPortada ? 1 : 0,
+                        'iva' => $this->pdfMostrarDesgloseIva ? 1 : 0,
                     ]);
 
                     $this->dispatchBrowserEvent('cotizacion-pdf-listo', [
@@ -2249,6 +2251,7 @@ class NuevaCotizacion extends Component
                     'cotizacion' => $cotizacion->id,
                     'portada' => $this->pdfUsarPortada ? 1 : 0,
                     'carta' => $this->pdfUsarCartaPresentacion ? 1 : 0,
+                    'iva' => $this->pdfMostrarDesgloseIva ? 1 : 0,
                 ]);
 
                 $this->dispatchBrowserEvent('cotizacion-pdf-listo', [
@@ -5404,6 +5407,7 @@ class NuevaCotizacion extends Component
                 'cotizacion' => $cotizacion->id,
                 'portada' => $this->pdfUsarPortada ? 1 : 0,
                 'carta' => $this->pdfUsarCartaPresentacion ? 1 : 0,
+                'iva' => $this->pdfMostrarDesgloseIva ? 1 : 0,
             ]);
 
             $this->dispatchBrowserEvent('cotizacion-pdf-listo', [
@@ -5989,10 +5993,12 @@ class NuevaCotizacion extends Component
         );
     }
 
-    public function guardarCotizacionDesdeModalPdf($usarPortada = false, $usarCartaPresentacion = true)
+    public function guardarCotizacionDesdeModalPdf($usarPortada = false, $usarCartaPresentacion = true,$mostrarDesgloseIva = true)
     {
         $this->pdfUsarPortada = (bool) $usarPortada;
         $this->pdfUsarCartaPresentacion = (bool) $usarCartaPresentacion;
+        $this->pdfMostrarDesgloseIva = (bool) $mostrarDesgloseIva;
+
 
         return $this->guardarCotizacion(true);
     }
@@ -6300,6 +6306,7 @@ class NuevaCotizacion extends Component
             $urlPdf = route('admin.cotizaciones.downloadPdf', [
                 'cotizacion' => $cotizacion->id,
                 'portada' => $this->pdfUsarPortada ? 1 : 0,
+                'iva' => $this->pdfMostrarDesgloseIva ? 1 : 0,
             ]);
 
             $this->dispatchBrowserEvent('cotizacion-pdf-listo', [

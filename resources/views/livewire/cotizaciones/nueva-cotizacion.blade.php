@@ -435,7 +435,7 @@
                                 Eliminar imagen actual
                             </button>
                         @endif
-                        
+
                     </div>
                 </div>
             </div>
@@ -2643,6 +2643,18 @@
                                 Agregar carta de presentación
                             </label>
                         </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="pdfMostrarDesgloseIvaSwitch"
+                                wire:model="pdfMostrarDesgloseIva">
+
+                            <label class="form-check-label" for="pdfMostrarDesgloseIvaSwitch">
+                                Mostrar desglose de IVA
+                            </label>
+
+                            <div class="form-text">
+                                Muestra el precio sin IVA y el valor correspondiente al IVA 12%.
+                            </div>
+                        </div>
 
                         <div class="alert alert-light border small mb-0">
                             Más adelante aquí agregaremos:
@@ -2688,8 +2700,9 @@
 
         const usarPortada = document.getElementById('pdfUsarPortadaSwitch')?.checked ? 1 : 0;
         const usarCartaPresentacion = document.getElementById('pdfUsarCartaPresentacionSwitch')?.checked ? 1 : 0;
+        const mostrarDesgloseIva = document.getElementById('pdfMostrarDesgloseIvaSwitch')?.checked ? 1 : 0;
 
-        $wire.guardarCotizacionDesdeModalPdf(usarPortada, usarCartaPresentacion);
+        $wire.guardarCotizacionDesdeModalPdf(usarPortada, usarCartaPresentacion, mostrarDesgloseIva);
         "
                         x-bind:disabled="generandoPdf" x-on:cotizacion-pdf-finalizado.window="generandoPdf = false">
 

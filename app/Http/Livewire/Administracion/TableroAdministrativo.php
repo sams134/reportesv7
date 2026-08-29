@@ -19,6 +19,8 @@ class TableroAdministrativo extends Component
     use WithPagination;
     use WithFileUploads;
 
+    private const STATUS_PAGADO_ID = 15;
+
     protected $paginationTheme = 'bootstrap';
 
     public $search = '';
@@ -335,6 +337,7 @@ class TableroAdministrativo extends Component
             'comentarios' => $this->comentarios,
             'updated_by' => auth()->id(),
         ]);
+        $this->sincronizarStatusProduccionPorPago($admin);
 
         $this->dispatchBrowserEvent('cerrar-modal-admin-status');
         $this->dispatchBrowserEvent('admin-status-actualizado');
@@ -839,6 +842,10 @@ class TableroAdministrativo extends Component
         }
 
         $admin->update($updates);
+
+        if ($tipo === 'pago') {
+            $this->sincronizarStatusProduccionPorPago($admin);
+        }
     }
     public function updatedInfoFile()
     {
@@ -886,6 +893,17 @@ class TableroAdministrativo extends Component
     {
         $this->dispatchBrowserEvent('confirmar-eliminar-admin-documento', [
             'documento_id' => $documentoId,
+        ]);
+    }
+    private function sincronizarStatusProduccionPorPago(MotorAdminStatus $admin): void
+    {
+        if ($this->pago_estado !== 'pagado') {
+            return;
+        }
+
+        Motor::where('id_motor', $admin->id_motor)->update([
+            'status_id' => self::STATUS_PAGADO_ID,
+            'updated_at' => now(),
         ]);
     }
 }

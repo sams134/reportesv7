@@ -2261,7 +2261,7 @@
                         </td>
                     </tr>
                 </table>
-
+                @if ($mostrarDesgloseIva)
                 <table class="items-iva-table">
                     <tr class="items-iva-title">
                         <td colspan="2">
@@ -2289,6 +2289,7 @@
                         </td>
                     </tr>
                 </table>
+                @endif
 
                 @if ($mostrarConversionUsd)
                     <table class="items-total-table" style="margin-top: 8px;">

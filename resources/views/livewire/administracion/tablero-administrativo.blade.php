@@ -95,6 +95,8 @@
                                 $aceptEstado = optional($admin)->aceptacion_estado ?? 'pendiente';
                                 $factEstado = optional($admin)->factura_estado ?? 'pendiente';
                                 $pagoEstado = optional($admin)->pago_estado ?? 'pendiente';
+
+                                $motorPagado = (int) ($motor->status_id ?? 0) === 15 || $pagoEstado === 'pagado';
                             @endphp
 
                             <tr>
@@ -146,88 +148,97 @@
                                     <x-status-badge status_id="{{ $motor->status_id }}" />
                                 </td>
 
-                                <td class="text-center">
-                                    @php
-                                        $admin = $motor->adminStatus;
-                                        $tieneCotizacionExterna =
-                                            $admin && $admin->documentos
-                                                ? $admin->documentos->where('tipo', 'cotizacion_externa')->count() > 0
-                                                : false;
-                                    @endphp
+                                @if ($motorPagado)
+                                    <td colspan="6" class="text-center">
+                                        <span class="badge bg-success">
+                                            Proyecto pagado / cerrado
+                                        </span>
+                                    </td>
+                                @else
+                                    <td class="text-center">
+                                        @php
+                                            $admin = $motor->adminStatus;
+                                            $tieneCotizacionExterna =
+                                                $admin && $admin->documentos
+                                                    ? $admin->documentos->where('tipo', 'cotizacion_externa')->count() >
+                                                        0
+                                                    : false;
+                                        @endphp
 
-                                    @if ($admin && $admin->cotizacion_id && $admin->cotizacion)
-                                        <span class="badge bg-success">Cotizado</span>
+                                        @if ($admin && $admin->cotizacion_id && $admin->cotizacion)
+                                            <span class="badge bg-success">Cotizado</span>
 
-                                        <div>
-                                            <a href="{{ route('admin.cotizaciones.edit', ['cotizacion' => $admin->cotizacion_id]) }}"
-                                                target="_blank">
-                                                {{ $admin->cotizacion->numero }}
-                                            </a>
-                                        </div>
-                                    @elseif ($tieneCotizacionExterna || optional($admin)->cotizacion_estado === 'cotizado')
-                                        <span class="badge bg-success">Cotizado</span>
+                                            <div>
+                                                <a href="{{ route('admin.cotizaciones.edit', ['cotizacion' => $admin->cotizacion_id]) }}"
+                                                    target="_blank">
+                                                    {{ $admin->cotizacion->numero }}
+                                                </a>
+                                            </div>
+                                        @elseif ($tieneCotizacionExterna || optional($admin)->cotizacion_estado === 'cotizado')
+                                            <span class="badge bg-success">Cotizado</span>
 
-                                        <div class="small text-muted">
-                                            Cotización externa
-                                        </div>
-                                    @else
-                                        <span class="badge bg-danger">Pendiente</span>
-                                    @endif
-                                </td>
+                                            <div class="small text-muted">
+                                                Cotización externa
+                                            </div>
+                                        @else
+                                            <span class="badge bg-danger">Pendiente</span>
+                                        @endif
+                                    </td>
 
-                                <td class="text-center">
-                                    <span class="badge {{ $this->badgeClass($reqEstado) }}">
-                                        {{ $this->badgeLabel($reqEstado) }}
-                                    </span>
+                                    <td class="text-center">
+                                        <span class="badge {{ $this->badgeClass($reqEstado) }}">
+                                            {{ $this->badgeLabel($reqEstado) }}
+                                        </span>
 
-                                    @if ($admin && $admin->requerimiento_numero)
-                                        <div class="small text-muted">
-                                            {{ $admin->requerimiento_numero }}
-                                        </div>
-                                    @endif
-                                </td>
+                                        @if ($admin && $admin->requerimiento_numero)
+                                            <div class="small text-muted">
+                                                {{ $admin->requerimiento_numero }}
+                                            </div>
+                                        @endif
+                                    </td>
 
-                                <td class="text-center">
-                                    <span class="badge {{ $this->badgeClass($ocEstado) }}">
-                                        {{ $this->badgeLabel($ocEstado) }}
-                                    </span>
+                                    <td class="text-center">
+                                        <span class="badge {{ $this->badgeClass($ocEstado) }}">
+                                            {{ $this->badgeLabel($ocEstado) }}
+                                        </span>
 
-                                    @if ($admin && $admin->oc_numero)
-                                        <div class="small text-muted">
-                                            {{ $admin->oc_numero }}
-                                        </div>
-                                    @endif
-                                </td>
+                                        @if ($admin && $admin->oc_numero)
+                                            <div class="small text-muted">
+                                                {{ $admin->oc_numero }}
+                                            </div>
+                                        @endif
+                                    </td>
 
-                                <td class="text-center">
-                                    <span class="badge {{ $this->badgeClass($autEstado) }}">
-                                        {{ $this->badgeLabel($autEstado) }}
-                                    </span>
-                                </td>
+                                    <td class="text-center">
+                                        <span class="badge {{ $this->badgeClass($autEstado) }}">
+                                            {{ $this->badgeLabel($autEstado) }}
+                                        </span>
+                                    </td>
 
-                                <td class="text-center">
-                                    <span class="badge {{ $this->badgeClass($antEstado) }}">
-                                        {{ $this->badgeLabel($antEstado) }}
-                                    </span>
+                                    <td class="text-center">
+                                        <span class="badge {{ $this->badgeClass($antEstado) }}">
+                                            {{ $this->badgeLabel($antEstado) }}
+                                        </span>
 
-                                    @if ($admin && $admin->anticipo_monto)
-                                        <div class="small text-muted">
-                                            Q{{ number_format($admin->anticipo_monto, 2) }}
-                                        </div>
-                                    @endif
-                                </td>
+                                        @if ($admin && $admin->anticipo_monto)
+                                            <div class="small text-muted">
+                                                Q{{ number_format($admin->anticipo_monto, 2) }}
+                                            </div>
+                                        @endif
+                                    </td>
 
-                                <td class="text-center">
-                                    <span class="badge {{ $this->badgeClass($aceptEstado) }}">
-                                        {{ $this->badgeLabel($aceptEstado) }}
-                                    </span>
+                                    <td class="text-center">
+                                        <span class="badge {{ $this->badgeClass($aceptEstado) }}">
+                                            {{ $this->badgeLabel($aceptEstado) }}
+                                        </span>
 
-                                    @if ($admin && $admin->aceptacion_numero)
-                                        <div class="small text-muted">
-                                            {{ $admin->aceptacion_numero }}
-                                        </div>
-                                    @endif
-                                </td>
+                                        @if ($admin && $admin->aceptacion_numero)
+                                            <div class="small text-muted">
+                                                {{ $admin->aceptacion_numero }}
+                                            </div>
+                                        @endif
+                                    </td>
+                                @endif
 
                                 <td class="text-center">
                                     <span class="badge {{ $this->badgeClass($factEstado) }}">
