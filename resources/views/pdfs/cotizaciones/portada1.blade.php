@@ -373,6 +373,7 @@
 
     $labelGarantiaTiempo = function ($value) {
         $opciones = [
+            'no_aplica' => 'No aplica (N/A)',
             '30_dias' => '30 días',
             '3_meses' => '3 meses',
             '6_meses' => '6 meses',

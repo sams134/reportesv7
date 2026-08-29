@@ -4671,6 +4671,7 @@ class NuevaCotizacion extends Component
     public function labelGarantiaTiempo($value)
     {
         $opciones = [
+            'no_aplica' => 'No aplica (N/A)',
             '30_dias' => '30 días',
             '3_meses' => '3 meses',
             '6_meses' => '6 meses',
@@ -5164,6 +5165,7 @@ class NuevaCotizacion extends Component
     private function mergeGarantiaUnificada($cotizaciones)
     {
         $ranking = [
+             'no_aplica' => 0,
             '30_dias' => 1,
             '3_meses' => 2,
             '6_meses' => 3,
@@ -5215,8 +5217,8 @@ class NuevaCotizacion extends Component
     }
     private function maxGarantiaTiempo($cotizaciones, array $ranking, string $tipo)
     {
-        $seleccionado = '30_dias';
-        $maxRank = 0;
+         $seleccionado = 'no_aplica';
+        $maxRank = -1;
 
         foreach ($cotizaciones as $cotizacion) {
             if ($tipo === 'general') {

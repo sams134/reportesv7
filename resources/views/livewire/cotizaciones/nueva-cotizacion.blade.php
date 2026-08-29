@@ -2834,6 +2834,7 @@
                                 <label class="form-label">Tiempo de garantía</label>
 
                                 <select class="form-select" wire:model="garantiaGeneralTiempo">
+                                    <option value="no_aplica">No aplica (N/A)</option>
                                     <option value="30_dias">30 días</option>
                                     <option value="3_meses">3 meses</option>
                                     <option value="6_meses">6 meses</option>
@@ -2852,6 +2853,7 @@
                                 </label>
 
                                 <select class="form-select" wire:model="garantiaElectricaTiempo">
+                                    <option value="no_aplica">No aplica (N/A)</option>
                                     <option value="30_dias">30 días</option>
                                     <option value="3_meses">3 meses</option>
                                     <option value="6_meses">6 meses</option>
@@ -2866,6 +2868,7 @@
                                 </label>
 
                                 <select class="form-select" wire:model="garantiaMecanicaTiempo">
+                                    <option value="no_aplica">No aplica (N/A)</option>
                                     <option value="30_dias">30 días</option>
                                     <option value="3_meses">3 meses</option>
                                     <option value="6_meses">6 meses</option>
