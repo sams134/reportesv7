@@ -899,7 +899,7 @@
         margin-left: auto;
         margin-right: auto;
         border-collapse: collapse;
-        font-size: 11px;
+        font-size: 12px;
         color: #1f2933;
     }
 
@@ -1035,7 +1035,7 @@
         color: #ffffff;
         border: 1px solid #0d2a68;
         padding: 8px 6px;
-        font-size: 11px;
+        font-size: 12px;
         text-align: center;
     }
 
@@ -2253,7 +2253,13 @@
                 <table class="items-total-table">
                     <tr class="items-grand-total">
                         <td>
-                            {{ $esCotizacionAgrupada ? 'Total general (IVA incluido)' : 'Total (IVA incluido)' }}
+                            {{ $mostrarDesgloseIva
+                                ? ($esCotizacionAgrupada
+                                    ? 'Total general (IVA incluido)'
+                                    : 'Total (IVA incluido)')
+                                : ($esCotizacionAgrupada
+                                    ? 'Total general'
+                                    : 'Total') }}
                         </td>
 
                         <td class="items-total-value">
@@ -2262,33 +2268,33 @@
                     </tr>
                 </table>
                 @if ($mostrarDesgloseIva)
-                <table class="items-iva-table">
-                    <tr class="items-iva-title">
-                        <td colspan="2">
-                            Desglose de IVA
-                        </td>
-                    </tr>
+                    <table class="items-iva-table">
+                        <tr class="items-iva-title">
+                            <td colspan="2">
+                                Desglose de IVA
+                            </td>
+                        </tr>
 
-                    <tr>
-                        <td class="items-iva-label">
-                            Precio sin IVA
-                        </td>
+                        <tr>
+                            <td class="items-iva-label">
+                                Precio sin IVA
+                            </td>
 
-                        <td class="items-iva-value">
-                            {{ $formatoMoneda($precioSinIva) }}
-                        </td>
-                    </tr>
+                            <td class="items-iva-value">
+                                {{ $formatoMoneda($precioSinIva) }}
+                            </td>
+                        </tr>
 
-                    <tr>
-                        <td class="items-iva-label">
-                            IVA 12%
-                        </td>
+                        <tr>
+                            <td class="items-iva-label">
+                                IVA 12%
+                            </td>
 
-                        <td class="items-iva-value">
-                            {{ $formatoMoneda($valorIva) }}
-                        </td>
-                    </tr>
-                </table>
+                            <td class="items-iva-value">
+                                {{ $formatoMoneda($valorIva) }}
+                            </td>
+                        </tr>
+                    </table>
                 @endif
 
                 @if ($mostrarConversionUsd)
