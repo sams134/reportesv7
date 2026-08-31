@@ -82,6 +82,17 @@ class IndexCotizaciones extends Component
 
     public $adminDocumentosResumen = [];
 
+    /*
+ * Modal compartido de generación de PDF
+ */
+    public $pdfCotizacionId = null;
+
+    public $tituloCotizacion = '';
+    public $subtituloCotizacion = '';
+
+    public $pdfUsarPortada = false;
+    public $pdfUsarCartaPresentacion = true;
+    public $pdfMostrarDesgloseIva = true;
 
 
     protected $paginationTheme = 'bootstrap';
@@ -1542,6 +1553,72 @@ class IndexCotizaciones extends Component
             'Surge P-P EAR%',
             'Core Loss Test',
             'Hot Spot Test',
+        ]);
+    }
+    public function abrirModalOpcionesPdf($cotizacionId)
+    {
+        $cotizacion = Cotizacion::find($cotizacionId);
+
+        if (!$cotizacion) {
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'Cotización no encontrada',
+                'text' => 'La cotización ya no existe.',
+            ]);
+
+            return;
+        }
+
+        $this->pdfCotizacionId = $cotizacion->id;
+
+        /*
+     * Los mostramos en el modal como referencia,
+     * pero desde el Index serán readonly.
+     */
+        $this->tituloCotizacion = $cotizacion->titulo ?? 'Oferta Presupuestaria';
+        $this->subtituloCotizacion = $cotizacion->subtitulo ?? '';
+
+        /*
+     * Valores predeterminados iguales al Create.
+     */
+        $this->pdfUsarPortada = false;
+        $this->pdfUsarCartaPresentacion = true;
+        $this->pdfMostrarDesgloseIva = true;
+
+        $this->dispatchBrowserEvent('abrir-modal-opciones-pdf-cotizacion');
+    }
+    public function generarPdfDesdeModal(
+        $usarPortada = false,
+        $usarCartaPresentacion = true,
+        $mostrarDesgloseIva = true
+    ) {
+        if (!$this->pdfCotizacionId) {
+            return;
+        }
+
+        $cotizacion = Cotizacion::find($this->pdfCotizacionId);
+
+        if (!$cotizacion) {
+            $this->dispatchBrowserEvent('swal-error', [
+                'title' => 'Cotización no encontrada',
+                'text' => 'La cotización ya no existe.',
+            ]);
+
+            return;
+        }
+
+        $this->pdfUsarPortada = (bool) $usarPortada;
+        $this->pdfUsarCartaPresentacion = (bool) $usarCartaPresentacion;
+        $this->pdfMostrarDesgloseIva = (bool) $mostrarDesgloseIva;
+
+        $urlPdf = route('admin.cotizaciones.downloadPdf', [
+            'cotizacion' => $cotizacion->id,
+            'portada' => $this->pdfUsarPortada ? 1 : 0,
+            'carta' => $this->pdfUsarCartaPresentacion ? 1 : 0,
+            'iva' => $this->pdfMostrarDesgloseIva ? 1 : 0,
+        ]);
+
+        $this->dispatchBrowserEvent('cotizacion-pdf-listo', [
+            'url' => $urlPdf,
         ]);
     }
 }

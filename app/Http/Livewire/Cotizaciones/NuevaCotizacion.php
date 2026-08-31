@@ -6051,6 +6051,14 @@ class NuevaCotizacion extends Component
 
         return $this->guardarCotizacion(true);
     }
+    public function generarPdfDesdeModal($usarPortada = false,$usarCartaPresentacion = true,$mostrarDesgloseIva = true) 
+    {
+        return $this->guardarCotizacionDesdeModalPdf(
+            $usarPortada,
+            $usarCartaPresentacion,
+            $mostrarDesgloseIva
+        );
+    }
     private function asegurarContactosEnModoEdicion(): void
     {
         if (! $this->modoEdicion || ! $this->cotizacionEditandoId) {
@@ -6078,30 +6086,7 @@ class NuevaCotizacion extends Component
 
         $this->cargarContactosParaChoices();
     }
-    public function debugValidacionCotizacion()
-    {
-        $resultado = $this->validarCotizacionAntesDeContinuar();
-
-        dd([
-            'resultado' => $resultado,
-            'errores' => $this->getErrorBag()->toArray(),
-            'estado' => [
-                'tituloCotizacion' => $this->tituloCotizacion,
-                'cliente_id' => $this->cliente_id,
-                'contactosSeleccionados' => $this->contactosSeleccionados,
-                'cotDate' => $this->cotDate,
-                'cotValid' => $this->cotValid,
-                'itemsCotizacion_count' => count($this->itemsCotizacion),
-                'tiempoEntrega' => $this->tiempoEntrega,
-                'tiempoEntregaOtro' => $this->tiempoEntregaOtro,
-                'monedaCotizacion' => $this->monedaCotizacion,
-                'tipoCambio' => $this->tipoCambio,
-                'pdfsAntesItems_count' => count($this->pdfsAntesItems),
-                'pdfsDespuesItems_count' => count($this->pdfsDespuesItems),
-                'pdfsAdjuntosEliminarIds' => $this->pdfsAdjuntosEliminarIds,
-            ],
-        ]);
-    }
+    
 
     /* excel */
     private function inicializarModoExcel()

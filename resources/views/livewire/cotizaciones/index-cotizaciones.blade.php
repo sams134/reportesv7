@@ -206,10 +206,12 @@
 
                                 <td class="text-center">
                                     <div class="btn-group">
-                                        <a href="{{ route('admin.cotizaciones.downloadPdf', ['cotizacion' => $cotizacion->id]) }}"
-                                            class="btn btn-sm btn-outline-danger" target="_blank" title="Ver PDF">
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                            wire:click="abrirModalOpcionesPdf({{ $cotizacion->id }})"
+                                            title="Generar PDF">
+
                                             <i class="far fa-file-pdf"></i>
-                                        </a>
+                                        </button>
 
                                         <a href="{{ route('admin.cotizaciones.edit', ['cotizacion' => $cotizacion->id]) }}"
                                             class="btn btn-sm btn-outline-primary" title="Editar cotización">
@@ -534,6 +536,9 @@
         </div>
 
     </div>
+    @include('livewire.cotizaciones.partials.opciones-pdf-cotizacion', [
+        'contextoPdf' => 'index',
+    ])
     @include('livewire.administracion.partials.admin-status-modal')
     @include('livewire.administracion.partials.admin-info-modal')
     <script>
