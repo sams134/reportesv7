@@ -563,6 +563,19 @@
     }
 
     /*
+     * Texto secundario de portada.
+     *
+     * Prioridad:
+     * 1. Subtítulo definido en la cotización.
+     * 2. Descripción técnica automática del equipo.
+     */
+    $cover1TextoSecundario = trim((string) ($cotizacion->subtitulo ?? ''));
+
+    if ($cover1TextoSecundario === '') {
+        $cover1TextoSecundario = $cover1EquipoDescripcion;
+    }
+
+    /*
      * 4. Cliente fallback.
      */
     if (!$cover1Cliente) {
@@ -1858,9 +1871,9 @@
                     </div>
                 @endif
 
-                @if ($cover1EquipoDescripcion)
+                @if ($cover1TextoSecundario)
                     <div class="cover1-equipo">
-                        {{ $cover1EquipoDescripcion }}
+                        {{ $cover1TextoSecundario }}
                     </div>
                 @endif
 
