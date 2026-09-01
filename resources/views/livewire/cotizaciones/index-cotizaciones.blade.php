@@ -140,7 +140,14 @@
                                 </td>
 
                                 <td class="fw-bold">
-                                    {{ $cotizacion->numero }}
+                                    <a href="{{ route('admin.cotizaciones.preview', [
+                                        'cotizacion' => $cotizacion->id,
+                                    ]) }}"
+                                        class="text-decoration-none fw-bold">
+
+                                        {{ $cotizacion->numero }}
+
+                                    </a>
 
                                     @if ($versiones->count() > 0)
                                         <button type="button" class="btn btn-link btn-sm p-0 ms-1"

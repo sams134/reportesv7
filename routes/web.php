@@ -133,6 +133,16 @@ Route::middleware([
             Route::get('cotizaciones/unificar', \App\Http\Livewire\Cotizaciones\NuevaCotizacion::class)
                 ->name('cotizaciones.unificar');
 
+            Route::get(
+                'cotizaciones/{cotizacion}/preview',
+                \App\Http\Livewire\Cotizaciones\PreviewCotizacion::class
+            )->name('cotizaciones.preview');
+
+            Route::get(
+                'cotizaciones/{cotizacion}/preview-html',
+                [CotizacionPdfController::class, 'previewHtml']
+            )->name('cotizaciones.previewHtml');
+
             Route::get('cotizaciones/{cotizacion}/adicional', \App\Http\Livewire\Cotizaciones\NuevaCotizacion::class)
                 ->name('cotizaciones.adicional');
 

@@ -1,5 +1,6 @@
 @php
     $seccionPdf = $seccionPdf ?? 'completo';
+    $modoPreviewHtml = $modoPreviewHtml ?? false;
 @endphp
 @php
     /*
@@ -7,19 +8,73 @@
      * Especialmente necesario en Windows:
      * C:\Apache24\htdocs\... -> file:///C:/Apache24/htdocs/...
      */
-    $pdfFileUrl = function ($path) {
+    $pdfFileUrl = function ($path) use ($modoPreviewHtml) {
         if (!$path) {
             return '';
         }
 
-        $path = str_replace('\\', '/', $path);
-        $path = str_replace(' ', '%20', $path);
+        /*
+         * Normalizar Windows:
+         * C:\Apache24\htdocs\...
+         *
+         * a:
+         * C:/Apache24/htdocs/...
+         */
+        $pathNormalizado = str_replace('\\', '/', $path);
 
-        if (preg_match('/^[A-Za-z]:\//', $path)) {
-            return 'file:///' . $path;
+        /*
+         * ========================================
+         * PREVIEW HTML
+         * ========================================
+         *
+         * Convertimos una ruta física dentro de public/
+         * a una URL accesible por el navegador.
+         */
+        if ($modoPreviewHtml) {
+            $publicRoot = rtrim(str_replace('\\', '/', public_path()), '/');
+
+            /*
+             * Solo exponemos archivos que realmente estén
+             * dentro de public/.
+             */
+            if (strpos($pathNormalizado, $publicRoot . '/') === 0) {
+                $relativePath = substr($pathNormalizado, strlen($publicRoot));
+
+                $relativePath = ltrim($relativePath, '/');
+
+                $url = asset($relativePath);
+
+                /*
+                 * Tenemos imágenes como:
+                 * portada 1.3.png
+                 */
+                return str_replace(' ', '%20', $url);
+            }
+
+            return '';
         }
 
-        return 'file://' . $path;
+        /*
+         * ========================================
+         * PDF / WKHTMLTOPDF
+         * ========================================
+         */
+
+        $pathNormalizado = str_replace(' ', '%20', $pathNormalizado);
+
+        /*
+         * Windows:
+         * C:/Apache24/... → file:///C:/Apache24/...
+         */
+        if (preg_match('/^[A-Za-z]:\//', $pathNormalizado)) {
+            return 'file:///' . $pathNormalizado;
+        }
+
+        /*
+         * Linux:
+         * /var/www/... → file:///var/www/...
+         */
+        return 'file://' . $pathNormalizado;
     };
 @endphp
 @php
@@ -590,27 +645,7 @@
 @php
     $cover1FotoUrl = $cover1FotoPath ? $pdfFileUrl($cover1FotoPath) : null;
 @endphp
-@php
-    $pdfFileUrl = function ($path) {
-        if (!$path) {
-            return '';
-        }
 
-        // Windows: C:\Apache24\... -> C:/Apache24/...
-        $path = str_replace('\\', '/', $path);
-
-        // Espacios en nombres como "portada 1.3.png"
-        $path = str_replace(' ', '%20', $path);
-
-        // Windows absolute path: C:/...
-        if (preg_match('/^[A-Za-z]:\//', $path)) {
-            return 'file:///' . $path;
-        }
-
-        // Linux absolute path: /var/www/...
-        return 'file://' . $path;
-    };
-@endphp
 @php
     $coverNumeroCotizacion = trim((string) ($cotizacion->numero ?? ''));
     $coverNumeroRequerimiento = trim((string) ($numeroRequerimiento ?? ''));
@@ -902,7 +937,7 @@
 
     .page-items {
         width: 100%;
-      
+
         background: #ffffff;
         font-family: Arial, Helvetica, sans-serif;
         color: #1f2933;
@@ -1822,9 +1857,144 @@
         font-weight: 400;
         color: #234a9b;
     }
+
+    @if ($modoPreviewHtml)
+
+        /*
+     * =========================================================
+     * PREVIEW HTML
+     * Estas reglas NO afectan el PDF.
+     * =========================================================
+     */
+
+        body.preview-html {
+            width: 1020px;
+            margin: 0 auto;
+            padding: 24px 0 50px 0;
+            background: #e9edf2;
+        }
+
+
+        /*
+     * Simular hojas visuales dentro del navegador.
+     */
+        .preview-html .cover1-page,
+        .preview-html .cover2-page,
+        .preview-html .page-letter,
+        .preview-html .page-items,
+        .preview-html .page-extra,
+        .preview-html .page-terms {
+            background: #ffffff;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+        }
+
+
+        /*
+     * La carta contiene elementos position:absolute.
+     * 1056px no son suficientes en HTML porque la firma
+     * empieza cerca de 985px.
+     *
+     * En preview reservamos la altura completa de la hoja.
+     */
+        .preview-html .page-letter {
+            width: 1020px;
+            min-height: 1310px;
+            margin-bottom: 32px !important;
+        }
+
+
+        /*
+     * Página de items.
+     */
+        .preview-html .page-items {
+            width: 1020px;
+            min-height: 0;
+            margin-bottom: 32px !important;
+            padding-bottom: 36px;
+            box-sizing: border-box;
+        }
+
+
+        /*
+     * Información adicional.
+     */
+        .preview-html .page-extra {
+            width: 1020px !important;
+            min-height: 1310px;
+
+            margin-left: auto !important;
+            margin-right: auto !important;
+            margin-bottom: 32px !important;
+
+            padding: 24px 60px 45px 60px;
+
+            box-sizing: border-box;
+            background: #ffffff;
+        }
+
+
+
+        /*
+     * Términos.
+     */
+        .preview-html .page-terms {
+            width: 1020px !important;
+            min-height: 1310px;
+
+            margin-left: auto !important;
+            margin-right: auto !important;
+            margin-bottom: 32px !important;
+
+            /*
+     * 60px a izquierda/derecha reproduce aproximadamente
+     * el área útil del 88% original.
+     */
+            padding: 0 60px 45px 60px;
+
+            box-sizing: border-box;
+
+            background: #ffffff;
+
+            /*
+     * En PDF usas overflow:hidden para controlar Snappy.
+     * En navegador puede cortar unos píxeles del texto.
+     */
+            overflow: visible !important;
+        }
+
+
+        /*
+     * page-break funciona para impresión, pero en pantalla
+     * normalmente no genera separación visual.
+     */
+        .preview-html .page-break {
+            page-break-before: auto !important;
+            height: 32px;
+            background: #e9edf2;
+        }
+
+        .preview-html .terms-content {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0;
+        }
+
+        .preview-html .terms-content p,
+        .preview-html .terms-content li {
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+
+        .preview-html .page-extra .extra-header {
+            padding-top: 0;
+        }
+
+    @endif
 </style>
 
-<body>
+<body class="{{ $modoPreviewHtml ? 'preview-html' : '' }}">
 
     @if (($usarPortada ?? true) && in_array($seccionPdf ?? 'completo', ['completo', 'inicio']))
 
@@ -2053,7 +2223,7 @@
                                     <tr>
                                         <td class="items-logo-cme-cell">
                                             @if (file_exists($logoPath))
-                                                <img src="{{ $logoPath }}" class="items-logo-cme" alt="CME">
+                                                <img src="{{ $logoUrl }}" class="items-logo-cme" alt="CME">
                                             @endif
 
                                             <div class="items-slogan-box">
@@ -2063,11 +2233,11 @@
 
                                         <td class="items-logo-certificaciones-cell">
                                             @if (file_exists($wegPath))
-                                                <img src="{{ $wegPath }}" class="items-logo-weg" alt="WEG">
+                                                <img src="{{ $wegUrl }}" class="items-logo-weg" alt="WEG">
                                             @endif
 
                                             @if (file_exists($easaPath))
-                                                <img src="{{ $easaPath }}" class="items-logo-easa" alt="EASA">
+                                                <img src="{{ $easaUrl }}" class="items-logo-easa" alt="EASA">
                                             @endif
                                         </td>
                                     </tr>
@@ -2345,7 +2515,7 @@
                     <tr>
                         <td class="extra-logo-cme-cell">
                             @if (file_exists($logoPath))
-                                <img src="{{ $logoPath }}" class="extra-logo-cme" alt="CME">
+                                <img src="{{ $logoUrl }}" class="extra-logo-cme" alt="CME">
                             @endif
 
                             <div class="extra-slogan-box">
@@ -2355,11 +2525,11 @@
 
                         <td class="extra-logo-certificaciones-cell">
                             @if (file_exists($wegPath))
-                                <img src="{{ $wegPath }}" class="extra-logo-weg" alt="WEG">
+                                <img src="{{ $wegUrl }}" class="extra-logo-weg" alt="WEG">
                             @endif
 
                             @if (file_exists($easaPath))
-                                <img src="{{ $easaPath }}" class="extra-logo-easa" alt="EASA">
+                                <img src="{{ $easaUrl }}" class="extra-logo-easa" alt="EASA">
                             @endif
                         </td>
                     </tr>

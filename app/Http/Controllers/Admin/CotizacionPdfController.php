@@ -19,6 +19,56 @@ use Illuminate\Support\Facades\DB;
 class CotizacionPdfController extends Controller
 {
 
+    public function previewHtml(Request $request, Cotizacion $cotizacion)
+    {
+        /*
+     * Cargamos exactamente la información que necesita
+     * la misma plantilla utilizada para generar el PDF.
+     */
+        $cotizacion->load([
+            'cliente.info_cliente',
+            'motor.infoMotor',
+            'motor.fotos',
+            'contactosCotizacion',
+            'itemsCotizacion',
+            'creadoPor',
+
+            'unificadaDetalles.items',
+            'unificadaDetalles.cotizacionOrigen.motor.infoMotor',
+
+            'excelGrupos.items',
+
+            'pdfsAntesItems',
+            'pdfsDespuesItems',
+        ]);
+
+        $usarPortada = filter_var(
+            $request->query('portada', 1),
+            FILTER_VALIDATE_BOOLEAN
+        );
+
+        $usarCartaPresentacion = filter_var(
+            $request->query('carta', 1),
+            FILTER_VALIDATE_BOOLEAN
+        );
+
+        $mostrarDesgloseIva = filter_var(
+            $request->query('iva', 1),
+            FILTER_VALIDATE_BOOLEAN
+        );
+
+        $data = $this->dataPdfCotizacion(
+            $cotizacion,
+            $usarPortada,
+            $usarCartaPresentacion,
+            $mostrarDesgloseIva
+        );
+
+        return view('pdfs.cotizaciones.portada1', array_merge($data, [
+            'seccionPdf' => 'completo',
+            'modoPreviewHtml' => true,
+        ]));
+    }
     public function downloadPdf(Request $request, Cotizacion $cotizacion)
     {
         $cotizacion->load([

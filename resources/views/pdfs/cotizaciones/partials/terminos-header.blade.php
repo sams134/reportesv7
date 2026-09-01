@@ -3,7 +3,7 @@
         <tr>
             <td class="terms-logo-cme-cell">
                 @if(file_exists($logoPath))
-                    <img src="{{ $logoPath }}" class="terms-logo-cme" alt="CME">
+                    <img src="{{ $logoUrl }}" class="terms-logo-cme" alt="CME">
                 @endif
 
                 <div class="terms-slogan-box">
@@ -13,11 +13,11 @@
 
             <td class="terms-logo-certificaciones-cell">
                 @if(file_exists($wegPath))
-                    <img src="{{ $wegPath }}" class="terms-logo-weg" alt="WEG">
+                    <img src="{{ $wegUrl }}" class="terms-logo-weg" alt="WEG">
                 @endif
 
                 @if(file_exists($easaPath))
-                    <img src="{{ $easaPath }}" class="terms-logo-easa" alt="EASA">
+                    <img src="{{ $easaUrl }}" class="terms-logo-easa" alt="EASA">
                 @endif
             </td>
         </tr>
