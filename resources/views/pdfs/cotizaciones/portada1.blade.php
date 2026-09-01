@@ -902,7 +902,7 @@
 
     .page-items {
         width: 100%;
-        min-height: 1056px;
+      
         background: #ffffff;
         font-family: Arial, Helvetica, sans-serif;
         color: #1f2933;

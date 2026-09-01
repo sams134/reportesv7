@@ -80,6 +80,10 @@ class CotizacionPdfController extends Controller
             'seccionPdf' => 'items',
         ]))
             ->setPaper('letter')
+            ->setOption('margin-top', '8mm')
+            ->setOption('margin-bottom', '12mm')
+            ->setOption('margin-left', '0mm')
+            ->setOption('margin-right', '0mm')
             ->save($itemsPath);
 
         /*
@@ -90,6 +94,10 @@ class CotizacionPdfController extends Controller
                 'seccionPdf' => 'terminos',
             ]))
                 ->setPaper('letter')
+                ->setOption('margin-top', '8mm')
+                ->setOption('margin-bottom', '12mm')
+                ->setOption('margin-left', '0mm')
+                ->setOption('margin-right', '0mm')
                 ->save($terminosPath);
         }
 
